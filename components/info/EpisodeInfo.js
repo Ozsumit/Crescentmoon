@@ -14,7 +14,7 @@ const EpisodeInfo = (props) => {
       <div className="pt-2 pb-8 flex justify-center">
         <iframe
           className="w-4/5 aspect-video sm: pr-4 pl-4"
-          src={`https://v2.vidsrc.me/embed/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
+          src={`https://vidsrc.to/embed/movie/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
           frameBorder={`0`}
           allowFullScreen={true}
         ></iframe>

@@ -2,17 +2,17 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Play, Star, Clock, CalendarDays, X, Heart } from "lucide-react";
-
+import ReactPlayer from "react-player";
+// npm i adblock-rs
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [iframeSrc, setIframeSrc] = useState("");
 
-  // Fallback for missing poster
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500/${MovieDetail.poster_path}`
     : "https://i.imgur.com/wjVuAGb.png";
 
-  // Calculate runtime in hours and minutes
   const formatRuntime = (minutes) => {
     if (!minutes) return "N/A";
     const hours = Math.floor(minutes / 60);
@@ -20,10 +20,15 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     return `${hours}h ${remainingMinutes}m`;
   };
 
-  // Toggle Trailer Playback
-  const toggleTrailer = () => setIsTrailerPlaying(!isTrailerPlaying);
+  const toggleTrailer = () => {
+    if (!isTrailerPlaying) {
+      setIframeSrc(`https://v2.vidsrc.me/embed/${id}`);
+    } else {
+      setIframeSrc("");
+    }
+    setIsTrailerPlaying(!isTrailerPlaying);
+  };
 
-  // Toggle Favorite Status
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -43,7 +48,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     setIsFavorite(!isFavorite);
   };
 
-  // Initialize Favorite Status
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     const isMovieFavorited = favorites.some(
@@ -55,17 +59,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br pt-16 from-indigo-950 via-slate-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
-        {/* Movie Header */}
         <div className="grid lg:grid-cols-[350px_1fr] gap-8 mb-8">
-          {/* Poster Section */}
           <div className="relative group mx-auto max-w-[350px] w-full">
             <Image
               src={posterPath}
               alt={MovieDetail.title || "Movie Poster"}
               width={350}
               height={525}
-              className="rounded-2xl shadow-2xl transform transition-all 
-                duration-300 group-hover:scale-105 group-hover:shadow-3xl"
+              className="rounded-2xl shadow-2xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-3xl"
               priority
             />
             <button
@@ -76,8 +77,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               <Play className="text-white w-24 h-24 drop-shadow-lg" />
             </button>
           </div>
-
-          {/* Movie Details */}
           <div className="lg:pl-8">
             <h1
               className="text-4xl lg:text-5xl font-black mb-4 text-transparent bg-clip-text 
@@ -85,7 +84,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             >
               {MovieDetail.title}
             </h1>
-            {/* Movie Stats */}
             <div className="flex flex-wrap items-center gap-4 mb-4 text-slate-300">
               <div className="flex items-center space-x-2">
                 <Star className="text-yellow-400 w-5 h-5" />
@@ -106,7 +104,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 </span>
               </div>
             </div>
-            {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-6">
               {genreArr?.map((genre, index) => (
                 <span
@@ -118,7 +115,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 </span>
               ))}
             </div>
-            {/* Favorite Button */}
             <button
               onClick={handleFavoriteToggle}
               className="flex items-center text-sm bg-black/50 px-4 py-2 rounded-lg hover:bg-black/70 transition-colors"
@@ -134,26 +130,22 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               />
               {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
             </button>
-            {/* Overview */}
             <p className="text-slate-400 text-base leading-relaxed mt-6">
               {MovieDetail.overview}
-            </p>{" "}
-            <div className="flex space-x-4">
-              <button
-                onClick={toggleTrailer}
-                className="bg-gradient-to-r flex flex-row justify-center items-center from-indigo-600 to-pink-600 
+            </p>
+            <button
+              onClick={toggleTrailer}
+              className="bg-gradient-to-r flex flex-row justify-center items-center from-indigo-600 to-pink-600 
                   text-white px-6 py-3 rounded-lg hover:from-indigo-700 
-                  hover:to-pink-700 transition-all transform hover:scale-105 
+                  hover:to-pink-700     mt-4 transition-all transform hover:scale-105 
               "
-              >
-                <Play className="mr-2 " />
-                Play
-              </button>
-            </div>
-          </div>
+            >
+              <Play className="mr-2 " />
+              Play
+            </button>
+          </div>{" "}
         </div>
 
-        {/* Trailer Modal */}
         {isTrailerPlaying && (
           <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
             <div className="relative w-full max-w-4xl aspect-video">
@@ -164,13 +156,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               >
                 <X className="w-8 h-8" />
               </button>
-
               <iframe
                 className="w-full h-full rounded-xl shadow-2xl"
-                src={`https://v2.vidsrc.me/embed/${id}`}
-                title="Movie Trailer"
+                src={iframeSrc}
+                // title="Movie Trailer"
                 frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allow="accelerometer; autoplay;download; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             </div>
