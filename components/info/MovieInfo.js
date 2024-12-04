@@ -146,7 +146,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   hover:to-pink-700 transition-all transform hover:scale-105 
               "
               >
-                <Play className="mr-2 mt-4" />
+                <Play className="mr-2 " />
                 Play
               </button>
             </div>
