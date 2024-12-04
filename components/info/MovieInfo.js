@@ -141,10 +141,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             <div className="flex space-x-4">
               <button
                 onClick={toggleTrailer}
-                className="bg-gradient-to-r from-indigo-600 to-pink-600 
+                className="bg-gradient-to-r flex flex-row justify-center items-center from-indigo-600 to-pink-600 
                   text-white px-6 py-3 rounded-lg hover:from-indigo-700 
                   hover:to-pink-700 transition-all transform hover:scale-105 
-                  flex items-center"
+              "
               >
                 <Play className="mr-2 mt-4" />
                 Play
