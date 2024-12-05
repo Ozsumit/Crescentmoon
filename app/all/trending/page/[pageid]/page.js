@@ -1,3 +1,4 @@
+import SpotlightCarousel from "@/components/display/carausel";
 import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
@@ -24,8 +25,9 @@ export async function getData(pageid) {
 const AllTrending = async ({ params }) => {
   let { data, pageid } = await getData(params.pageid);
   return (
-    <div className=" h-auto">
-      <Title />
+    <div className=" h pt-8">
+      {/* <Title /> */}
+      <SpotlightCarousel />
       {/* <SearchBar />
       <HomeFilter /> */}
       <HomeDisplay movies={data} pageid={pageid} />

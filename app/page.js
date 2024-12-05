@@ -25,7 +25,7 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" h-auto">
+    <div className=" m-0 h-auto">
       {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}

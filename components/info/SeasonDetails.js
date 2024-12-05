@@ -83,15 +83,7 @@ const SeasonInfo = (props) => {
         </div>
 
         {/* Episodes Section */}
-        <div className="mt-12 bg-slate-800/70 p-6 rounded-xl shadow-2xl">
-          <h2 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-            Episodes
-          </h2>
-          <div className="">
-            {/* Your existing EpisodeDisplay component goes here */}
-            <EpisodeDisplay EpisodeInfos={episodes} seriesId={id} />{" "}
-          </div>
-        </div>
+       
       </div>
     </div>
   );

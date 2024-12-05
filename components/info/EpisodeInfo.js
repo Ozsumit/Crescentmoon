@@ -1,37 +1,75 @@
 import React from "react";
-import EpisodeDetails from "./EpisodeDetails";
-import NextEpisode from "../pagination/NextEpisode";
+import { Play, Clock, CalendarDays } from "lucide-react";
 
-const EpisodeInfo = (props) => {
-  let { episodeDetails, seriesId, seasonData, seriesData } = props;
-  let TotalEpisodes = seasonData.episodes.length;
-  let TotalSeasons = seriesData.number_of_seasons;
+const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
+  const totalEpisodes = seasonData.episodes.length;
+  const totalSeasons = seriesData.number_of_seasons;
+
   return (
-    <div>
-      <div className="flex flex-row place-content-center items-center mb-10 mt-5">
-        <EpisodeDetails episodeDetails={episodeDetails} />
-      </div>
-      <div className="pt-2 pb-8 flex justify-center">
-        <iframe
-          className="w-4/5 aspect-video sm: pr-4 pl-4"
-          src={`https://vidsrc.to/embed/movie/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
-          frameBorder={`0`}
-          allowFullScreen={true}
-        ></iframe>
-        {/* working */}
-        {/* https://vidsrc.to/embed/tv/${seriesId}/${episodeDetails.season_number}/${episodeDetails.episode_number} */}
-        {/* https://v2.vidsrc.me/embed/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number} */}
-        {/* not working */}
-        {/* https://olgply.xyz/${seriesId}/${episodeDetails.season_number}/${episodeDetails.episode_number} */}
-        {/* src={`https://autoembed.to/tv/tmdb/${seriesId}-${episodeDetails.season_number}-${episodeDetails.episode_number}`} */}
-      </div>
-      <div className="flex w-full items-center justify-center">
-        <NextEpisode
-          seriesId={seriesId}
-          episodeDetails={episodeDetails}
-          totalEpisodes={TotalEpisodes}
-          totalSeasons={TotalSeasons}
-        />
+    <div className="bg-gradient-to-br rounded-xl from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
+      <div className="container mx-auto px-4 space-y-10">
+        {/* Episode Details Section */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            {episodeDetails.name}
+          </h1>
+          <div className="flex items-center space-x-4 text-slate-300">
+            <div className="flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-indigo-400" />
+              <span>
+                {episodeDetails.runtime
+                  ? `${Math.floor(episodeDetails.runtime / 60)}h ${
+                      episodeDetails.runtime % 60
+                    }m`
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CalendarDays className="w-5 h-5 text-pink-400" />
+              <span>
+                {episodeDetails.air_date
+                  ? new Date(episodeDetails.air_date).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+            <div>
+              Season {episodeDetails.season_number}, Episode{" "}
+              {episodeDetails.episode_number}
+            </div>
+          </div>
+        </div>
+
+        {/* Video Embed Section */}
+        <div className="flex justify-center mb-8">
+          <iframe
+            className="w-full md:w-3/4 lg:w-2/3 aspect-video rounded-xl shadow-xl"
+            src={`https://v2.vidsrc.me/embed/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+        </div>
+
+        {/* Description Section */}
+        <div className="max-w-4xl mx-auto text-center text-slate-300 px-4">
+          <p className="text-base leading-relaxed">{episodeDetails.overview}</p>
+        </div>
+
+        {/* Navigation Section */}
+        <div className="flex justify-center space-x-4 mt-8">
+          {/* Previous Episode Button */}
+          <button className="bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-600 transition-colors">
+            Previous Episode
+          </button>
+
+          {/* Next Episode Button */}
+          <button
+            className="bg-gradient-to-r from-indigo-600 to-pink-600 
+            text-white px-6 py-2 rounded-lg hover:from-indigo-700 hover:to-pink-700 
+            transition-all transform hover:scale-105"
+          >
+            Next Episode
+          </button>
+        </div>
       </div>
     </div>
   );

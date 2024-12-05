@@ -127,13 +127,6 @@ const SpotlightCarousel = () => {
                 />
                 Watch Now
               </Link>
-              <button className="flex items-center bg-white/20 text-white px-6 py-3 rounded-full hover:bg-white/30 transition-all group">
-                <ChevronRight
-                  className="mr-2 group-hover:translate-x-1 transition-transform"
-                  size={20}
-                />
-                More Details
-              </button>
             </div>
           </motion.div>
         </AnimatePresence>

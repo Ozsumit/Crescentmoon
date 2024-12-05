@@ -1,26 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  Home,
-  Film,
-  Tv,
-  Search,
-  Menu,
-  Bell,
-  User,
-  X,
-  Clapperboard,
-  ListFilter,
-  Heart,
-} from "lucide-react";
+import { Home, Film, Tv, Search, Heart, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,98 +18,72 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleNavbar = () => {
-    setIsOpen(!isOpen);
-  };
-
   const navLinks = [
-    {
-      href: "/",
-      label: "Home",
-      icon: Home,
-    },
-    {
-      href: "/movie",
-      label: "Movies",
-      icon: Film,
-    },
-    {
-      href: "/series",
-      label: "TV Series",
-      icon: Tv,
-    },
+    { href: "/", label: "Home", icon: Home },
+    { href: "/movie", label: "Movies", icon: Film },
+    { href: "/series", label: "TV Series", icon: Tv },
   ];
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-black/80 backdrop-blur-xl shadow-2xl"
+          ? "bg-black/90 backdrop-blur-xl shadow-2xl"
           : "bg-gradient-to-b from-black/80 to-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
+          {/* Logo */}
+          <div>
             <Logo />
-            {/* <span className="text-white text-xl font-bold tracking-wider">CinemaFlow</span> */}
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <div
+              <Link
                 key={link.href}
-                className="relative group"
-                onMouseEnter={() => setActiveDropdown(link.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
+                href={link.href}
+                className="group flex items-center space-x-2 text-white/80 hover:text-white transition-colors"
               >
-                <Link
-                  href={link.href}
-                  className="flex items-center space-x-2 text-white hover:text-gray-300 transition-colors group"
-                >
-                  <link.icon size={20} />
-                  <span className="font-medium">{link.label}</span>
-                </Link>
-
-                {/* Dropdown */}
-              </div>
+                <link.icon
+                  size={20}
+                  className="group-hover:text-indigo-400 transition-colors"
+                />
+                <span className="font-medium group-hover:text-indigo-400">
+                  {link.label}
+                </span>
+              </Link>
             ))}
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
+          <div className="flex items-center space-x-6">
             <Link
               href="/search"
-              className="text-white hover:text-gray-300 transition-colors"
+              className="text-white/80 hover:text-white transition-colors"
             >
               <Search size={24} />
             </Link>
 
-            {/* Notifications */}
-            {/* <button className="text-white hover:text-gray-300 transition-colors relative">
-              <Bell size={24} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                3
-              </span>
-            </button> */}
-
-            {/* Profile */}
             <Link
               href="/favourites"
-              className="text-white hover:text-gray-300 transition-colors"
+              className="text-white/80 hover:text-white transition-colors"
             >
               <Heart size={24} />
             </Link>
 
             {/* Mobile Menu Toggle */}
             <button
-              onClick={toggleNavbar}
-              className="lg:hidden text-white focus:outline-none"
+              onClick={toggleMobileMenu}
+              className="lg:hidden text-white/80 hover:text-white"
             >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
@@ -130,41 +91,24 @@ const Header = () => {
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {isOpen && (
+        {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="lg:hidden absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-xl"
           >
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 py-6 space-y-6">
               {navLinks.map((link) => (
-                <div key={link.href} className="border-b border-white/10 pb-4">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href={link.href}
-                      onClick={toggleNavbar}
-                      className="flex items-center space-x-3 text-white text-lg"
-                    >
-                      <link.icon size={24} />
-                      <span>{link.label}</span>
-                    </Link>
-                    <ListFilter size={20} className="text-white/50" />
-                  </div>
-
-                  <div className="mt-3 space-y-2">
-                    {link.dropdown.map((dropItem) => (
-                      <Link
-                        key={dropItem.href}
-                        href={dropItem.href}
-                        onClick={toggleNavbar}
-                        className="block pl-10 py-2 text-white/80 hover:bg-white/10 rounded-md transition-colors"
-                      >
-                        {dropItem.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={toggleMobileMenu}
+                  className="flex items-center space-x-4 text-white/80 hover:text-white text-lg border-b border-white/10 pb-4"
+                >
+                  <link.icon size={24} className="text-indigo-400" />
+                  <span>{link.label}</span>
+                </Link>
               ))}
             </div>
           </motion.div>

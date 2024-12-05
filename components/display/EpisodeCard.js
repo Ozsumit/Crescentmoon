@@ -4,34 +4,35 @@ import React from "react";
 
 const EpisodeCard = (props) => {
   let { episodeinfo, seriesId } = props;
-  let still_path = `https://image.tmdb.org/t/p/w342/${episodeinfo.still_path}`;
-  if (episodeinfo.still_path == null) {
-    still_path = "https://i.imgur.com/HIYYPtZ.png";
-  }
+  let still_path = episodeinfo.still_path
+    ? `https://image.tmdb.org/t/p/w342/${episodeinfo.still_path}`
+    : "https://i.imgur.com/HIYYPtZ.png";
+
   return (
-    <div className="flex flex-col w-72 h-auto bg-grey m-3 ">
-      <div className="hover:opacity-75">
-        <Link
-          href="/series/[id]/season/[seasonid]/[epid]"
-          as={`/series/${seriesId}/season/${episodeinfo.season_number}/${episodeinfo.episode_number}`}
-          title={episodeinfo.name}
-        >
-          <Image
-            src={still_path}
-            alt={episodeinfo.name}
-            className="rounded w-full h-full"
-            width={288}
-            height={176}
-            unoptimized
-          />
-        </Link>
+    <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+      <Link
+        href="/series/[id]/season/[seasonid]/[epid]"
+        as={`/series/${seriesId}/season/${episodeinfo.season_number}/${episodeinfo.episode_number}`}
+        title={episodeinfo.name}
+        className="block"
+      >
+        <Image
+          src={still_path}
+          alt={episodeinfo.name}
+          className="w-full h-48 object-cover"
+          width={288}
+          height={176}
+          unoptimized
+        />
+      </Link>
+      <div className="p-4">
+        <p className="text-center text-slate-300">
+          <span className="text-indigo-400 font-semibold">
+            S{episodeinfo.season_number} E{episodeinfo.episode_number}:
+          </span>{" "}
+          <span className="text-slate-200">{episodeinfo.name}</span>
+        </p>
       </div>
-      <p className="my-2 text-center text-white text-sm font-light">
-        <span className="text-primary font-semibold">
-          S{episodeinfo.season_number} E{episodeinfo.episode_number}:
-        </span>{" "}
-        {episodeinfo.name}
-      </p>
     </div>
   );
 };

@@ -23,10 +23,10 @@ const SeasonInfo = (props) => {
           </h2>
 
           {/* Episodes Display Component (Uncomment and implement if needed) */}
-          {/* <EpisodeDisplay EpisodeInfos={episodes} seriesId={id} /> */}
+          <EpisodeDisplay EpisodeInfos={episodes} seriesId={id} />
 
           {/* Example styling for Episode Items */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {episodes?.map((episode, index) => (
               <div
                 key={index}
@@ -41,7 +41,7 @@ const SeasonInfo = (props) => {
                 </button>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

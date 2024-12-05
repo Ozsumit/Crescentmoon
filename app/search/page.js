@@ -61,8 +61,8 @@ const Search = () => {
   }, [typedValue]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-black text-white">
-      <div className="container mx-auto px-4 py-8 flex-grow">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br justify-center items-center from-indigo-950 via-slate-900 to-black text-white">
+      <div className="container mx-auto mt-16 px-4 py-8 flex-grow">
         <SearchTitle />
         <SearchBar onSearch={handleSearch} onTyping={handleTyping} />
 
