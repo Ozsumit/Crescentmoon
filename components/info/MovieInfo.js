@@ -25,12 +25,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   };
 
   const toggleTrailer = () => {
+    setIsTrailerPlaying(!isTrailerPlaying);
     if (!isTrailerPlaying) {
       setIframeSrc(`https://v2.vidsrc.me/embed/${id}`);
     } else {
       setIframeSrc("");
     }
-    setIsTrailerPlaying(!isTrailerPlaying);
   };
 
   const handleFavoriteToggle = (e) => {
@@ -172,30 +172,40 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 {isFavorite ? "Remove Favorite" : "Add Favorite"}
               </button>
             </div>
+
+            {/* Trailer Section - Inline trailer */}
+            {isTrailerPlaying && (
+              <div className="w-full col-span-full mt-8">
+                <div className="relative w-full max-w-4xl mx-auto">
+                  <div className="bg-slate-900/50 rounded-xl border border-indigo-900/30 p-2 shadow-2xl">
+                    <div className="aspect-video w-full relative">
+                      <button
+                        onClick={toggleTrailer}
+                        className="absolute -top-8 right-0 text-slate-300 hover:text-indigo-300 transition-colors z-10"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                      <iframe
+                        className="absolute inset-0 w-full h-full rounded-lg"
+                        src={iframeSrc}
+                        // sandbox="allow-scripts allow-orientation-lock allow-same-origin"
+                        // frameBorder="0"
+                        referrerpolicy="no-referrer"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{
+                          filter: "brightness(0.9) contrast(1.1)",
+                          boxShadow: "inset 0 0 15px rgba(99, 102, 241, 0.3)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Trailer Modal */}
-      {isTrailerPlaying && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-fade-in">
-          <div className="relative w-full max-w-4xl aspect-video">
-            <button
-              onClick={toggleTrailer}
-              className="absolute -top-10 right-0 text-slate-300 hover:text-indigo-300 transition-colors transform hover:scale-110"
-            >
-              <X className="w-8 h-8" />
-            </button>
-            <iframe
-              className="w-full h-full rounded-xl shadow-2xl animate-scale-up"
-              src={iframeSrc}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

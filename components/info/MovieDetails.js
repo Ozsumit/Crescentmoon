@@ -1,7 +1,16 @@
-import React from "react";
-import { Clock, Star, CalendarDays, Bookmark, PlayCircle } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Play,
+  Clock,
+  Star,
+  CalendarDays,
+  Bookmark,
+  PlayCircle,
+} from "lucide-react";
 
-const MovieDetails = ({ MovieDetail, genreArr }) => {
+const MovieDetails = ({ MovieDetail, genreArr, videoId }) => {
+  const [showVideo, setShowVideo] = useState(false);
+
   // Convert minutes to hours and minutes
   const formatRuntime = (minutes) => {
     const hours = Math.floor(minutes / 60);
@@ -10,54 +19,26 @@ const MovieDetails = ({ MovieDetail, genreArr }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-xl shadow-2xl text-white">
-      <div className="flex items-center mb-4">
-        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold mr-3">
-          MOVIE
-        </span>
-        <div className="flex items-center text-yellow-400">
-          <Star className="w-5 h-5 mr-1 fill-current" />
-          <span className="font-bold">
-            {MovieDetail.vote_average.toFixed(1)}/10
-          </span>
-        </div>
-      </div>
-      <div className="grid md:grid-cols-[300px_1fr] gap-8 mb-8">
-        {/* Poster Section */}
-        <div className="relative group">
-          <Image
-            src={posterPath}
-            alt={MovieDetail.title || "Movie Poster"}
-            width={300}
-            height={450}
-            className="rounded-xl shadow-xl group-hover:scale-105 transition-transform"
-          />
-          <button
-            onClick={toggleTrailer}
-            className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Play className="text-white w-20 h-20" />
-          </button>
-        </div>
-
-        {/* Movie Details */}
-        <div>
-          <h1 className="text-4xl font-bold mb-4 text-white">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        {/* Movie Title Section */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <h1 className="text-4xl font-bold text-white mb-4">
             {MovieDetail.title}
           </h1>
 
           {/* Movie Stats */}
-          <div className="flex items-center space-x-4 mb-4">
+          <div className="flex items-center space-x-6 text-slate-300">
             <div className="flex items-center space-x-2">
-              <Star className="text-yellow-400" />
-              <span>{MovieDetail.vote_average?.toFixed(1) || "N/A"}</span>
+              <Star className="w-5 h-5 text-yellow-400" />
+              <span>{MovieDetail.vote_average.toFixed(1)}/10</span>
             </div>
             <div className="flex items-center space-x-2">
-              <Clock />
+              <Clock className="w-5 h-5 text-indigo-400" />
               <span>{formatRuntime(MovieDetail.runtime)}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <CalendarDays />
+              <CalendarDays className="w-5 h-5 text-pink-400" />
               <span>
                 {MovieDetail.release_date
                   ? new Date(MovieDetail.release_date).getFullYear()
@@ -65,63 +46,93 @@ const MovieDetails = ({ MovieDetail, genreArr }) => {
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Genres */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {genreArr?.map((genre) => (
-              <span
-                key={genre.id}
-                className="bg-gray-700 px-3 py-1 rounded-full text-sm"
-              >
-                {genre.name}
-              </span>
-            ))}
+        {/* Movie Content Grid */}
+        <div className="grid md:grid-cols-[300px_1fr] gap-8 max-w-4xl mx-auto">
+          {/* Poster Section */}
+          <div className="relative group">
+            <img
+              src={`https://image.tmdb.org/t/p/w300${MovieDetail.poster_path}`}
+              alt={MovieDetail.title || "Movie Poster"}
+              className="rounded-xl shadow-xl transition-transform group-hover:scale-105"
+            />
+            <button
+              onClick={() => setShowVideo(true)}
+              className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Play className="text-white w-20 h-20" />
+            </button>
           </div>
 
-          {/* Overview */}
-          <p className="text-gray-300 mb-6">{MovieDetail.overview}</p>
-        </div>
-      </div>
-      <h1 className="text-3xl font-bold mb-4 text-white leading-tight">
-        {MovieDetail.title}
-      </h1>
+          {/* Movie Details */}
+          <div>
+            {/* Genres */}
+            <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
+              {genreArr?.map((genre) => (
+                <span
+                  key={genre.id}
+                  className="bg-slate-700 text-slate-200 px-3 py-1 rounded-full text-sm"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
 
-      <div className="flex flex-wrap items-center gap-4 mb-5 text-zinc-300">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="w-5 h-5 text-blue-400" />
-          <span>{MovieDetail.release_date.substr(0, 4)}</span>
+            {/* Synopsis */}
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-3 text-blue-400">
+                Synopsis
+              </h2>
+              <p className="text-slate-300 leading-relaxed">
+                {MovieDetail.overview}
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-blue-400" />
-          <span>{formatRuntime(MovieDetail.runtime)}</span>
-        </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mb-5">
-        {genreArr.map((genre, index) => (
-          <span
-            key={index}
-            className="bg-zinc-700 text-zinc-200 px-3 py-1 rounded-full text-sm"
+        {/* Action Buttons */}
+        <div className="flex justify-center space-x-4 mt-8">
+          <button
+            onClick={() => setShowVideo(true)}
+            className="flex items-center bg-gradient-to-r from-indigo-600 to-pink-600 
+            text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-pink-700 
+            transition-transform hover:scale-105"
           >
-            {genre}
-          </span>
-        ))}
-      </div>
+            <PlayCircle className="mr-2" />
+            Watch Trailer
+          </button>
+          <button
+            className="flex items-center bg-slate-700 text-white px-6 py-3 rounded-lg 
+            hover:bg-slate-600 transition-colors"
+          >
+            <Bookmark className="mr-2" />
+            Watchlist
+          </button>
+        </div>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3 text-blue-400">Synopsis</h2>
-        <p className="text-zinc-300 leading-relaxed">{MovieDetail.overview}</p>
-      </div>
-
-      <div className="flex space-x-4">
-        <button className="flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-          <PlayCircle className="mr-2" />
-          Watch Trailer
-        </button>
-        <button className="flex items-center bg-zinc-700 text-white px-6 py-3 rounded-lg hover:bg-zinc-600 transition-colors">
-          <Bookmark className="mr-2" />
-          Watchlist
-        </button>
+        {/* Video Player Section */}
+        {showVideo && videoId && (
+          <div className="mt-10 max-w-4xl mx-auto">
+            <div className="relative pt-[56.25%]">
+              {/* 16:9 Aspect Ratio */}
+              <iframe
+                className="absolute top-0 left-0 w-full h-full rounded-xl shadow-xl"
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                title="Movie Trailer"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <button
+              onClick={() => setShowVideo(false)}
+              className="mt-4 bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-600 transition-colors"
+            >
+              Close Trailer
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
