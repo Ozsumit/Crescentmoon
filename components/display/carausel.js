@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +10,11 @@ const SpotlightCarousel = () => {
   const [spotlights, setSpotlights] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // State to ensure client-side rendering
+
+  useEffect(() => {
+    setIsMounted(true); // Mark component as mounted
+  }, []);
 
   useEffect(() => {
     const fetchSpotlights = async () => {
@@ -45,7 +51,7 @@ const SpotlightCarousel = () => {
     setIsPaused(!isPaused);
   };
 
-  if (spotlights.length === 0) return null;
+  if (!isMounted || spotlights.length === 0) return null; // Avoid rendering until mounted and data is loaded
 
   const currentItem = spotlights[currentSlide];
   const title = currentItem.title || currentItem.name;
@@ -55,7 +61,6 @@ const SpotlightCarousel = () => {
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
     : "https://i.imgur.com/xDHFGVl.jpeg";
 
-  // Determine media type and generate link
   const isTV = currentItem.media_type === "tv";
   const href = isTV ? "/series/[id]" : "/movie/[id]";
   const as = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;

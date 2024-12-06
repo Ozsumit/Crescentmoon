@@ -7,6 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
+import AdblockerModal from "@/components/adblockmodel";
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -26,14 +27,17 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" m-0 px-6 h-auto">
+    <div className=" m-0 h-auto">
       {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */}
-      {/* <h1>Trending Movies</h1> */}
-      <HomeDisplay movies={data} />
+      {/* <h1>Trending Movies</h1> div*/}
+      <div className="w-full flex px-4  justify-center items-center">
+        <HomeDisplay movies={data} />
+      </div>
       <WelcomeModal />
+      <AdblockerModal />
     </div>
   );
 }

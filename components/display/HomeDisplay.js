@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import HomePagination from "../pagination/HomePagination";
 import HomeCards from "./HomeCard";
