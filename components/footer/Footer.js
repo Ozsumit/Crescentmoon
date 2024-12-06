@@ -57,7 +57,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-200 rounded-t-3xl shadow-2xl py-16 px-6">
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-200 rounded-t-3xl shadow-2xl py-16 px-4 sm:px-6">
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Section */}
@@ -98,7 +98,7 @@ const Footer = () => {
                       {movieOfTheDay.overview}
                     </p>
                     <Link
-                      href={`/movie/${movieOfTheDay.id}`} // Updated to point to movieinfo
+                      href={`/movie/${movieOfTheDay.id}`}
                       className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block text-sm"
                     >
                       Explore Movie
@@ -111,7 +111,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2 w-full text-center md:text-left">
               Quick Links
             </h2>
             <nav className="w-full">
@@ -131,19 +131,22 @@ const Footer = () => {
 
             {/* Trending Movies */}
             <div className="space-y-4 w-full">
-              <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+              <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2 w-full text-center md:text-left">
                 Trending Movies
               </h2>
               {[
-                { title: "The Shawshank Redemption", id: 278 },
-                { title: "Inception", id: 27205 },
-                { title: "The Dark Knight", id: 155 },
-                { title: "Pulp Fiction", id: 680 },
+                { title: "The Shawshank Redemption", id: 278, year: 1994 },
+                { title: "Inception", id: 27205, year: 2010 },
+                { title: "The Dark Knight", id: 155, year: 2008 },
+                { title: "Pulp Fiction", id: 680, year: 1994 },
               ].map((movie) => (
-                <div key={movie.title} className="group">
+                <div
+                  key={movie.title}
+                  className="group text-center md:text-left"
+                >
                   <Link
-                    href={`/movie/${movie.id}`} // Updated to point to movieinfo
-                    className="text-gray-300 group-hover:text-indigo-400 transition-all flex items-center"
+                    href={`/movie/${movie.id}`}
+                    className="text-gray-300 group-hover:text-indigo-400 transition-all flex items-center justify-center md:justify-start"
                   >
                     <span className="mr-2 group-hover:translate-x-1 transition-transform">
                       →
@@ -160,7 +163,7 @@ const Footer = () => {
 
           {/* Social Links */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2 w-full text-center md:text-left">
               Connect With Us
             </h2>
             <div className="flex space-x-6">
@@ -193,19 +196,19 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <div className="mt-12 border-t border-gray-700 pt-6 text-sm flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 mb-4 md:mb-0">
+          <p className="text-gray-400 mb-4 md:mb-0 text-center w-full md:w-auto">
             &copy; {currentYear} Crescent Moon. All rights reserved.
           </p>
-          <div className="space-x-4">
+          <div className="space-x-4 flex flex-col md:flex-row items-center text-center w-full md:w-auto">
             <Link
               href="/privacy"
-              className="text-gray-400 hover:text-indigo-400 transition-colors"
+              className="text-gray-400 hover:text-indigo-400 transition-colors mb-2 md:mb-0 block md:inline"
             >
               Privacy Policy
             </Link>
             <Link
               href="/terms"
-              className="text-gray-400 hover:text-indigo-400 transition-colors"
+              className="text-gray-400 hover:text-indigo-400 transition-colors block md:inline"
             >
               Terms of Service
             </Link>

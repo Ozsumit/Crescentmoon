@@ -6,7 +6,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const totalSeasons = seriesData.number_of_seasons;
 
   return (
-    <div className="bg-gradient-to-br rounded-xl from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
+    <div className="bg-gradient-to-br rounded-xl pt-16 from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
       <div className="container mx-auto px-4 space-y-10">
         {/* Episode Details Section */}
         <div className="flex flex-col items-center text-center mb-6">

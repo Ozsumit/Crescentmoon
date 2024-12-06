@@ -1,5 +1,5 @@
 import React from "react";
-import HomeCards from "./HomeCard";
+import FavoriteCard from "./favouritecARD";
 
 const SearchDisplay = (props) => {
   const { movies } = props;
@@ -17,7 +17,7 @@ const SearchDisplay = (props) => {
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full"
           >
             {movies.map((movie) => (
-              <HomeCards key={movie.id} MovieCard={movie} className="w-full" />
+              <FavoriteCard key={movie.id} favoriteItem={movie} />
             ))}
           </div>
         ) : (
