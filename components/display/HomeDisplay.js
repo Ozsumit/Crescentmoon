@@ -24,7 +24,7 @@ const HomeDisplay = (props) => {
       {/* Movie Grid */}
       <div
         id="trending"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full"
       >
         {movies.map((movie) => (
           <HomeCards key={movie.id} MovieCard={movie} className="w-full" />
