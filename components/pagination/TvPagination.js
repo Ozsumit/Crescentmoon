@@ -1,50 +1,79 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
-const TvPagination = (props) => {
-  let { pageid } = props;
-  let pagenum = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  if (isNaN(pageid) == true) {
-    pageid = 1;
-  }
+const Pagination = ({
+  pageid = 1,
+  totalPages = 10,
+  basePath = "/series/trending/page/",
+}) => {
+  const router = useRouter();
+  const currentPage = isNaN(Number(pageid)) ? 1 : Number(pageid);
+
+  const handlePageChange = (newPage) => {
+    router.push(`${basePath}${newPage}`);
+  };
+
+  const renderPageLinks = () =>
+    Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+      <Link
+        key={pageNumber}
+        href={`${basePath}${pageNumber}`}
+        className={`${
+          currentPage === pageNumber
+            ? "bg-indigo-600 text-white font-bold"
+            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+        } px-4 py-2 rounded-md transition-all ease-in-out duration-300`}
+        aria-label={`Go to page ${pageNumber}`}
+      >
+        {pageNumber}
+      </Link>
+    ));
+
   return (
-    <div className="flex justify-center items-center list-none flex-wrap">
-      <li className="mb-10 md:mb-0">
+    <div className="flex flex-col items-center gap-4 py-6 px-4">
+      {/* Pagination Controls */}
+      <div className="flex items-center gap-2 flex-wrap justify-center">
+        {/* Previous Button */}
         <Link
-          href="/series/trending/page/[pageid]"
-          as={`/series/trending/page/${Number(pageid) - 1}`}
-          className="bg-grey p-3 mx-2 text-light-white rounded-md stroke-2 hover:opacity-70 hover:text-white"
+          href={currentPage > 1 ? `${basePath}${currentPage - 1}` : "#"}
+          className={`${
+            currentPage <= 1
+              ? "pointer-events-none opacity-50"
+              : "hover:bg-indigo-600"
+          } bg-gray-800 px-4 py-2 rounded-md text-white transition-all ease-in-out duration-300`}
+          aria-label="Previous Page"
         >
-          {`<`}
+          Previous
         </Link>
-      </li>
 
-      {pagenum &&
-        pagenum.map((element, index) => {
-          return (
-            <li key={index} className="mb-10 md:mb-0">
-              <Link
-                href="/series/trending/page/[pageid]"
-                as={`/series/trending/page/${element}`}
-                className="bg-grey p-3 mx-2 text-light-white rounded-md stroke-2 hover:opacity-70 hover:text-white"
-              >
-                {`${element}`}
-              </Link>
-            </li>
-          );
-        })}
+        {/* Page Number Links */}
+        {renderPageLinks()}
 
-      <li className="mb-10 md:mb-0">
+        {/* Next Button */}
         <Link
-          href="/series/trending/page/[pageid]"
-          as={`/series/trending/page/${Number(pageid) + 1}`}
-          className="bg-grey p-3 mx-2 text-light-white rounded-md stroke-2 hover:opacity-70 hover:text-white"
+          href={
+            currentPage < totalPages ? `${basePath}${currentPage + 1}` : "#"
+          }
+          className={`${
+            currentPage >= totalPages
+              ? "pointer-events-none opacity-50"
+              : "hover:bg-indigo-600"
+          } bg-gray-800 px-4 py-2 rounded-md text-white transition-all ease-in-out duration-300`}
+          aria-label="Next Page"
         >
-          {`>`}
+          Next
         </Link>
-      </li>
+      </div>
+
+      {/* Page Indicator */}
+      <div className="text-lg font-semibold text-indigo-600">
+        Page {currentPage} of {totalPages}
+      </div>
     </div>
   );
 };
 
-export default TvPagination;
+export default Pagination;

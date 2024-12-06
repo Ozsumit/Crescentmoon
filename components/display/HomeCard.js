@@ -51,7 +51,7 @@ const HomeCards = ({ MovieCard }) => {
 
   return (
     <div
-      className="relative group w-64 h-96 sm:w-52 sm:h-72 bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-all hover:scale-105 hover:shadow-2xl m-3"
+      className="relative group w-full aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-all hover:scale-105 hover:shadow-2xl"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -69,56 +69,66 @@ const HomeCards = ({ MovieCard }) => {
       </button>
 
       {/* Movie/TV Show Poster */}
-      <Link href={href} as={as} aria-label={title} className="block relative">
+      <Link
+        href={href}
+        as={as}
+        aria-label={title}
+        className="block relative h-full"
+      >
         <Image
           src={posterPath}
           alt={title || "Media Poster"}
           className={`w-full h-full object-cover transition-all 
             ${isHovered ? "brightness-50" : "brightness-100"}`}
-          width={208}
-          height={288}
+          fill
           unoptimized
         />
 
-        {/* Hover Details */}
+        {/* Hover Details - Hidden on mobile, shown on larger screens */}
+        <div className="hidden md:block">
+          {isHovered && (
+            <div className="absolute inset-0 bg-black/60 flex flex-col justify-center items-start text-white p-4">
+              <p className="text-xs sm:text-sm mb-2 text-left line-clamp-3">
+                {MovieCard.overview || "No overview available"}
+              </p>
+              <Link
+                href={href}
+                as={as}
+                className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
+              >
+                <Info size={16} className="mr-2" />
+                More Details
+              </Link>
+            </div>
+          )}
+        </div>
+      </Link>
+
+      {/* Card Footer */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/100 to-transparent p-2 sm:p-4 text-white">
+        <h3 className="text-sm sm:text-lg font-semibold truncate mb-1">
+          {title}
+        </h3>
+        <div className="flex justify-between items-center text-xs sm:text-sm">
+          <span>{rating}</span>
+          <span className="text-gray-300">{formattedDate}</span>
+        </div>
+      </div>
+
+      {/* Quick Actions - Hidden on mobile, shown on larger screens */}
+      <div className="hidden md:block">
         {isHovered && (
-          <div className="absolute inset-0 bg-black/60 flex flex-col justify-center items-start text-white p-4">
-            <p className="text-sm mb-2 text-left line-clamp-3">
-              {MovieCard.overview || "No overview available"}
-            </p>
+          <div className="absolute top-2 left-2 flex gap-2">
             <Link
               href={href}
               as={as}
               className="flex items-center text-sm hover:text-blue-400 transition-colors"
             >
-              <Info size={16} className="mr-2" />
-              More Details
+              <PlayCircle size={20} className="text-white" />
             </Link>
           </div>
         )}
-      </Link>
-
-      {/* Card Footer */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/100 to-transparent p-4 text-white">
-        <h3 className="text-lg font-semibold  truncate mb-1">{title}</h3>
-        <div className="flex justify-between items-center">
-          <span className="text-sm">{rating}</span>
-          <span className="text-sm text-gray-300">{formattedDate}</span>
-        </div>
       </div>
-
-      {/* Quick Actions */}
-      {isHovered && (
-        <div className="absolute top-2 left-2 flex gap-2">
-          <Link
-            href={href}
-            as={as}
-            className="flex items-center text-sm hover:text-blue-400 transition-colors"
-          >
-            <PlayCircle size={20} className="text-white" />
-          </Link>
-        </div>
-      )}
     </div>
   );
 };

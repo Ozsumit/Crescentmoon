@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Home, Film, Tv, Search, Heart, Menu, X } from "lucide-react";
@@ -21,7 +22,7 @@ const Header = () => {
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/movie", label: "Movies", icon: Film },
-    { href: "/series", label: "TV Series", icon: Tv },
+    { href: "/series", label: "TV", icon: Tv },
   ];
 
   const toggleMobileMenu = () => {
@@ -31,60 +32,78 @@ const Header = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-black/90 backdrop-blur-xl shadow-2xl"
-          : "bg-gradient-to-b from-black/80 to-transparent"
+        isMobileMenuOpen
+          ? "bg-gray-800/90 backdrop-blur-md shadow-lg  border-gray-700"
+          : `rounded-b-xl ${
+              isScrolled
+                ? "bg-gray-800/70 backdrop-blur-xl shadow-2xl"
+                : "bg-gradient-to-b from-gray-800/50 to-transparent"
+            }`
       }`}
+      style={{
+        WebkitBackdropFilter: "blur(10px)",
+        backdropFilter: "blur(10px)",
+      }} // Add this line
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <div>
+          <div className="flex-shrink-0">
             <Logo />
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <Link
+              <motion.div
                 key={link.href}
-                href={link.href}
-                className="group flex items-center space-x-2 text-white/80 hover:text-white transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <link.icon
-                  size={20}
-                  className="group-hover:text-indigo-400 transition-colors"
-                />
-                <span className="font-medium group-hover:text-indigo-400">
-                  {link.label}
-                </span>
-              </Link>
+                <Link
+                  href={link.href}
+                  className="group flex items-center space-x-2 text-white/80 hover:text-white transition-colors"
+                >
+                  <link.icon
+                    size={20}
+                    className="group-hover:text-indigo-400 transition-colors"
+                  />
+                  <span className="font-medium group-hover:text-indigo-400">
+                    {link.label}
+                  </span>
+                </Link>
+              </motion.div>
             ))}
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-6">
-            <Link
-              href="/search"
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <Search size={24} />
-            </Link>
+          <div className="flex items-center space-x-4 sm:space-x-6">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link
+                href="/search"
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <Search size={22} />
+              </Link>
+            </motion.div>
 
-            <Link
-              href="/favourites"
-              className="text-white/80 hover:text-white transition-colors"
-            >
-              <Heart size={24} />
-            </Link>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link
+                href="/favourites"
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <Heart size={22} />
+              </Link>
+            </motion.div>
 
             {/* Mobile Menu Toggle */}
-            <button
+            <motion.button
               onClick={toggleMobileMenu}
               className="lg:hidden text-white/80 hover:text-white"
+              whileTap={{ scale: 0.9 }}
             >
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </motion.button>
           </div>
         </div>
       </div>
@@ -96,19 +115,29 @@ const Header = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden absolute top-20 left-0 right-0 bg-black/95 backdrop-blur-xl"
+            transition={{ type: "tween" }}
+            className="lg:hidden absolute top-16 sm:top-20 left-0 right-0 bg-gray-800/95 backdrop-blur-2xl shadow-2xl rounded-b-xl border-gray-700"
           >
-            <div className="px-4 py-6 space-y-6">
+            <div className="px-4 py-4   sm:py-6 space-y-4 sm:space-y-6">
               {navLinks.map((link) => (
-                <Link
+                <motion.div
                   key={link.href}
-                  href={link.href}
-                  onClick={toggleMobileMenu}
-                  className="flex items-center space-x-4 text-white/80 hover:text-white text-lg border-b border-white/10 pb-4"
+                  whileHover={{ x: 10 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group"
                 >
-                  <link.icon size={24} className="text-indigo-400" />
-                  <span>{link.label}</span>
-                </Link>
+                  <Link
+                    href={link.href}
+                    onClick={toggleMobileMenu}
+                    className="flex items-center space-x-4 text-white/80 hover:text-white text-base sm:text-lg border-b border-white/10 pb-3 sm:pb-4 last:border-b-0 transition-colors"
+                  >
+                    <link.icon
+                      size={20}
+                      className="text-indigo-400 group-hover:text-indigo-400"
+                    />
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </motion.div>

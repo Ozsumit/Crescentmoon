@@ -1,24 +1,19 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Github,
-  Twitter,
-  Instagram,
-  Facebook,
-  Linkedin,
-  Mail,
-  Heart,
-} from "lucide-react";
+import { Github, Instagram, Facebook, Moon, Star } from "lucide-react";
 
 const Footer = () => {
+  const [movieOfTheDay, setMovieOfTheDay] = useState(null);
   const currentYear = new Date().getFullYear();
+
   const socialLinks = [
     {
       icon: Github,
       href: "https://github.com/ozsumit",
       label: "GitHub",
     },
-
     {
       icon: Instagram,
       href: "https://instagram.com/sumitp0khrel",
@@ -35,96 +30,188 @@ const Footer = () => {
     { href: "/", label: "Home" },
     { href: "/movies", label: "Movies" },
     { href: "/series", label: "TV Series" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
   ];
 
+  // Fetch Movie of the Day
+  useEffect(() => {
+    const fetchMovie = async () => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+        const resp = await fetch(
+          `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=1`
+        );
+
+        if (!resp.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const data = await resp.json();
+        const movies = data.results;
+        const randomMovie = movies[Math.floor(Math.random() * movies.length)];
+        setMovieOfTheDay(randomMovie);
+      } catch (error) {
+        console.error("Error fetching movie data:", error);
+      }
+    };
+
+    fetchMovie();
+  }, []);
+
   return (
-    <footer className="bg-gray-900 text-gray-300 py-10 px-4 mt-10">
-      <div className="container mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-200 rounded-t-3xl shadow-2xl py-16 px-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Section */}
-          <div className="flex flex-col items-center md:items-start">
+          <div className="flex flex-col items-center md:items-start space-y-6">
             <Link href="/" className="group">
-              <span
-                className="text-white font-bold text-2xl tracking-wide 
-                group-hover:text-blue-400 transition-colors flex items-center"
-              >
-                Crescent Moon
-                <Heart
-                  className="ml-2 text-red-500 group-hover:scale-110 transition-transform"
-                  size={24}
+              <div className="flex items-center space-x-3">
+                <Moon
+                  className="text-indigo-500 fill-indigo-500 group-hover:rotate-12 transition-transform"
+                  size={36}
                 />
-              </span>
+                <h1 className="text-white font-bold text-3xl group-hover:text-indigo-400 transition-colors">
+                  Crescent Moon
+                </h1>
+              </div>
             </Link>
-            <p className="text-sm mt-2 text-center md:text-left">
-              When you are wannin' more entertainment
+            <p className="text-gray-400 text-center md:text-left max-w-xs leading-relaxed">
+              Discover cinematic magic, one frame at a time. Your ultimate
+              destination for endless entertainment.
             </p>
 
-            {/* Newsletter Signup */}
-            <div className="mt-4 w-full max-w-xs">
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Subscribe to our newsletter"
-                  className="w-full px-3 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-colors">
-                  <Mail size={20} />
-                </button>
+            {movieOfTheDay && (
+              <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg w-full transform transition-all hover:scale-105 hover:shadow-xl">
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={`https://image.tmdb.org/t/p/w200/${movieOfTheDay.poster_path}`}
+                    alt={movieOfTheDay.title}
+                    className="w-24 h-36 object-cover rounded-lg shadow-md"
+                  />
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <Star className="w-5 h-5 text-yellow-500 mr-2" />
+                      <h3 className="text-indigo-400 font-bold">Movie Pick</h3>
+                    </div>
+                    <p className="text-white font-semibold">
+                      {movieOfTheDay.title}
+                    </p>
+                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">
+                      {movieOfTheDay.overview}
+                    </p>
+                    <Link
+                      href={`https://www.themoviedb.org/movie/${movieOfTheDay.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block text-sm"
+                    >
+                      Explore Movie
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Quick Links */}
-          <div className="flex flex-col items-center">
-            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-            <nav>
-              <ul className="space-y-2 text-center">
+          <div className="flex flex-col items-center md:items-start space-y-6">
+            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+              Quick Links
+            </h2>
+            <nav className="w-full">
+              <ul className="space-y-3 text-center md:text-left">
                 {footerLinks.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-white hover:underline transition-colors"
+                      className="text-gray-300 hover:text-indigo-400 hover:translate-x-2 transition-all inline-block"
                     >
-                      {link.label}
+                      → {link.label}
                     </Link>
                   </li>
                 ))}
               </ul>
             </nav>
+
+            {/* Trending Movies */}
+            <div className="space-y-4 w-full">
+              <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+                Trending Movies
+              </h2>
+              {[
+                { title: "The Shawshank Redemption", year: 1994 },
+                { title: "Inception", year: 2010 },
+                { title: "The Dark Knight", year: 2008 },
+                { title: "Pulp Fiction", year: 1994 },
+              ].map((movie) => (
+                <div key={movie.title} className="group">
+                  <Link
+                    href={`/movie/${movie.title
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="text-gray-300 group-hover:text-indigo-400 transition-all flex items-center"
+                  >
+                    <span className="mr-2 group-hover:translate-x-1 transition-transform">
+                      →
+                    </span>
+                    {movie.title}{" "}
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({movie.year})
+                    </span>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Social Links */}
-          <div className="flex flex-col items-center">
-            <h4 className="text-white font-semibold mb-4">Connect With Us</h4>
-            <div className="flex space-x-4">
+          <div className="flex flex-col items-center md:items-start space-y-6">
+            <h2 className="text-white font-semibold text-xl border-b-2 border-indigo-500 pb-2">
+              Connect With Us
+            </h2>
+            <div className="flex space-x-6">
               {socialLinks.map((social) => (
                 <Link
                   key={social.label}
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors group"
                   aria-label={social.label}
+                  className="text-gray-300 hover:text-indigo-400 transition-all transform hover:scale-125 hover:rotate-6"
                 >
-                  <social.icon className="w-6 h-6 group-hover:scale-110 group-hover:text-blue-400 transition-all" />
+                  <social.icon className="w-7 h-7" />
                 </Link>
               ))}
+            </div>
+            <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-lg w-full text-center">
+              <p className="text-gray-400 mb-3">
+                Love movies? Join our community!
+              </p>
+              <Link
+                href="/about"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105 inline-block"
+              >
+                Learn More
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Copyright and Additional Info */}
-        <div className="mt-8 pt-4 border-t border-gray-700 text-center flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm mb-2 md:mb-0">
-            &copy; {currentYear} Vass.inc. All rights reserved.
+        {/* Footer Bottom */}
+        <div className="mt-12 border-t border-gray-700 pt-6 text-sm flex flex-col md:flex-row justify-between items-center">
+          <p className="text-gray-400 mb-4 md:mb-0">
+            &copy; {currentYear} Crescent Moon. All rights reserved.
           </p>
-          <div className="text-sm space-x-4">
-            <Link href="/privacy" className="hover:text-white hover:underline">
+          <div className="space-x-4">
+            <Link
+              href="/privacy"
+              className="text-gray-400 hover:text-indigo-400 transition-colors"
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-white hover:underline">
+            <Link
+              href="/terms"
+              className="text-gray-400 hover:text-indigo-400 transition-colors"
+            >
               Terms of Service
             </Link>
           </div>

@@ -3,10 +3,13 @@ import React from "react";
 import { BiSkipPrevious, BiSkipNext } from "react-icons/bi";
 
 const NextEpisode = (props) => {
-  let { episodeDetails, totalEpisodes, seriesId, totalSeasons } = props;
+  const { episodeDetails, totalEpisodes, seriesId, totalSeasons } = props;
   return (
-    <div className="flex w-full md:w-2/3 items-center justify-between px-10">
+    <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-6 px-4 w-full">
+      {/* Previous Episode Button */}
       <PrevEpisodeBtn episodeDetails={episodeDetails} seriesId={seriesId} />
+
+      {/* Next Episode Button */}
       <NextEpisodeBtn
         episodeDetails={episodeDetails}
         totalEpisodes={totalEpisodes}
@@ -20,21 +23,24 @@ const NextEpisode = (props) => {
 export default NextEpisode;
 
 function NextEpisodeBtn(props) {
-  let { episodeDetails, totalEpisodes, seriesId, totalSeasons } = props;
+  const { episodeDetails, totalEpisodes, seriesId, totalSeasons } = props;
+  const isLastEpisode = Number(episodeDetails.episode_number) === totalEpisodes;
+  const isLastSeason = Number(episodeDetails.season_number) === totalSeasons;
+
   return (
     <>
-      {Number(episodeDetails.episode_number) == totalEpisodes ? (
+      {isLastEpisode ? (
         <Link
           href={`/series/[id]/season/[seasonid]`}
           as={`/series/${seriesId}/season/${
-            Number(episodeDetails.season_number) + 1 <= totalSeasons
-              ? Number(episodeDetails.season_number) + 1
-              : Number(episodeDetails.season_number)
+            isLastSeason
+              ? episodeDetails.season_number
+              : episodeDetails.season_number + 1
           }`}
           className={`${
-            Number(episodeDetails.season_number) == totalSeasons
-              ? `pointer-events-none bg-slate-600 text-gray-400/25`
-              : `bg-slate-600 hover:bg-slate-600/75 text-indigo-400`
+            isLastSeason
+              ? "pointer-events-none bg-slate-600 text-gray-400/25"
+              : "bg-slate-600 hover:bg-slate-600/75 text-indigo-400"
           } transition-all px-4 py-2 flex items-center justify-center rounded-lg font-semibold text-sm gap-2`}
         >
           <p>Next Season</p>
@@ -46,12 +52,12 @@ function NextEpisodeBtn(props) {
           as={`/series/${seriesId}/season/${episodeDetails.season_number}/${
             Number(episodeDetails.episode_number) + 1 <= totalEpisodes
               ? Number(episodeDetails.episode_number) + 1
-              : Number(episodeDetails.episode_number)
+              : episodeDetails.episode_number
           }`}
           className={`${
-            Number(episodeDetails.episode_number) == totalEpisodes
-              ? `pointer-events-none bg-slate-600 text-gray-400/25`
-              : `bg-slate-600 hover:bg-slate-600/75 text-indigo-400`
+            isLastEpisode
+              ? "pointer-events-none bg-slate-600 text-gray-400/25"
+              : "bg-slate-600 hover:bg-slate-600/75 text-indigo-400"
           } transition-all px-4 py-2 flex items-center justify-center rounded-lg font-semibold text-sm gap-2`}
         >
           <p>Next Episode</p>
@@ -63,21 +69,24 @@ function NextEpisodeBtn(props) {
 }
 
 function PrevEpisodeBtn(props) {
-  let { episodeDetails, seriesId } = props;
+  const { episodeDetails, seriesId } = props;
+  const isFirstEpisode = Number(episodeDetails.episode_number) === 1;
+  const isFirstSeason = Number(episodeDetails.season_number) === 1;
+
   return (
     <>
-      {Number(episodeDetails.episode_number) == 1 ? (
+      {isFirstEpisode ? (
         <Link
           href={`/series/[id]/season/[seasonid]`}
           as={`/series/${seriesId}/season/${
-            Number(episodeDetails.season_number) - 1 < 1
-              ? Number(episodeDetails.season_number)
-              : Number(episodeDetails.season_number) - 1
+            isFirstSeason
+              ? episodeDetails.season_number
+              : episodeDetails.season_number - 1
           }`}
           className={`${
-            Number(episodeDetails.season_number) == 1
-              ? `pointer-events-none bg-slate-600 text-gray-400/25`
-              : `bg-slate-600 hover:bg-slate-600/75 text-indigo-400`
+            isFirstSeason
+              ? "pointer-events-none bg-slate-600 text-gray-400/25"
+              : "bg-slate-600 hover:bg-slate-600/75 text-indigo-400"
           } transition-all px-4 py-2 flex items-center justify-center rounded-lg font-semibold text-sm gap-2`}
         >
           <BiSkipPrevious className="text-2xl" />
@@ -88,13 +97,13 @@ function PrevEpisodeBtn(props) {
           href={`/series/[id]/season/[seasonid]/[epid]`}
           as={`/series/${seriesId}/season/${episodeDetails.season_number}/${
             Number(episodeDetails.episode_number) - 1 < 1
-              ? Number(episodeDetails.episode_number)
+              ? episodeDetails.episode_number
               : Number(episodeDetails.episode_number) - 1
           }`}
           className={`${
-            Number(episodeDetails.episode_number) == 1
-              ? `pointer-events-none bg-slate-600 text-gray-400/25`
-              : `bg-slate-600 hover:bg-slate-600/75 text-indigo-400`
+            isFirstEpisode
+              ? "pointer-events-none bg-slate-600 text-gray-400/25"
+              : "bg-slate-600 hover:bg-slate-600/75 text-indigo-400"
           } transition-all px-4 py-2 flex items-center justify-center rounded-lg font-semibold text-sm gap-2`}
         >
           <BiSkipPrevious className="text-2xl" />

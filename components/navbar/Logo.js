@@ -5,13 +5,21 @@ const Logo = () => {
   return (
     <Link
       href="/"
-      className="inline-flex items-center text-[2rem] font-bold tracking-tight transition-colors duration-200 hover:opacity-80"
+      className="inline-flex items-center text-xl sm:text-2xl md:text-[2rem] font-bold tracking-tight transition-colors duration-200 hover:opacity-80"
       aria-label="Cineworld Home"
     >
-      <span className="bg-gradient-to-r mr-2 from-indigo-500 to-purple-600 text-transparent bg-clip-text">
-        Crescent{" "}
+      <span className="flex items-baseline">
+        <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text text-3xl sm:text-4xl mr-0">
+          C
+        </span>
+        <span className="text-gray-800 dark:text-gray-200">rescent</span>
       </span>
-      <span className="text-gray-800 font-mono dark:text-gray-200"> Moon</span>
+      <span className="ml-2 flex items-baseline">
+        <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text text-3xl sm:text-4xl mr-0">
+          M
+        </span>
+        <span className="text-gray-800 dark:text-gray-200">oon</span>
+      </span>
     </Link>
   );
 };

@@ -6,6 +6,7 @@ import Title from "@/components/title/Title";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import TvDisplay from "@/components/display/TvDisplay";
+import WelcomeModal from "@/components/welcome";
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -31,6 +32,7 @@ export default async function Home() {
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */ <h1>Trending Movies</h1>}
       <HomeDisplay movies={data} />
+      <WelcomeModal />
     </div>
   );
 }
