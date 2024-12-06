@@ -6,7 +6,7 @@ const EpisodeCard = (props) => {
   let { episodeinfo, seriesId } = props;
   let still_path = episodeinfo.still_path
     ? `https://image.tmdb.org/t/p/w342/${episodeinfo.still_path}`
-    : "https://i.imgur.com/HIYYPtZ.png";
+    : "https://i.imgur.com/xDHFGVl.jpeg";
 
   return (
     <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">

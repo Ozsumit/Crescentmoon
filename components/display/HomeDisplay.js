@@ -3,26 +3,36 @@ import HomePagination from "../pagination/HomePagination";
 import HomeCards from "./HomeCard";
 
 const HomeDisplay = (props) => {
-  let { movies, pageid } = props;
+  const { movies, pageid } = props;
+
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center text-center py-12">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-          Trending Movies & Series
-        </h2>
+    <div className="bg-slate-800/40 backdrop-blur-xl p-6 my-8 rounded-xl shadow-2xl">
+      {/* Title Section */}
+      <h2
+        className="text-3xl lg:text-4xl font-bold text-center mb-6 text-transparent
+        bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600"
+      >
+        Trending Movies & Series
+      </h2>
 
-        <div
-          id="trending"
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full"
-        >
-          {movies.map((movie) => (
-            <HomeCards key={movie.id} MovieCard={movie} className="w-full" />
-          ))}
-        </div>
+      {/* Metadata Divider */}
+      <div className="w-full flex justify-center mt-4 mb-8">
+        <span className="w-4/5 bg-slate-600 h-0.5"></span>
+      </div>
 
-        <div className="mt-8">
-          <HomePagination pageid={pageid} />
-        </div>
+      {/* Movie Grid */}
+      <div
+        id="trending"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 w-full"
+      >
+        {movies.map((movie) => (
+          <HomeCards key={movie.id} MovieCard={movie} className="w-full" />
+        ))}
+      </div>
+
+      {/* Pagination Section */}
+      <div className="mt-8 mb-8 flex justify-center">
+        <HomePagination pageid={pageid} />
       </div>
     </div>
   );

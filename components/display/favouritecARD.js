@@ -25,7 +25,7 @@ const FavoriteCard = ({ favoriteItem }) => {
       return `https://image.tmdb.org/t/p/w342/${favoriteItem.poster_path}`;
     if (favoriteItem.still_path)
       return `https://image.tmdb.org/t/p/w342/${favoriteItem.still_path}`;
-    return "https://i.imgur.com/HIYYPtZ.png";
+    return "https://i.imgur.com/xDHFGVl.jpeg";
   };
 
   const getLink = () => {
@@ -41,21 +41,33 @@ const FavoriteCard = ({ favoriteItem }) => {
     if (favoriteItem.episode_number) {
       return `/series/${favoriteItem.series_id}/season/${favoriteItem.season_number}/${favoriteItem.episode_number}`;
     }
+    // Movie link
+    if (favoriteItem.release_date) {
+      return `/movie/${favoriteItem.id}`;
+    }
     return "#";
   };
 
   const renderTitle = () => {
     // Series
     if (favoriteItem.first_air_date) {
-      return favoriteItem.name;
+      return favoriteItem.name || "Unknown Series";
     }
     // Season
     if (favoriteItem.season_number) {
-      return `Season ${favoriteItem.season_number}: ${favoriteItem.name}`;
+      return `Season ${favoriteItem.season_number}: ${
+        favoriteItem.name || "Unknown Season"
+      }`;
     }
     // Episode
     if (favoriteItem.episode_number) {
-      return `S${favoriteItem.season_number} E${favoriteItem.episode_number}: ${favoriteItem.name}`;
+      return `S${favoriteItem.season_number} E${favoriteItem.episode_number}: ${
+        favoriteItem.name || "Unknown Episode"
+      }`;
+    }
+    // Movie
+    if (favoriteItem.release_date) {
+      return favoriteItem.title || "Unknown Movie";
     }
     return "Favorite Item";
   };
