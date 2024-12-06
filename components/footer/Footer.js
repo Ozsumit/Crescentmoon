@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Github, Instagram, Facebook, Moon, Star } from "lucide-react";
@@ -99,9 +98,7 @@ const Footer = () => {
                       {movieOfTheDay.overview}
                     </p>
                     <Link
-                      href={`https://www.themoviedb.org/movie/${movieOfTheDay.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/movie/${movieOfTheDay.id}`} // Updated to point to movieinfo
                       className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block text-sm"
                     >
                       Explore Movie
@@ -138,16 +135,14 @@ const Footer = () => {
                 Trending Movies
               </h2>
               {[
-                { title: "The Shawshank Redemption", year: 1994 },
-                { title: "Inception", year: 2010 },
-                { title: "The Dark Knight", year: 2008 },
-                { title: "Pulp Fiction", year: 1994 },
+                { title: "The Shawshank Redemption", id: 278 },
+                { title: "Inception", id: 27205 },
+                { title: "The Dark Knight", id: 155 },
+                { title: "Pulp Fiction", id: 680 },
               ].map((movie) => (
                 <div key={movie.title} className="group">
                   <Link
-                    href={`/movie/${movie.title
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
+                    href={`/movie/${movie.id}`} // Updated to point to movieinfo
                     className="text-gray-300 group-hover:text-indigo-400 transition-all flex items-center"
                   >
                     <span className="mr-2 group-hover:translate-x-1 transition-transform">
