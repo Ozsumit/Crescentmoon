@@ -10,7 +10,7 @@ const HomeCards2 = ({ MovieCard }) => {
   const getImagePath = () => {
     if (MovieCard.poster_path)
       return `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
-    return "https://i.imgur.com/xDHFGVl.jpeg";
+    return "https://i.imgur.com/HIYYPtZ.png";
   };
 
   const getLink = () => {

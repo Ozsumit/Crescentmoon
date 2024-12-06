@@ -30,7 +30,8 @@ export default async function Home() {
       {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
-      {/* <HomeFilter /> */ <h1>Trending Movies</h1>}
+      {/* <HomeFilter /> */}
+      {/* <h1>Trending Movies</h1> */}
       <HomeDisplay movies={data} />
       <WelcomeModal />
     </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { Heart, Star, Calendar, Info } from "lucide-react";
 
-const HomeCards1 = ({ MovieCard }) => {
+const HomeCards = ({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const isTV = MovieCard.media_type === "tv";
@@ -16,7 +16,7 @@ const HomeCards1 = ({ MovieCard }) => {
   const getImagePath = () => {
     if (MovieCard.poster_path)
       return `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
-    return "https://i.imgur.com/xDHFGVl.jpeg";
+    return "https://i.imgur.com/HIYYPtZ.png";
   };
 
   const getLink = () => {
@@ -90,22 +90,24 @@ const HomeCards1 = ({ MovieCard }) => {
         </div>
       </Link>
       {/* Hover Overlay with Information */}
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
-        <h3 className="font-semibold text-lg mb-2 text-shadow-md">
-          {renderTitle()}
-        </h3>
-        <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
-          {additionalDetails.overview}
-        </p>
-        <Link
-          href={href}
-          as={as}
-          className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
-        >
-          <Info size={16} className="mr-2" />
-          More Details
-        </Link>
-      </div>{" "}
+      <Link href={href} as={as}>
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
+          <h3 className="font-semibold text-lg mb-2 text-shadow-md">
+            {renderTitle()}
+          </h3>
+          <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
+            {additionalDetails.overview}
+          </p>
+          <Link
+            href={href}
+            as={as}
+            className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
+          >
+            <Info size={16} className="mr-2" />
+            More Details
+          </Link>
+        </div>{" "}
+      </Link>
       <div className="p-4">
         <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
           {renderTitle()}
@@ -141,4 +143,4 @@ const HomeCards1 = ({ MovieCard }) => {
   );
 };
 
-export default HomeCards1;
+export default HomeCards;
