@@ -55,10 +55,15 @@ const HomeCards = ({ MovieCard }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Media Type Tag */}
+      <div className="absolute top-2 left-2 z-10 bg-white/20 text-white text-xs font-bold px-2 py-1 rounded">
+        {isTV ? "TV SERIES" : "MOVIE"}
+      </div>
+
       {/* Favorite Button */}
       <button
         onClick={handleFavoriteToggle}
-        className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+        className="absolute top-2 right-2 z-20 rounded-full p-2 hover:bg-neutral-800/80 transition-colors"
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
         <Heart
@@ -84,7 +89,7 @@ const HomeCards = ({ MovieCard }) => {
           unoptimized
         />
 
-        {/* Hover Details - Hidden on mobile, shown on larger screens */}
+        {/* Hover Details */}
         <div className="hidden md:block">
           {isHovered && (
             <div className="absolute inset-0 bg-black/60 flex flex-col justify-center items-start text-white p-4">
@@ -113,21 +118,6 @@ const HomeCards = ({ MovieCard }) => {
           <span>{rating}</span>
           <span className="text-gray-300">{formattedDate}</span>
         </div>
-      </div>
-
-      {/* Quick Actions - Hidden on mobile, shown on larger screens */}
-      <div className="hidden md:block">
-        {isHovered && (
-          <div className="absolute top-2 left-2 flex gap-2">
-            <Link
-              href={href}
-              as={as}
-              className="flex items-center text-sm hover:text-blue-400 transition-colors"
-            >
-              <PlayCircle size={20} className="text-white" />
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );
