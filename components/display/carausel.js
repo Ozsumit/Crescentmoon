@@ -53,7 +53,7 @@ const SpotlightCarousel = () => {
   const description = currentItem.overview || "No description available.";
   const posterPath = currentItem.backdrop_path
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
-    : "https://i.imgur.com/wjVuAGb.png";
+    : "https://i.imgur.com/xDHFGVl.jpeg";
 
   // Determine media type and generate link
   const isTV = currentItem.media_type === "tv";

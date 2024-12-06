@@ -1,23 +1,26 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Star, Clock, CalendarDays, Heart } from "lucide-react";
 import SeasonDisplay from "../display/SeasonDisplay";
 
-const TvInfo = (props) => {
-  const { TvDetail, genreArr, id } = props;
+const TvInfo = ({ TvDetail, genreArr }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   // Fallback for missing poster
   const posterPath = TvDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500/${TvDetail.poster_path}`
-    : "https://i.imgur.com/wjVuAGb.png";
+    : "https://i.imgur.com/xDHFGVl.jpeg";
 
-  // Toggle Favorite Status
+  const backgroundPath = TvDetail.backdrop_path
+    ? `https://image.tmdb.org/t/p/w1280${TvDetail.backdrop_path}`
+    : posterPath;
+
+  // Handle Favorite Toggle
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     if (isFavorite) {
       const updatedFavorites = favorites.filter(
@@ -34,53 +37,70 @@ const TvInfo = (props) => {
   };
 
   // Initialize Favorite Status
-  React.useEffect(() => {
+  useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    const isTvShowFavorited = favorites.some((item) => item.id === TvDetail.id);
-    setIsFavorite(isTvShowFavorited);
+    const isFavorited = favorites.some((item) => item.id === TvDetail.id);
+    setIsFavorite(isFavorited);
   }, [TvDetail.id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br pt-16 from-indigo-950 via-slate-900 to-black text-white">
-      <div className="container mx-auto px-4 py-8">
-        {/* TV Show Header */}
-        <div className="grid lg:grid-cols-[350px_1fr] gap-8 mb-8">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 pt-16 text-slate-100 overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={backgroundPath}
+          alt={`${TvDetail.name} background`}
+          layout="fill"
+          objectFit="cover"
+          objectPosition="center"
+          className="opacity-20 blur-sm"
+          onLoadingComplete={() => setIsImageLoaded(true)}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 to-slate-950/90" />
+      </div>
+
+      {/* Content */}
+      <div
+        className={`relative z-10 container mx-auto px-4 py-8 max-w-6xl transition-opacity duration-700 ${
+          isImageLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="grid md:grid-cols-[1fr_2fr] gap-8 items-start">
           {/* Poster Section */}
-          <div className="relative group mx-auto max-w-[350px] w-full">
-            <Image
-              src={posterPath}
-              alt={TvDetail.name || "TV Show Poster"}
-              width={350}
-              height={525}
-              className="rounded-2xl shadow-2xl transform transition-all 
-                duration-300 group-hover:scale-105 group-hover:shadow-3xl"
-              priority
-            />
+          <div className="relative group max-w-md mx-auto md:sticky md:top-8">
+            <div className="relative overflow-hidden rounded-2xl shadow-lg transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
+              <Image
+                src={posterPath}
+                alt={TvDetail.name || "TV Show Poster"}
+                width={350}
+                height={525}
+                className="w-full h-auto object-cover rounded-2xl"
+                priority
+              />
+            </div>
           </div>
 
-          {/* TV Show Details */}
-          <div className="lg:pl-8">
-            <h1
-              className="text-4xl lg:text-5xl font-black mb-4 text-transparent bg-clip-text 
-              bg-gradient-to-r from-indigo-400 to-pink-600"
-            >
+          {/* Details Section */}
+          <div className="space-y-6 md:pl-8">
+            {/* Title */}
+            <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300 leading-tight">
               {TvDetail.name}
             </h1>
 
-            {/* TV Show Stats */}
-            <div className="flex flex-wrap items-center gap-4 mb-4 text-slate-300">
+            {/* Stats */}
+            <div className="flex flex-wrap items-center space-x-4 text-slate-400">
               <div className="flex items-center space-x-2">
-                <Star className="text-yellow-400 w-5 h-5" />
-                <span className="font-semibold">
+                <Star className="text-yellow-400 w-5 h-5 animate-pulse" />
+                <span className="font-medium">
                   {TvDetail.vote_average?.toFixed(1) || "N/A"}/10
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-indigo-400" />
+                <Clock className="text-indigo-400 w-5 h-5" />
                 <span>{TvDetail.number_of_seasons} Seasons</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CalendarDays className="w-5 h-5 text-pink-400" />
+                <CalendarDays className="text-pink-400 w-5 h-5" />
                 <span>
                   {TvDetail.first_air_date
                     ? new Date(TvDetail.first_air_date).getFullYear()
@@ -90,42 +110,42 @@ const TvInfo = (props) => {
             </div>
 
             {/* Genres */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2">
               {genreArr?.map((genre, index) => (
                 <span
                   key={index}
-                  className="bg-slate-800 text-slate-200 px-3 py-1 rounded-full 
-                    text-sm transition-colors hover:bg-indigo-800"
+                  className="bg-indigo-900/30 text-indigo-200 px-3 py-1 rounded-full text-sm transition-all duration-300 hover:bg-indigo-800/50 hover:scale-105 hover:shadow-lg"
                 >
                   {genre.name || genre}
                 </span>
               ))}
             </div>
 
-            {/* Favorite Button */}
-            <button
-              onClick={handleFavoriteToggle}
-              className="flex items-center text-sm bg-black/50 px-4 py-2 rounded-lg hover:bg-black/70 transition-colors"
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
-            >
-              <Heart
-                size={20}
-                fill={isFavorite ? "red" : "none"}
-                stroke={isFavorite ? "red" : "white"}
-                className="mr-2 transition-colors"
-              />
-              {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
-            </button>
-
             {/* Overview */}
-            <p className="text-slate-400 text-base leading-relaxed mt-6">
+            <p className="text-slate-400 leading-relaxed bg-slate-900/50 p-4 rounded-xl border border-indigo-900/30 shadow-inner">
               {TvDetail.overview}
             </p>
 
-            {/* Additional TV Show Info */}
-            <div className="mt-6 space-y-2 text-slate-300">
+            {/* Favorite Button */}
+            <button
+              onClick={handleFavoriteToggle}
+              className={`flex items-center px-5 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                isFavorite
+                  ? "bg-gradient-to-r from-pink-600/60 to-red-600/60 text-pink-100"
+                  : "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50"
+              }`}
+            >
+              <Heart
+                size={20}
+                fill={isFavorite ? "rgb(251 113 133)" : "none"}
+                stroke={isFavorite ? "rgb(251 113 133)" : "currentColor"}
+                className={`mr-2 ${isFavorite ? "animate-pulse" : ""}`}
+              />
+              {isFavorite ? "Remove Favorite" : "Add Favorite"}
+            </button>
+
+            {/* Additional Info */}
+            <div className="space-y-2 text-slate-300">
               <p>
                 <strong>Total Episodes:</strong> {TvDetail.number_of_episodes}
               </p>

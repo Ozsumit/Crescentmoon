@@ -11,7 +11,7 @@ const SeasonCard = (props) => {
   // Determine the fallback poster image
   let poster_path = `https://image.tmdb.org/t/p/w342/${SeasonDetails.poster_path}`;
   if (SeasonDetails.poster_path == null) {
-    poster_path = "https://i.imgur.com/wjVuAGb.png";
+    poster_path = "https://i.imgur.com/xDHFGVl.jpeg";
   }
 
   // Rating and release date

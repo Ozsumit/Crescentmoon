@@ -12,7 +12,7 @@ const MovieCards = (props) => {
   // Handle the fallback for the poster image
   let poster_path = `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
   if (MovieCard.poster_path == null) {
-    poster_path = "https://i.imgur.com/wjVuAGb.png";
+    poster_path = "https://i.imgur.com/xDHFGVl.jpeg";
   }
 
   // Rating and release year

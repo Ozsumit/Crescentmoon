@@ -15,7 +15,7 @@ const HomeCards = ({ MovieCard }) => {
 
   const posterPath = MovieCard.poster_path
     ? `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`
-    : "https://i.imgur.com/wjVuAGb.png";
+    : "https://i.imgur.com/xDHFGVl.jpeg";
 
   const rating = MovieCard.vote_average?.toFixed(1) || "N/A";
   const releaseDate = isTV ? MovieCard.first_air_date : MovieCard.release_date;

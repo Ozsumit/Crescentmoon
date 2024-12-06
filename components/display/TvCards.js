@@ -11,7 +11,7 @@ const TvCards = ({ TvCard }) => {
 
   const posterPath = TvCard.poster_path
     ? `https://image.tmdb.org/t/p/w342/${TvCard.poster_path}`
-    : "https://i.imgur.com/wjVuAGb.png";
+    : "https://i.imgur.com/xDHFGVl.jpeg";
 
   const rating = TvCard.vote_average?.toFixed(1) || "N/A";
   const releaseDate = TvCard.first_air_date;

@@ -5,7 +5,7 @@ const ImageCard = (props) => {
   let { MovieDetail } = props;
   let poster_path = `https://image.tmdb.org/t/p/w342/${MovieDetail.poster_path}`;
   if (MovieDetail.poster_path == null) {
-    poster_path = "https://i.imgur.com/wjVuAGb.png";
+    poster_path = "https://i.imgur.com/xDHFGVl.jpeg";
   }
   return (
     <div className="w-52 h-72 bg-grey m-3">
