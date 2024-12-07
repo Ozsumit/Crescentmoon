@@ -43,8 +43,9 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         <div className="flex justify-center mb-8">
           <iframe
             className="w-full md:w-3/4 lg:w-2/3 aspect-video rounded-xl shadow-xl"
-            src={`https://v2.vidsrc.me/embed/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
+            src={`https://2embed.cc/embed/${seriesId}/${episodeDetails.season_number}-${episodeDetails.episode_number}`}
             frameBorder="0"
+            sandbox="allow-scripts allow-orientation-lock allow-same-origin"
             allowFullScreen
           ></iframe>
         </div>

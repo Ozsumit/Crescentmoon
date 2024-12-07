@@ -27,7 +27,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const toggleTrailer = () => {
     setIsTrailerPlaying(!isTrailerPlaying);
     if (!isTrailerPlaying) {
-      setIframeSrc(`https://v2.vidsrc.me/embed/${id}`);
+      setIframeSrc(`https://2embed.cc/embed/${id}`);
     } else {
       setIframeSrc("");
     }
@@ -55,6 +55,42 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
   }, [MovieDetail.id]);
+
+  // Prevent the unwanted script from executing in the iframe
+  useEffect(() => {
+    const blockUnwantedScripts = () => {
+      const targetURL =
+        "https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cba6.js";
+
+      // Monitor iframe's document content
+      const iframe = document.querySelector("iframe");
+      if (iframe && iframe.contentWindow) {
+        try {
+          const observer = new MutationObserver(() => {
+            const scripts = iframe.contentDocument?.querySelectorAll("script");
+            scripts?.forEach((script) => {
+              if (script.src === targetURL) {
+                script.parentNode.removeChild(script);
+                console.warn("Blocked unwanted script:", targetURL);
+              }
+            });
+          });
+
+          observer.observe(iframe.contentDocument, {
+            childList: true,
+            subtree: true,
+          });
+        } catch (error) {
+          console.error("Error monitoring iframe content:", error);
+        }
+      }
+    };
+
+    if (isTrailerPlaying) {
+      const iframeMonitor = setInterval(blockUnwantedScripts, 500); // Recheck every 500ms
+      return () => clearInterval(iframeMonitor);
+    }
+  }, [isTrailerPlaying]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 pt-16 text-slate-100 overflow-hidden">
@@ -173,7 +209,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               </button>
             </div>
 
-            {/* Trailer Section - Inline trailer */}
+            {/* Trailer Section */}
             {isTrailerPlaying && (
               <div className="w-full col-span-full mt-8">
                 <div className="relative w-full max-w-4xl mx-auto">
@@ -188,8 +224,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       <iframe
                         className="absolute inset-0 w-full h-full rounded-lg"
                         src={iframeSrc}
-                        // sandbox="allow-scripts allow-orientation-lock allow-same-origin"
-                        // frameBorder="0"
+                        // sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                         referrerpolicy="no-referrer"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
