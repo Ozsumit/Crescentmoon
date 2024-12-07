@@ -27,6 +27,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const toggleTrailer = () => {
     setIsTrailerPlaying(!isTrailerPlaying);
     if (!isTrailerPlaying) {
+      // Use the direct embed URL
       setIframeSrc(`https://2embed.cc/embed/${id}`);
     } else {
       setIframeSrc("");
@@ -56,44 +57,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
   }, [MovieDetail.id]);
 
-  // Prevent the unwanted script from executing in the iframe
-  useEffect(() => {
-    const blockUnwantedScripts = () => {
-      const targetURL =
-        "https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cba6.js";
-
-      // Monitor iframe's document content
-      const iframe = document.querySelector("iframe");
-      if (iframe && iframe.contentWindow) {
-        try {
-          const observer = new MutationObserver(() => {
-            const scripts = iframe.contentDocument?.querySelectorAll("script");
-            scripts?.forEach((script) => {
-              if (script.src === targetURL) {
-                script.parentNode.removeChild(script);
-                console.warn("Blocked unwanted script:", targetURL);
-              }
-            });
-          });
-
-          observer.observe(iframe.contentDocument, {
-            childList: true,
-            subtree: true,
-          });
-        } catch (error) {
-          console.error("Error monitoring iframe content:", error);
-        }
-      }
-    };
-
-    if (isTrailerPlaying) {
-      const iframeMonitor = setInterval(blockUnwantedScripts, 500); // Recheck every 500ms
-      return () => clearInterval(iframeMonitor);
-    }
-  }, [isTrailerPlaying]);
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 pt-16 text-slate-100 overflow-hidden">
+    <div className="relative min-h-screen -mb-4 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 pt-16 text-slate-100 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -102,7 +67,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           layout="fill"
           objectFit="cover"
           objectPosition="center"
-          className="opacity-20 blur-sm"
+          className="opacity-60 blur-lg"
           onLoadingComplete={() => setIsImageLoaded(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 to-slate-950/90" />
@@ -224,10 +189,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       <iframe
                         className="absolute inset-0 w-full h-full rounded-lg"
                         src={iframeSrc}
-                        // sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                        referrerpolicy="no-referrer"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
+                        // sandbox="allow-scripts allow-same-origin"
+                        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                        referrerPolicy="no-referrer"
+                        name="trailerFrame"
                         style={{
                           filter: "brightness(0.9) contrast(1.1)",
                           boxShadow: "inset 0 0 15px rgba(99, 102, 241, 0.3)",
