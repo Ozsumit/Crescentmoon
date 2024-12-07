@@ -74,12 +74,12 @@ const HomeCards = ({ MovieCard }) => {
   }, [MovieCard.id]);
 
   return (
-    <div className="bg-slate-800/80 rounded-xl overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
+    <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto  overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
       <Link href={getLink()} title={renderTitle()} className="block relative">
         <Image
           src={getImagePath()}
           alt={renderTitle()}
-          className="w-full h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
+          className="w-full h-32 sm:h-48  object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
           width={288}
           height={176}
           unoptimized
@@ -114,7 +114,7 @@ const HomeCards = ({ MovieCard }) => {
         </h3>
 
         {/* Additional Details Section */}
-        <div className="flex justify-between items-center text-xs text-slate-400">
+        <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
           <div className="flex items-center">
             <Star size={14} className="mr-1 text-yellow-500" />
             <span>{additionalDetails.rating}</span>

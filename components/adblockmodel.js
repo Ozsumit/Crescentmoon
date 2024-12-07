@@ -4,12 +4,12 @@ import { ShieldAlert, Info, ExternalLink } from "lucide-react";
 
 // Add common ad-related class names and identifiers
 const adClassNames = [
-  "adsbox",
-  "ad-container",
-  "advertisement",
-  "banner-ad",
-  "google-ad",
-  "sponsored-content",
+  'adsbox', 
+  'ad-container', 
+  'advertisement', 
+  'banner-ad', 
+  'google-ad', 
+  'sponsored-content'
 ];
 
 const AdblockerModal = () => {
@@ -18,27 +18,27 @@ const AdblockerModal = () => {
   useEffect(() => {
     // Create elements that ad blockers typically target
     const createAdTrap = () => {
-      const adElement = document.createElement("div");
-
+      const adElement = document.createElement('div');
+      
       // Add multiple ad-related attributes and classes
-      adClassNames.forEach((className) => {
+      adClassNames.forEach(className => {
         adElement.classList.add(className);
       });
-
-      adElement.id = "ad-blocker-test";
-      adElement.setAttribute("data-ad", "true");
-      adElement.innerHTML = "&nbsp;";
-
+      
+      adElement.id = 'ad-blocker-test';
+      adElement.setAttribute('data-ad', 'true');
+      adElement.innerHTML = '&nbsp;';
+      
       // Make it look like an ad container
       Object.assign(adElement.style, {
-        position: "absolute",
-        top: "-1px",
-        left: "-1px",
-        width: "1px",
-        height: "1px",
-        display: "block",
-        background: "transparent",
-        visibility: "visible",
+        position: 'absolute',
+        top: '-1px',
+        left: '-1px',
+        width: '1px',
+        height: '1px',
+        display: 'block',
+        background: 'transparent',
+        visibility: 'visible'
       });
 
       document.body.appendChild(adElement);
@@ -56,8 +56,8 @@ const AdblockerModal = () => {
     if (window.chrome && window.chrome.runtime) {
       try {
         window.chrome.runtime.getManifest = () => ({
-          name: "uBlock Origin",
-          version: "1.0.0",
+          name: 'uBlock Origin',
+          version: '1.0.0'
         });
       } catch {}
     }
