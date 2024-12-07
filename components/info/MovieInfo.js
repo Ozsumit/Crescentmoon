@@ -1,13 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Play, Star, Clock, CalendarDays, X, Heart } from "lucide-react";
+
+const ADGUARD_DNS_SERVERS = [
+  "https://dns.adguard.com/dns-query", // Primary
+  "https://dns-family.adguard.com/dns-query", // Family-friendly
+  "https://unfiltered.adguard-dns.com/dns-query", // Unfiltered
+];
 
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [iframeSrc, setIframeSrc] = useState("");
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const iframeRef = useRef(null);
 
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
@@ -27,16 +34,216 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const toggleTrailer = () => {
     setIsTrailerPlaying(!isTrailerPlaying);
     if (!isTrailerPlaying) {
-      // Use the direct embed URL
-      setIframeSrc(`https://2embed.cc/embed/${id}`);
+      // Use a reliable embed source with DNS-level ad blocking
+      setIframeSrc(`https://2embed.cc/embed/${id}?adguard=1`);
     } else {
       setIframeSrc("");
     }
   };
 
+  // Advanced ad-blocking and content filtering
+  useEffect(() => {
+    if (isTrailerPlaying && iframeRef.current) {
+      const iframe = iframeRef.current;
+
+      const blockAds = () => {
+        try {
+          const iframeDoc =
+            iframe.contentDocument || iframe.contentWindow?.document;
+
+          if (!iframeDoc) return;
+
+          // Comprehensive ad and popup blocking with deep traversal
+          const removeElements = (selectors, rootElement = iframeDoc) => {
+            const adSelectors = [
+              // Existing selectors
+              'iframe[src*="ads"]',
+              'iframe[src*="advert"]',
+              'div[class*="ad"]',
+              'div[id*="ad"]',
+              'div[class*="popup"]',
+              'div[id*="popup"]',
+              'div[class*="modal"]',
+              'div[id*="modal"]',
+              'div[class*="overlay"]',
+              'div[id*="overlay"]',
+              'script[src*="ad"]',
+              'script[src*="https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cba6.js"]',
+              'script[src*="https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cb.js"]',
+              'script[src*="track"]',
+              'script[src*="analytics"]',
+              '[class*="banner"]',
+              '[id*="banner"]',
+              '[class*="advertisement"]',
+              '[id*="advertisement"]',
+              'a[href*="stretchedbystander.com"]',
+              'a[href*="https://luckyforbet.com"]',
+
+              // Additional deep-search selectors
+              '[class*="ads"]',
+              '[id*="ads"]',
+              '[class*="advert"]',
+              '[id*="advert"]',
+              '[class*="promo"]',
+              '[id*="promo"]',
+            ];
+
+            // Recursive removal of elements
+            const recursiveRemove = (element) => {
+              adSelectors.forEach((selector) => {
+                const elements = element.querySelectorAll(selector);
+                elements.forEach((el) => {
+                  try {
+                    el.remove();
+                  } catch (removeError) {
+                    try {
+                      el.style.display = "none";
+                      el.style.visibility = "hidden";
+                      el.style.opacity = "0";
+                      el.style.height = "0";
+                      el.style.width = "0";
+                      el.style.pointerEvents = "none";
+                    } catch (styleError) {
+                      console.warn("Could not hide element:", styleError);
+                    }
+                  }
+                });
+              });
+
+              // Recursively check child iframes
+              const childIframes = element.getElementsByTagName("iframe");
+              for (let childIframe of childIframes) {
+                try {
+                  const childDoc =
+                    childIframe.contentDocument ||
+                    childIframe.contentWindow?.document;
+                  if (childDoc) {
+                    recursiveRemove(childDoc.body);
+                  }
+                } catch (iframeError) {
+                  console.warn("Could not access child iframe:", iframeError);
+                }
+              }
+            };
+
+            recursiveRemove(rootElement.body);
+          };
+
+          // Prevent redirects and unwanted interactions
+          const preventUnwantedInteractions = (doc) => {
+            const preventInteraction = (element) => {
+              const links = doc.getElementsByTagName("a");
+              const scripts = doc.getElementsByTagName("script");
+
+              // Remove or disable potentially malicious links
+              for (let link of links) {
+                link.addEventListener("click", (e) => {
+                  const href = link.getAttribute("href");
+                  if (
+                    href &&
+                    (href.includes("ad") ||
+                      href.includes("popup") ||
+                      href.includes("track"))
+                  ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                });
+              }
+
+              // Remove potentially problematic scripts
+              for (let script of scripts) {
+                if (
+                  script.src &&
+                  (script.src.includes("ad") ||
+                    script.src.includes("track") ||
+                    script.src.includes("promo"))
+                ) {
+                  script.remove();
+                }
+              }
+
+              // Check child iframes
+              const childIframes = doc.getElementsByTagName("iframe");
+              for (let childIframe of childIframes) {
+                try {
+                  const childDoc =
+                    childIframe.contentDocument ||
+                    childIframe.contentWindow?.document;
+                  if (childDoc) {
+                    preventInteraction(childDoc);
+                  }
+                } catch (iframeError) {
+                  console.warn("Could not access child iframe:", iframeError);
+                }
+              }
+            };
+
+            preventInteraction(doc);
+          };
+
+          // Remove elements and prevent interactions
+          removeElements();
+          preventUnwantedInteractions(iframeDoc);
+
+          // Inject aggressive ad-blocking CSS with deep selector support
+          const style = iframeDoc.createElement("style");
+          style.textContent = `
+            body * {
+              -webkit-filter: contrast(1) !important;
+              filter: contrast(1) !important;
+            }
+            [class*="ad"], [id*="ad"], 
+            [class*="popup"], [id*="popup"],
+            [class*="modal"], [id*="modal"],
+            [class*="overlay"], [id*="overlay"],
+            [class*="banner"], [id*="banner"],
+            [class*="advertisement"], [id*="advertisement"],
+            [class*="promo"], [id*="promo"],
+            [class*="ads"], [id*="ads"] {
+              display: none !important;
+              visibility: hidden !important;
+              opacity: 0 !important;
+              height: 0 !important;
+              width: 0 !important;
+              pointer-events: none !important;
+              clip-path: inset(50%) !important;
+              position: absolute !important;
+              top: -9999px !important;
+              left: -9999px !important;
+            }
+            iframe[src*="ads"], 
+            iframe[src*="advert"], 
+            iframe[src*="track"] {
+              display: none !important;
+              height: 0 !important;
+              width: 0 !important;
+            }
+          `;
+          iframeDoc.head.appendChild(style);
+        } catch (error) {
+          console.error("Advanced ad blocking failed:", error);
+        }
+      };
+
+      // Initial and periodic ad blocking
+      const loadHandler = () => blockAds();
+      iframe.addEventListener("load", loadHandler);
+
+      const intervalId = setInterval(blockAds, 2000);
+
+      // Cleanup
+      return () => {
+        iframe.removeEventListener("load", loadHandler);
+        clearInterval(intervalId);
+      };
+    }
+  }, [isTrailerPlaying]);
+
+  // Favorites handling (unchanged from previous implementation)
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 
     if (isFavorite) {
       const updatedFavorites = favorites.filter(
@@ -53,7 +260,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   };
 
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
   }, [MovieDetail.id]);
 
@@ -187,11 +394,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         <X className="w-6 h-6" />
                       </button>
                       <iframe
+                        ref={iframeRef}
                         className="absolute inset-0 w-full h-full rounded-lg"
                         src={iframeSrc}
                         allowFullScreen
-                        // sandbox="allow-scripts allow-same-origin"
-                        allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                        allow="autoplay; fullscreen"
                         referrerPolicy="no-referrer"
                         name="trailerFrame"
                         style={{

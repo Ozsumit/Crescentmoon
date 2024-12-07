@@ -12,6 +12,7 @@ const AdBlocker = () => {
       /stretchedbystander\.com/i,
       /ad[sx]?\d*/i,
       /\.ads\./i,
+      /luckyforbet\.com/i
     ];
 
     // Block network requests
