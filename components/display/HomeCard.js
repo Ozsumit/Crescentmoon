@@ -92,9 +92,9 @@ const HomeCards = ({ MovieCard }) => {
       {/* Hover Overlay with Information */}
       <Link href={href} as={as}>
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
-          <h3 className="font-semibold text-lg mb-2 text-shadow-md">
+          {/* <h3 className="font-semibold text-lg mb-2 text-shadow-md">
             {renderTitle()}
-          </h3>
+          </h3> */}
           <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
             {additionalDetails.overview}
           </p>

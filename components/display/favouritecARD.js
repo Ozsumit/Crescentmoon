@@ -25,7 +25,7 @@ const FavoriteCard = ({ favoriteItem }) => {
       return `https://image.tmdb.org/t/p/w342/${favoriteItem.poster_path}`;
     if (favoriteItem.still_path)
       return `https://image.tmdb.org/t/p/w342/${favoriteItem.still_path}`;
-    return "https://i.imgur.com/HIYYPtZ.png";
+    return "/placeholder.jpg"; // Use a placeholder image
   };
 
   const getLink = () => {
@@ -132,18 +132,18 @@ const FavoriteCard = ({ favoriteItem }) => {
   const additionalDetails = getAdditionalDetails();
 
   return (
-    <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative">
+    <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative w-full max-w-sm mx-auto">
       <Link href={getLink()} title={renderTitle()} className="block">
         <Image
           src={getImagePath()}
           alt={renderTitle()}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover rounded-t-xl"
           width={288}
           height={176}
           unoptimized
         />
         {/* Subtle Type Tag */}
-        <div className="absolute top-2 left-2 bg-black/30 text-white/70 px-2 py-0.5 rounded text-xs">
+        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 rounded text-xs">
           {additionalDetails.type}
         </div>
       </Link>

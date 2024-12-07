@@ -1,9 +1,63 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Download,
+  Star,
+  Heart,
+  Grid,
+  List,
+  Film,
+  Tv,
+  Sparkles,
+} from "lucide-react";
+import html2canvas from "html2canvas";
 import FavoriteCard from "./favouritecARD";
+import { random } from "lodash";
 
+// Animated Background Component
+const AnimatedBackground = ({ type }) => {
+  const backgrounds = {
+    all: "bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900",
+    series: "bg-gradient-to-br from-teal-900 via-emerald-900 to-cyan-900",
+    movies: "bg-gradient-to-br from-red-900 via-rose-900 to-pink-900",
+  };
+
+  return (
+    <div
+      className={`absolute inset-0 opacity-20 ${backgrounds[type]} animate-background bg-gradient-to-r from-transparent to-transparent animate-pulse`}
+    />
+  );
+};
+
+// Floating Element Component
+const FloatingElement = ({ icon, size = 40, animationDuration = "6s" }) => {
+  const randomPosition = {
+    top: `${random(5, 90)}%`,
+    left: `${random(5, 90)}%`,
+    animationDelay: `${random(0, 5)}s`,
+  };
+
+  return (
+    <div
+      className="absolute z-0 animate-float opacity-30 text-slate-500"
+      style={{
+        top: randomPosition.top,
+        left: randomPosition.left,
+        animationDuration: animationDuration,
+        animationDelay: randomPosition.animationDelay,
+      }}
+    >
+      {React.cloneElement(icon, { size })}
+    </div>
+  );
+};
+
+// FavoriteDisplay Component
 const FavoriteDisplay = () => {
   const [favorites, setFavorites] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [viewMode, setViewMode] = useState("grid");
+  const [isSaving, setIsSaving] = useState(false);
+  const favoriteContainerRef = useRef(null);
 
   // Load favorites from localStorage on component mount
   useEffect(() => {
@@ -11,7 +65,7 @@ const FavoriteDisplay = () => {
     setFavorites(storedFavorites);
   }, []);
 
-  // Update favorites when localStorage changes (e.g., in another tab)
+  // Update favorites when localStorage changes
   useEffect(() => {
     const handleStorageChange = () => {
       const storedFavorites =
@@ -28,59 +82,165 @@ const FavoriteDisplay = () => {
   // Filter favorites based on active tab
   const filteredFavorites = favorites.filter((item) => {
     if (activeTab === "all") return true;
-    if (activeTab === "series") return item.first_air_date; // Series have `first_air_date`
-    if (activeTab === "movies") return item.release_date; // Movies have `release_date`
+    if (activeTab === "series") return item.first_air_date;
+    if (activeTab === "movies") return item.release_date;
     return true;
   });
 
+  // Save the current screen using html2canvas with enhanced options
+  const handleSaveAsPicture = async () => {
+    if (favoriteContainerRef.current) {
+      setIsSaving(true);
+      try {
+        const canvas = await html2canvas(favoriteContainerRef.current, {
+          scale: 3, // Higher resolution
+          useCORS: true,
+          logging: false, // Disable logging
+          allowTaint: true, // Allow cross-origin images
+          backgroundColor: null, // Transparent background
+          imageTimeout: 0, // No timeout for image loading
+        });
+
+        // Create a temporary link and trigger download
+        const link = document.createElement("a");
+        link.download = `favorites_${
+          new Date().toISOString().split("T")[0]
+        }.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      } catch (error) {
+        console.error("Error capturing screen:", error);
+        alert("Failed to save image. Please try again.");
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
   return (
-    <div className="bg-slate-800/70 p-6 rounded-xl shadow-2xl">
-      <div className="flex place-content-center mt-5 mb-8 mx-5">
-        <h1 className="w-full md:w-1/2 lg:w-1/3 text-white text-xl sm:text-2xl md:text-3xl text-center font-semibold">
-          Your
-          <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text">
-            {" "}
-            Favorites
+    <div
+      ref={favoriteContainerRef}
+      className="relative min-h-screen bg-slate-900 rounded-2xl p-6 overflow-hidden shadow-2xl"
+    >
+      {/* Animated Background */}
+      <AnimatedBackground type={activeTab} />
+
+      {/* Header with Save Button */}
+      <div className="relative z-10 flex justify-between items-center mb-8">
+        <h1 className="text-white text-4xl font-bold tracking-wide flex items-center space-x-3">
+          <Sparkles className="text-indigo-400 animate-pulse" size={36} />
+          <span>
+            Your
+            <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text ml-2">
+              Favorites
+            </span>
           </span>
         </h1>
+
+        <div className="flex items-center space-x-4">
+          {/* View Mode Toggle */}
+          <div className="bg-slate-800/70 backdrop-blur-md rounded-full p-1 flex items-center space-x-1 ring-2 ring-slate-700/50">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-full transition-all duration-300 ${
+                viewMode === "grid"
+                  ? "bg-indigo-600 text-white scale-110"
+                  : "text-slate-400 hover:bg-slate-700"
+              }`}
+            >
+              <Grid size={20} />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-full transition-all duration-300 ${
+                viewMode === "list"
+                  ? "bg-indigo-600 text-white scale-110"
+                  : "text-slate-400 hover:bg-slate-700"
+              }`}
+            >
+              <List size={20} />
+            </button>
+          </div>
+
+          {/* Save Button */}
+          {/* <button
+            onClick={handleSaveAsPicture}
+            disabled={isSaving}
+            className={`bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-full transition-all duration-300 flex items-center space-x-2 
+              ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
+            `}
+          >
+            {isSaving ? (
+              <span className="animate-pulse">Saving...</span>
+            ) : (
+              <>
+                <Download size={20} />
+                <span className="hidden md:inline">Save</span>
+              </>
+            )}
+          </button> */}
+        </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="inline-flex bg-slate-800 rounded-full p-1 space-x-1">
-          {["all", "series", "movies"].map((tab) => (
+      <div className="relative z-10 flex items-center justify-center mb-8">
+        <div className="inline-flex bg-slate-800/70 backdrop-blur-md rounded-full p-1 space-x-1 ring-2 ring-slate-700/50">
+          {[
+            { name: "all", icon: Star },
+            { name: "series", icon: Tv },
+            { name: "movies", icon: Film },
+          ].map(({ name, icon: Icon }) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                activeTab === tab
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : "text-slate-300 hover:bg-slate-700 hover:text-white"
-              } focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50`}
+              key={name}
+              onClick={() => setActiveTab(name)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center space-x-2 
+                ${
+                  activeTab === name
+                    ? "bg-indigo-600 text-white shadow-lg scale-105"
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              <Icon size={16} />
+              <span>{name.charAt(0).toUpperCase() + name.slice(1)}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Metadata Divider */}
-      <div className="w-full flex justify-center mt-4 mb-8">
-        <span className="w-4/5 bg-slate-600 h-0.5"></span>
+      {/* Favorites Grid/List */}
+      <div className="relative z-10">
+        {filteredFavorites.length > 0 ? (
+          <div
+            className={`${
+              viewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                : "space-y-4"
+            } animate-fade-in`}
+          >
+            {filteredFavorites.map((favorite, index) => (
+              <FavoriteCard
+                key={favorite.id || index}
+                favoriteItem={favorite}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-slate-400 py-12 animate-pulse">
+            No favorites found. Start adding some!
+          </div>
+        )}
       </div>
 
-      {/* Favorites Grid */}
-      {filteredFavorites.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredFavorites.map((favorite, index) => (
-            <FavoriteCard key={favorite.id || index} favoriteItem={favorite} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center text-slate-400 py-12">
-          No favorites found. Start adding some!
-        </div>
-      )}
+      {/* Floating Elements */}
+      {["Heart", "Star", "Film", "Tv"].map((IconName, index) => (
+        <FloatingElement
+          key={index}
+          icon={React.createElement({ Heart, Star, Film, Tv }[IconName])}
+          size={random(30, 50)}
+          animationDuration={`${random(5, 15)}s`}
+        />
+      ))}
     </div>
   );
 };
