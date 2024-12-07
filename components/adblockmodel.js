@@ -66,13 +66,13 @@ const AdblockerModal = () => {
     // Only proceed if no ad blocker is detected
     if (!hasAdBlocker()) {
       const storedVisitCount = localStorage.getItem("websiteVisitCount") || 0;
-      const parsedCount = parseInt(storedVisitCount, 0);
+      const parsedCount = parseInt(storedVisitCount, 10);
       const newCount = parsedCount + 1;
 
       localStorage.setItem("websiteVisitCount", newCount.toString());
       setVisitCount(newCount);
 
-      if (newCount < 1) {
+      if (newCount > 1) {
         setIsVisible(true);
         document.body.style.overflow = "hidden";
       }

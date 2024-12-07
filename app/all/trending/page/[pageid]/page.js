@@ -27,7 +27,7 @@ const AllTrending = async ({ params }) => {
   return (
     <div className=" h pt-8">
       {/* <Title /> */}
-      <SpotlightCarousel />
+      {/* <SpotlightCarousel /> */}
       {/* <SearchBar />
       <HomeFilter /> */}
       <HomeDisplay movies={data} pageid={pageid} />

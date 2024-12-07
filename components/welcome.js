@@ -4,7 +4,7 @@ import { Moon, Star, Info, CheckCircle, AlertTriangle } from "lucide-react";
 
 const WelcomeModal = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const CURRENT_VERSION = "1.0.3";
+  const CURRENT_VERSION = "1.1.0";
 
   useEffect(() => {
     const storedVersion = localStorage.getItem("cresentMoonVersion");
@@ -71,6 +71,7 @@ const WelcomeModal = () => {
                 <li>Enhanced search & movie recommendations</li>
                 <li>Improved user interface</li>
                 <li>Working Web-series</li>
+                <li>Added filter</li>
               </ul>
             </div>
 
