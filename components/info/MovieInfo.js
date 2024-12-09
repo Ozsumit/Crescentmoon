@@ -398,7 +398,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         className="absolute inset-0 w-full h-full rounded-lg"
                         src={iframeSrc}
                         allowFullScreen
-                        allow="autoplay; fullscreen"
+                        allow="autoplay fullscreen"
                         referrerPolicy="no-referrer"
                         name="trailerFrame"
                         style={{
