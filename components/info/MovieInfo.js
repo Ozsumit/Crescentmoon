@@ -1,18 +1,28 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Play, Star, Clock, CalendarDays, X, Heart } from "lucide-react";
+import {
+  Play,
+  Star,
+  Clock,
+  CalendarDays,
+  X,
+  Heart,
+  Server,
+} from "lucide-react";
 
-const ADGUARD_DNS_SERVERS = [
-  "https://dns.adguard.com/dns-query", // Primary
-  "https://dns-family.adguard.com/dns-query", // Family-friendly
-  "https://unfiltered.adguard-dns.com/dns-query", // Unfiltered
+// Updated Video Sources (Removed MoviesJoy and FlixHQ)
+const VIDEO_SOURCES = [
+  { name: "2Embed", url: `https://2embed.cc/embed/` },
+  { name: "VidSrc", url: `https://v2.vidsrc.me/embed/` },
+  { name: "StreamTape", url: `https://streamtape.com/e/` },
 ];
 
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [iframeSrc, setIframeSrc] = useState("");
+  const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[1]); // Default to VidSrc
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const iframeRef = useRef(null);
 
@@ -34,213 +44,19 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const toggleTrailer = () => {
     setIsTrailerPlaying(!isTrailerPlaying);
     if (!isTrailerPlaying) {
-      // Use a reliable embed source with DNS-level ad blocking
-      setIframeSrc(`https://2embed.cc/embed/${id}?adguard=1`);
+      setIframeSrc(`${selectedServer.url}${id}`);
     } else {
       setIframeSrc("");
     }
   };
 
-  // Advanced ad-blocking and content filtering
-  useEffect(() => {
-    if (isTrailerPlaying && iframeRef.current) {
-      const iframe = iframeRef.current;
-
-      const blockAds = () => {
-        try {
-          const iframeDoc =
-            iframe.contentDocument || iframe.contentWindow?.document;
-
-          if (!iframeDoc) return;
-
-          // Comprehensive ad and popup blocking with deep traversal
-          const removeElements = (selectors, rootElement = iframeDoc) => {
-            const adSelectors = [
-              // Existing selectors
-              'iframe[src*="ads"]',
-              'iframe[src*="advert"]',
-              'div[class*="ad"]',
-              'div[id*="ad"]',
-              'div[class*="popup"]',
-              'div[id*="popup"]',
-              'div[class*="modal"]',
-              'div[id*="modal"]',
-              'div[class*="overlay"]',
-              'div[id*="overlay"]',
-              'script[src*="ad"]',
-              'script[src*="https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cba6.js"]',
-              'script[src*="https://stretchedbystander.com/82/89/6b/82896b2332b74dfc6fec71bfcd31cb.js"]',
-              'script[src*="track"]',
-              'script[src*="analytics"]',
-              '[class*="banner"]',
-              '[id*="banner"]',
-              '[class*="advertisement"]',
-              '[id*="advertisement"]',
-              'a[href*="stretchedbystander.com"]',
-              'a[href*="https://luckyforbet.com"]',
-
-              // Additional deep-search selectors
-              '[class*="ads"]',
-              '[id*="ads"]',
-              '[class*="advert"]',
-              '[id*="advert"]',
-              '[class*="promo"]',
-              '[id*="promo"]',
-            ];
-
-            // Recursive removal of elements
-            const recursiveRemove = (element) => {
-              adSelectors.forEach((selector) => {
-                const elements = element.querySelectorAll(selector);
-                elements.forEach((el) => {
-                  try {
-                    el.remove();
-                  } catch (removeError) {
-                    try {
-                      el.style.display = "none";
-                      el.style.visibility = "hidden";
-                      el.style.opacity = "0";
-                      el.style.height = "0";
-                      el.style.width = "0";
-                      el.style.pointerEvents = "none";
-                    } catch (styleError) {
-                      console.warn("Could not hide element:", styleError);
-                    }
-                  }
-                });
-              });
-
-              // Recursively check child iframes
-              const childIframes = element.getElementsByTagName("iframe");
-              for (let childIframe of childIframes) {
-                try {
-                  const childDoc =
-                    childIframe.contentDocument ||
-                    childIframe.contentWindow?.document;
-                  if (childDoc) {
-                    recursiveRemove(childDoc.body);
-                  }
-                } catch (iframeError) {
-                  console.warn("Could not access child iframe:", iframeError);
-                }
-              }
-            };
-
-            recursiveRemove(rootElement.body);
-          };
-
-          // Prevent redirects and unwanted interactions
-          const preventUnwantedInteractions = (doc) => {
-            const preventInteraction = (element) => {
-              const links = doc.getElementsByTagName("a");
-              const scripts = doc.getElementsByTagName("script");
-
-              // Remove or disable potentially malicious links
-              for (let link of links) {
-                link.addEventListener("click", (e) => {
-                  const href = link.getAttribute("href");
-                  if (
-                    href &&
-                    (href.includes("ad") ||
-                      href.includes("popup") ||
-                      href.includes("track"))
-                  ) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-                });
-              }
-
-              // Remove potentially problematic scripts
-              for (let script of scripts) {
-                if (
-                  script.src &&
-                  (script.src.includes("ad") ||
-                    script.src.includes("track") ||
-                    script.src.includes("promo"))
-                ) {
-                  script.remove();
-                }
-              }
-
-              // Check child iframes
-              const childIframes = doc.getElementsByTagName("iframe");
-              for (let childIframe of childIframes) {
-                try {
-                  const childDoc =
-                    childIframe.contentDocument ||
-                    childIframe.contentWindow?.document;
-                  if (childDoc) {
-                    preventInteraction(childDoc);
-                  }
-                } catch (iframeError) {
-                  console.warn("Could not access child iframe:", iframeError);
-                }
-              }
-            };
-
-            preventInteraction(doc);
-          };
-
-          // Remove elements and prevent interactions
-          removeElements();
-          preventUnwantedInteractions(iframeDoc);
-
-          // Inject aggressive ad-blocking CSS with deep selector support
-          const style = iframeDoc.createElement("style");
-          style.textContent = `
-            body * {
-              -webkit-filter: contrast(1) !important;
-              filter: contrast(1) !important;
-            }
-            [class*="ad"], [id*="ad"], 
-            [class*="popup"], [id*="popup"],
-            [class*="modal"], [id*="modal"],
-            [class*="overlay"], [id*="overlay"],
-            [class*="banner"], [id*="banner"],
-            [class*="advertisement"], [id*="advertisement"],
-            [class*="promo"], [id*="promo"],
-            [class*="ads"], [id*="ads"] {
-              display: none !important;
-              visibility: hidden !important;
-              opacity: 0 !important;
-              height: 0 !important;
-              width: 0 !important;
-              pointer-events: none !important;
-              clip-path: inset(50%) !important;
-              position: absolute !important;
-              top: -9999px !important;
-              left: -9999px !important;
-            }
-            iframe[src*="ads"], 
-            iframe[src*="advert"], 
-            iframe[src*="track"] {
-              display: none !important;
-              height: 0 !important;
-              width: 0 !important;
-            }
-          `;
-          iframeDoc.head.appendChild(style);
-        } catch (error) {
-          console.error("Advanced ad blocking failed:", error);
-        }
-      };
-
-      // Initial and periodic ad blocking
-      const loadHandler = () => blockAds();
-      iframe.addEventListener("load", loadHandler);
-
-      const intervalId = setInterval(blockAds, 2000);
-
-      // Cleanup
-      return () => {
-        iframe.removeEventListener("load", loadHandler);
-        clearInterval(intervalId);
-      };
+  const handleServerChange = (server) => {
+    setSelectedServer(server);
+    if (isTrailerPlaying) {
+      setIframeSrc(`${server.url}${id}`);
     }
-  }, [isTrailerPlaying]);
+  };
 
-  // Favorites handling (unchanged from previous implementation)
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -266,7 +82,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   return (
     <div className="relative min-h-screen -mb-4 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 pt-16 text-slate-100 overflow-hidden">
-      {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
           src={backgroundPath}
@@ -280,14 +95,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 to-slate-950/90" />
       </div>
 
-      {/* Content */}
       <div
         className={`relative z-10 container mx-auto px-4 py-8 max-w-6xl transition-all duration-700 ${
           isImageLoaded ? "opacity-100" : "opacity-0"
         }`}
       >
         <div className="grid md:grid-cols-[1fr_2fr] gap-8 items-start">
-          {/* Poster Section */}
           <div className="relative group max-w-md mx-auto md:sticky md:top-8">
             <div className="relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-[1.02] hover:rotate-1 hover:shadow-xl">
               <Image
@@ -309,7 +122,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
           </div>
 
-          {/* Details Section */}
           <div className="space-y-6 md:pl-8">
             <div className="space-y-3">
               <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300 leading-tight tracking-tight">
@@ -337,7 +149,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               </div>
             </div>
 
-            {/* Genres */}
             <div className="flex flex-wrap gap-2">
               {genreArr?.map((genre, index) => (
                 <span
@@ -349,13 +160,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               ))}
             </div>
 
-            {/* Overview */}
             <p className="text-slate-400 leading-relaxed bg-slate-900/50 p-4 rounded-xl border border-indigo-900/30 shadow-inner">
               {MovieDetail.overview}
             </p>
 
-            {/* Actions */}
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 items-center">
               <button
                 onClick={toggleTrailer}
                 className="flex items-center bg-gradient-to-r from-indigo-600/40 to-purple-600/40 text-indigo-200 px-5 py-2 rounded-lg hover:from-indigo-600/60 hover:to-purple-600/60 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
@@ -381,31 +190,70 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               </button>
             </div>
 
-            {/* Trailer Section */}
             {isTrailerPlaying && (
               <div className="w-full col-span-full mt-8">
                 <div className="relative w-full max-w-4xl mx-auto">
-                  <div className="bg-slate-900/50 rounded-xl border border-indigo-900/30 p-2 shadow-2xl">
-                    <div className="aspect-video w-full relative">
+                  <div className="bg-slate-900/50 rounded-xl border border-slate-900/30 p-2 shadow-2xl">
+                    <div className="flex justify-between items-center mb-2 px-2">
+                      <div className="flex items-center space-x-2">
+                        <Server className="w-5 h-5 text-indigo-300" />{" "}
+                        <h3 className="text-lg font-semibold text-slate-200 flex items-center">
+                          {/* <Server className="mr-2 w-5 h-5 text-indigo-400" /> */}
+                          Select Server
+                        </h3>
+                        <select
+                          value={selectedServer.name}
+                          onChange={(e) =>
+                            handleServerChange(
+                              VIDEO_SOURCES.find(
+                                (source) => source.name === e.target.value
+                              )
+                            )
+                          }
+                          className="bg-slate-900/70 border border-indigo-800 text-indigo-300 px-3 py-2 rounded-lg text-sm focus:ring focus:ring-indigo-600"
+                        >
+                          {VIDEO_SOURCES.map((server, index) => (
+                            <option key={index} value={server.name}>
+                              {server.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                       <button
                         onClick={toggleTrailer}
-                        className="absolute -top-8 right-0 text-slate-300 hover:text-indigo-300 transition-colors z-10"
+                        className="flex items-center px-2 py-2 bg-red-400/30 text-pink-100 text-sm rounded-full hover:bg-pink-700/50 hover:scale-105 hover:shadow-md transition-all duration-200"
                       >
-                        <X className="w-6 h-6" />
+                        <X className="w-4 h-4 " />
                       </button>
+                    </div>
+                    <div className="relative w-full h-[600px] md:h-[500px] rounded-xl overflow-hidden shadow-lg">
                       <iframe
                         ref={iframeRef}
-                        className="absolute inset-0 w-full h-full rounded-lg"
                         src={iframeSrc}
                         allowFullScreen
-                        allow="autoplay fullscreen"
-                        referrerPolicy="no-referrer"
-                        name="trailerFrame"
-                        style={{
-                          filter: "brightness(0.9) contrast(1.1)",
-                          boxShadow: "inset 0 0 15px rgba(99, 102, 241, 0.3)",
-                        }}
+                        className="w-full h-full border-none"
                       />
+                    </div>
+                  </div>{" "}
+                  <div className="space-y-2 mt-8">
+                    <h3 className="text-lg font-semibold text-slate-200 flex items-center">
+                      <Server className="mr-2 w-5 h-5 text-indigo-400" />
+                      Select Server
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {VIDEO_SOURCES.map((server, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleServerChange(server)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 shadow-md ${
+                            selectedServer.name === server.name
+                              ? "bg-indigo-600/50 text-indigo-100"
+                              : "bg-slate-700/40 text-slate-300 hover:bg-slate-600/40"
+                          }`}
+                        >
+                          {server.name}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
