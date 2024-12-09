@@ -192,13 +192,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
             {isTrailerPlaying && (
               <div className="w-full col-span-full mt-8">
-                <div className="relative w-full max-w-4xl mx-auto">
+                <div className="relative w-full max-w-4xl mx-auto px-4">
                   <div className="bg-slate-900/50 rounded-xl border border-slate-900/30 p-2 shadow-2xl">
-                    <div className="flex justify-between items-center mb-2 px-2">
-                      <div className="flex items-center space-x-2">
-                        <Server className="w-5 h-5 text-indigo-300" />{" "}
-                        <h3 className="text-lg font-semibold text-slate-200 flex items-center">
-                          {/* <Server className="mr-2 w-5 h-5 text-indigo-400" /> */}
+                    <div className="flex flex-wrap justify-between items-center mb-2 px-2 gap-4">
+                      <div className="flex flex-wrap items-center space-x-2">
+                        <Server className="w-5 h-5 text-indigo-300" />
+                        <h3 className="text-lg font-semibold text-slate-200">
                           Select Server
                         </h3>
                         <select
@@ -223,22 +222,24 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         onClick={toggleTrailer}
                         className="flex items-center px-2 py-2 bg-red-400/30 text-pink-100 text-sm rounded-full hover:bg-pink-700/50 hover:scale-105 hover:shadow-md transition-all duration-200"
                       >
-                        <X className="w-4 h-4 " />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="relative w-full h-[600px] md:h-[500px] rounded-xl overflow-hidden shadow-lg">
+                    <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
                       <iframe
                         ref={iframeRef}
                         src={iframeSrc}
                         allowFullScreen
-                        className="w-full h-full border-none"
+                        className="absolute inset-0 w-full h-full border-none"
+                        title="Movie Trailer"
                       />
                     </div>
-                  </div>{" "}
+                  </div>
+
                   <div className="space-y-2 mt-8">
                     <h3 className="text-lg font-semibold text-slate-200 flex items-center">
                       <Server className="mr-2 w-5 h-5 text-indigo-400" />
-                      Select Server
+                      Server Options
                     </h3>
                     <div className="flex flex-wrap gap-3">
                       {VIDEO_SOURCES.map((server, index) => (
