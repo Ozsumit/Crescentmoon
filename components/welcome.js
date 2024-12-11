@@ -13,7 +13,7 @@ import {
 
 const WelcomeModal = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const CURRENT_VERSION = "1.1.1";
+  const CURRENT_VERSION = "1.1.2";
 
   useEffect(() => {
     const storedVersion = localStorage.getItem("cresentMoonVersion");
@@ -109,7 +109,10 @@ const WelcomeModal = () => {
               <ul className="text-gray-300 text-xs lg:text-sm space-y-1 pl-4 list-disc">
                 <li>Enhanced search & movie recommendations</li>
                 <li>Improved user interface</li>
-                <li>Working Web-series</li>
+                <li>
+                  Added Continue Watching function for movies.[web series not
+                  yet implemented]
+                </li>
                 <li>Added filter</li>
               </ul>
             </div>

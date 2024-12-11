@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Filter, X } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Filter, X, Search } from "lucide-react";
 import HomePagination from "../pagination/HomePagination";
 import HomeCards from "./HomeCard";
 import useGenreStore from "@/components/zustand";
+import ContinueWatching from "../continuewatching";
 
 const FULL_GENRE_LIST = [
   { id: 28, name: "Action" },
@@ -34,10 +35,22 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
+  const [genreFilter, setGenreFilter] = useState("");
+  const [error, setError] = useState(null);
+
+  // Memoized filtered genres
+  const filteredGenres = useMemo(
+    () =>
+      FULL_GENRE_LIST.filter((genre) =>
+        genre.name.toLowerCase().includes(genreFilter.toLowerCase())
+      ),
+    [genreFilter]
+  );
 
   // Fetch Movies
   const fetchMovies = async (currentPage = 1, genreIds = []) => {
     setIsLoading(true);
+    setError(null);
     try {
       const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
       const url =
@@ -50,6 +63,11 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
           : `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=${currentPage}&language=en-US`;
 
       const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch movies");
+      }
+
       const data = await response.json();
 
       setMovies(data.results || []);
@@ -57,6 +75,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
       setPage(currentPage);
     } catch (error) {
       console.error("Error fetching movies:", error);
+      setError("Unable to load movies. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +95,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
 
   const handleClearFilters = () => {
     clearGenres();
+    setGenreFilter("");
     fetchMovies(1, []);
   };
 
@@ -96,12 +116,17 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
               {/* Filter Genres Button */}
               <button
                 onClick={toggleGenreContainer}
+                aria-label="Filter Movie Genres"
+                aria-expanded={isGenreMenuOpen}
                 className="flex items-center space-x-2 bg-indigo-600/80 text-white px-3 py-2 rounded-full hover:bg-indigo-700 transition-colors"
               >
                 <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="text-xs sm:text-sm">Filter Genres</span>
                 {activeGenres.length > 0 && (
-                  <span className="ml-2 bg-white text-indigo-600 rounded-full px-2 py-0.5 text-xs">
+                  <span
+                    className="ml-2 bg-white text-indigo-600 rounded-full px-2 py-0.5 text-xs"
+                    aria-label={`${activeGenres.length} genres selected`}
+                  >
                     {activeGenres.length}
                   </span>
                 )}
@@ -110,6 +135,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
               {activeGenres.length > 0 && (
                 <button
                   onClick={handleClearFilters}
+                  aria-label="Clear Genre Filters"
                   className="text-slate-400 hover:text-white flex items-center space-x-1 text-xs sm:text-sm"
                 >
                   <X className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -129,6 +155,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
                     <span className="truncate max-w-[150px]">{genre.name}</span>
                     <button
                       onClick={() => toggleGenre(genre)}
+                      aria-label={`Remove ${genre.name} genre`}
                       className="ml-2 text-indigo-400 hover:text-white flex-shrink-0"
                     >
                       <X className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -141,26 +168,45 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
             {/* Genre Selection Menu */}
             {isGenreMenuOpen && (
               <div className="w-full max-w-4xl bg-slate-800 rounded-2xl p-3 sm:p-4 mt-4">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
-                  {FULL_GENRE_LIST.map((genre) => (
-                    <button
-                      key={genre.id}
-                      onClick={() => toggleGenre(genre)}
-                      className={`px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 truncate ${
-                        activeGenres.some((g) => g.id === genre.id)
-                          ? "bg-indigo-600 text-white scale-105"
-                          : "bg-slate-700 text-slate-300 hover:bg-slate-600 hover:scale-105"
-                      }`}
-                    >
-                      {genre.name}
-                    </button>
-                  ))}
+                {/* Genre Search Input */}
+                <div className="mb-3 relative">
+                  <input
+                    type="text"
+                    placeholder="Search genres..."
+                    value={genreFilter}
+                    onChange={(e) => setGenreFilter(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-label="Search movie genres"
+                  />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                </div>
+
+                {/* Genre Grid with Scrollable Container */}
+                <div className="max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
+                    {filteredGenres.map((genre) => (
+                      <button
+                        key={genre.id}
+                        onClick={() => toggleGenre(genre)}
+                        aria-pressed={activeGenres.some(
+                          (g) => g.id === genre.id
+                        )}
+                        className={`px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 truncate ${
+                          activeGenres.some((g) => g.id === genre.id)
+                            ? "bg-indigo-600 text-white scale-105"
+                            : "bg-slate-700 text-slate-300 hover:bg-slate-600 hover:scale-105"
+                        }`}
+                      >
+                        {genre.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Loading Spinner */}
+          {/* Loading and Error States */}
           {isLoading && (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
@@ -168,25 +214,38 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
             </div>
           )}
 
-          {/* Movies Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5  gap-4">
-            {movies.map((movie) => (
-              <HomeCards
-                key={movie.id}
-                MovieCard={movie}
-                className="h-[300px] sm:h-[360px] lg:h-[420px]"
-              />
-            ))}
-          </div>
+          {error && (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          )}
 
-          {/* Pagination */}
-          <div className="mt-6 sm:mt-10">
-            <HomePagination
-              page={page}
-              setPage={setPage}
-              totalPages={totalPages}
-            />
-          </div>
+          <ContinueWatching />
+
+          {/* Movies Grid */}
+          {!isLoading && !error && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Tremding Movies
+                </h2>
+
+                {movies.map((movie) => (
+                  <HomeCards
+                    key={movie.id}
+                    MovieCard={movie}
+                    className="h-[300px] sm:h-[360px] lg:h-[420px]"
+                  />
+                ))}
+              </div>
+              {/* Pagination */}
+              <div className="mt-6 sm:mt-10">
+                <HomePagination
+                  page={page}
+                  setPage={setPage}
+                  totalPages={totalPages}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
