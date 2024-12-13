@@ -29,9 +29,11 @@ const VIDEO_SOURCES = [
   },
   {
     name: "VidSrc",
+    params: "?multiLang=true",
+
     url: `https://v2.vidsrc.me/embed/`,
     icon: <Server className="w-4 h-4" />,
-    downloadSupport: true,
+    // downloadSupport: true,
     getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
   {
@@ -164,8 +166,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   }, [isTrailerPlaying, MovieDetail]);
 
   return (
-    <div className="relative min-h-screen mt-16 
-    bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100">
+    <div
+      className="relative min-h-screen mt-16 
+    bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100"
+    >
       {/* Background image remains the same */}
       <div className="absolute inset-0 z-0">
         <img
@@ -237,7 +241,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   className="flex items-center bg-gradient-to-r from-indigo-700/50 to-purple-700/50 text-indigo-200 px-5 py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 hover:text-white transition-colors duration-300"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  {isTrailerPlaying ? "Stop" : "Play +"}
+                  {isTrailerPlaying ? "Stop" : "Play"}
                 </button>
                 <button
                   onClick={handleFavoriteToggle}

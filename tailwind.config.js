@@ -15,10 +15,10 @@ module.exports = {
       colors: {
         "bg-black": "#0E0E0E",
         primary: "purple-600",
-        "light-primary": "#A69C40",
+        "light-primary": "purple-600",
         white: "#ffffff",
         grey: "#1D1B1B",
-        "light-white": "#6D6B6B",
+        "light-white": "#ffffff",
         navbg: "rgb(8, 8, 8)",
       },
     },
