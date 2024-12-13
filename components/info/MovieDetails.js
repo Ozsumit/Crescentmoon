@@ -19,7 +19,7 @@ const MovieDetails = ({ MovieDetail, genreArr, videoId }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
+    <div className="bg-gradient-to-br mt-16 from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Movie Title Section */}
         <div className="flex flex-col items-center text-center mb-6">
