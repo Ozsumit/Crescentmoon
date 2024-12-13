@@ -96,7 +96,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   }, [isTrailerPlaying, MovieDetail]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100">
+    <div className="relative min-h-screen mt-16 
+    bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100">
       {/* Background image remains the same */}
       <div className="absolute inset-0 z-0">
         <img
