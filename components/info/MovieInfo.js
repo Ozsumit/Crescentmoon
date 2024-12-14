@@ -11,6 +11,7 @@ import {
   Server,
   MoreHorizontal,
   Download,
+  User,
 } from "lucide-react";
 
 const VIDEO_SOURCES = [
@@ -30,10 +31,9 @@ const VIDEO_SOURCES = [
   {
     name: "VidSrc",
     params: "?multiLang=true",
-
     url: `https://v2.vidsrc.me/embed/`,
     icon: <Server className="w-4 h-4" />,
-    // downloadSupport: true,
+    downloadSupport: true,
     getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
   {
@@ -51,12 +51,16 @@ const VIDEO_SOURCES = [
   },
 ];
 
+const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [iframeSrc, setIframeSrc] = useState("");
   const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[0]);
   const [isServerMenuOpen, setIsServerMenuOpen] = useState(false);
+  const [castInfo, setCastInfo] = useState([]);
+  const [isLoadingCast, setIsLoadingCast] = useState(false);
 
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
@@ -98,16 +102,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     if (selectedServer.downloadSupport && selectedServer.getDownloadLink) {
       const downloadLink = selectedServer.getDownloadLink(id);
 
-      // Create a temporary anchor element to trigger download
       const link = document.createElement("a");
       link.href = downloadLink;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-
-      // Optional: You might want to add a download attribute if possible
       link.download = `${MovieDetail.title}_${selectedServer.name}.mp4`;
 
-      // Append to body, click, and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -133,10 +133,32 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     setIsFavorite(!isFavorite);
   };
 
+  const fetchCastInfo = async () => {
+    setIsLoadingCast(true);
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${TMDB_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch cast details");
+      }
+
+      const data = await response.json();
+      setCastInfo(data.cast.slice(0, 10)); // Limit to top 10 cast members
+    } catch (error) {
+      console.error("Error fetching cast info:", error);
+    } finally {
+      setIsLoadingCast(false);
+    }
+  };
+
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
-  }, [MovieDetail.id]);
+
+    fetchCastInfo();
+  }, [MovieDetail.id, id]);
 
   useEffect(() => {
     if (isTrailerPlaying) {
@@ -166,11 +188,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   }, [isTrailerPlaying, MovieDetail]);
 
   return (
-    <div
-      className="relative min-h-screen mt-16 
-    bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100"
-    >
-      {/* Background image remains the same */}
+    <div className="relative min-h-screen mt-16 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100">
       <div className="absolute inset-0 z-0">
         <img
           src={backgroundPath}
@@ -342,30 +360,58 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           transition-all duration-300 
                           ${
                             selectedServer.name === server.name
-                              ? "bg-slate-700/50 text-white ring-1 ring-slate-600"
-                              : "bg-slate-800/30 text-slate-400 hover:bg-slate-800/50 hover:text-slate-300"
-                          }
-                          rounded-lg
-                        `}
+                              ? "bg-indigo-900/50 text-indigo-200 border border-indigo-700"
+                              : "bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-transparent"
+                          }`}
+                        title={`Stream on ${server.name}`}
                       >
                         {server.icon}
                         <span>{server.name}</span>
                       </button>
-                      {server.downloadSupport && (
-                        <button
-                          onClick={() => {
-                            handleServerChange(server);
-                            handleDownload();
-                          }}
-                          className="ml-2 text-green-400 hover:text-green-300 transition-colors"
-                          title="Download Available"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-4 mt-6">
+                <div className="flex items-center space-x-2 mb-3">
+                  <User className="w-6 h-6 text-slate-400" />
+                  <h2 className="text-lg font-semibold text-slate-300">
+                    Top Cast
+                  </h2>
+                </div>
+                {isLoadingCast ? (
+                  <div className="flex justify-center items-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-5 gap-3">
+                    {castInfo.map((actor, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col items-center space-y-2 text-center"
+                      >
+                        <img
+                          src={
+                            actor.profile_path
+                              ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
+                              : "https://via.placeholder.com/200x300.png?text=Actor"
+                          }
+                          alt={actor.name}
+                          className="w-20 h-20 object-cover rounded-full shadow-md"
+                        />
+                        <div>
+                          <p className="text-xs text-slate-300 font-medium">
+                            {actor.name}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {actor.character}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

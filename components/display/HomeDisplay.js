@@ -5,6 +5,7 @@ import HomePagination from "../pagination/HomePagination";
 import HomeCards from "./HomeCard";
 import useGenreStore from "@/components/zustand";
 import ContinueWatching from "../continuewatching";
+import RecommendedMovies from "../recommended";
 
 const FULL_GENRE_LIST = [
   { id: 28, name: "Action" },
@@ -222,12 +223,11 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
 
           {/* Movies Grid */}
           {!isLoading && !error && (
-            <><h2 className="text-2xl font-bold text-white mb-4">
-                  Trending Movies
-                </h2>
+            <>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Trending Movies
+              </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
-                
-
                 {movies.map((movie) => (
                   <HomeCards
                     key={movie.id}
@@ -236,6 +236,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
                   />
                 ))}
               </div>
+              <RecommendedMovies />
               {/* Pagination */}
               <div className="mt-6 sm:mt-10">
                 <HomePagination
