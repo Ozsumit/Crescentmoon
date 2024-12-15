@@ -164,7 +164,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
           <iframe
             src={iframeSrc}
-            allow="autoplay fullscreen unmute"
+            allow="autoplay; fullscreen "
             className="w-full aspect-video rounded-lg border border-indigo-900/30 shadow-inner max-h-[56rem]"
           ></iframe>
         </div>
