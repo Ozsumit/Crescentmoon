@@ -59,6 +59,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [serverMenuOpen, setServerMenuOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [watchProgress, setWatchProgress] = useState(0);
+  const [watchProgress, setWatchProgress] = useState(0);
 
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
@@ -130,6 +131,37 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     );
   };
 
+  const updateContinueWatching = () => {
+    const continueWatching = JSON.parse(
+      localStorage.getItem("continueWatching") || "[]"
+    );
+
+    const existingMovieIndex = continueWatching.findIndex(
+      (item) => item.id === MovieDetail.id
+    );
+
+    const movieEntry = {
+      ...MovieDetail,
+      watchedAt: Date.now(),
+      progress: watchProgress,
+    };
+
+    if (existingMovieIndex !== -1) {
+      continueWatching[existingMovieIndex] = movieEntry;
+    } else {
+      continueWatching.push(movieEntry);
+    }
+
+    const sortedContinueWatching = continueWatching
+      .sort((a, b) => b.watchedAt - a.watchedAt)
+      .slice(0, 10);
+
+    localStorage.setItem(
+      "continueWatching",
+      JSON.stringify(sortedContinueWatching)
+    );
+  };
+
   const fetchCastInfo = async () => {
     setIsLoadingCast(true);
     try {
@@ -152,6 +184,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   const handleIframeLoad = () => {
     // Simulate progress tracking
+    const randomProgress = Math.floor(Math.random() * 100);
+    setWatchProgress(randomProgress);
+    updateContinueWatching();
+  };
+
+  const handleIframeLoad = () => {
+    // Simulate progress tracking 
     const randomProgress = Math.floor(Math.random() * 100);
     setWatchProgress(randomProgress);
     updateContinueWatching();
@@ -245,6 +284,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         "
             ></iframe>
           </div>
+          <iframe
+            src={iframeSrc}
+            allow="autoplay; fullscreen"
+            className="w-full aspect-video rounded-lg border border-indigo-900/30 shadow-inner max-h-[56rem]"
+            onLoad={handleIframeLoad}
+          ></iframe>
         </div>
       </div>
 
@@ -318,6 +363,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 className={`flex items-center px-5 py-2 rounded-lg transition-colors duration-300 ${
                   isFavorite
                     ? "bg-red-700/70 text-white hover:bg-red-700"
+                    : "bg-gray-700/50 text-white hover:bg-gray-700/70"
                     : "bg-gray-700/50 text-white hover:bg-gray-700/70"
                 }`}
               >
