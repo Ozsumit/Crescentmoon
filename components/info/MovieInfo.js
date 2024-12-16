@@ -10,6 +10,7 @@ import {
   Download,
   User,
 } from "lucide-react";
+import RecommendedMovies from "../recommended";
 
 const VIDEO_SOURCES = [
   {
@@ -57,6 +58,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [serverMenuOpen, setServerMenuOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [watchProgress, setWatchProgress] = useState(0);
 
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
@@ -97,6 +99,37 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     setIsFavorite(!isFavorite);
   };
 
+  const updateContinueWatching = () => {
+    const continueWatching = JSON.parse(
+      localStorage.getItem("continueWatching") || "[]"
+    );
+
+    const existingMovieIndex = continueWatching.findIndex(
+      (item) => item.id === MovieDetail.id
+    );
+
+    const movieEntry = {
+      ...MovieDetail,
+      watchedAt: Date.now(),
+      progress: watchProgress,
+    };
+
+    if (existingMovieIndex !== -1) {
+      continueWatching[existingMovieIndex] = movieEntry;
+    } else {
+      continueWatching.push(movieEntry);
+    }
+
+    const sortedContinueWatching = continueWatching
+      .sort((a, b) => b.watchedAt - a.watchedAt)
+      .slice(0, 10);
+
+    localStorage.setItem(
+      "continueWatching",
+      JSON.stringify(sortedContinueWatching)
+    );
+  };
+
   const fetchCastInfo = async () => {
     setIsLoadingCast(true);
     try {
@@ -117,6 +150,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     }
   };
 
+  const handleIframeLoad = () => {
+    // Simulate progress tracking
+    const randomProgress = Math.floor(Math.random() * 100);
+    setWatchProgress(randomProgress);
+    updateContinueWatching();
+  };
+
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
@@ -126,20 +166,39 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   }, [MovieDetail.id, id]);
 
   return (
-    <div className="relative min-h-screen mt-8 mb-8 px-4 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 py-16 text-slate-100">
-      <div className="w-full mb-8 z-50 relative">
-        <div className="bg-slate-900/80 drop-shadow-lg rounded-xl p-2 border border-indigo-900/40 shadow-xl relative">
-          {/* Server Selection Menu Integrated */}
-          <div className="absolute top-4 right-4 z-20">
+    <div
+      className={`
+        relative min-h-screen pt-8 mb-8 px-4 
+        bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 
+        py-16 text-slate-100 
+       
+      `}
+    >
+      <div
+        className={`
+         w-full mb-16 mt-12 z-40 relative flex justify-center 
+       
+       `}
+      >
+        <div
+          className={`
+      bg-slate-900/80 drop-shadow-lg rounded-xl p-3 
+      border border-indigo-900/40 shadow-xl relative w-[930px]
+    
+    `}
+        >
+          {/* Server Selection Menu */}
+          <div className="absolute top-3 right-3 z-50">
             <div className="relative">
               <button
-                className="px-4 py-2 bg-gray-800 text-indigo-200 hover:bg-gray-700 rounded-lg shadow-lg border border-indigo-900/30"
+                className="px-2.5 py-1.5 bg-gray-800 text-indigo-200 hover:bg-gray-700 rounded-lg shadow-lg border border-indigo-900/30 transition-colors"
                 onClick={() => setServerMenuOpen((prev) => !prev)}
               >
-                <Server className="w-5 h-5" />
+                <Server className="w-4 h-4" />
               </button>
+
               {serverMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg border border-indigo-900/40">
+                <div className="absolute right-0 mt-1.5 w-48 bg-gray-900 rounded-lg shadow-2xl border border-indigo-900/40 overflow-hidden">
                   {VIDEO_SOURCES.map((server, index) => (
                     <button
                       key={index}
@@ -147,14 +206,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         handleServerChange(server);
                         setServerMenuOpen(false);
                       }}
-                      className={`flex justify-start items-center flex-row w-full text-left px-4 py-2 text-sm rounded-lg transition-colors ${
-                        selectedServer.name === server.name
-                          ? "bg-indigo-700 text-white"
-                          : "hover:bg-gray-800 text-indigo-200"
-                      }`}
+                      className={`
+                  flex items-center w-full px-3 py-2 text-xs text-left 
+                  transition-colors duration-200 
+                  ${
+                    selectedServer.name === server.name
+                      ? "bg-indigo-700 text-white"
+                      : "hover:bg-gray-800 text-indigo-200"
+                  }
+                `}
                     >
-                      {server.icon}
-                      <span className="ml-2">{server.name}</span>
+                      <span className="mr-2 scale-90">{server.icon}</span>
+                      <span>{server.name}</span>
                     </button>
                   ))}
                 </div>
@@ -162,15 +225,31 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
           </div>
 
-          <iframe
-            src={iframeSrc}
-            allow="autoplay fullscreen unmute"
-            className="w-full aspect-video rounded-lg border border-indigo-900/30 shadow-inner max-h-[56rem]"
-          ></iframe>
+          {/* Video Iframe */}
+          <div className="flex justify-center z-50 relative">
+            <iframe
+              // onClick={toggleTrailer}
+              onLoad={handleIframeLoad}
+              src={iframeSrc}
+              allow="autoplay fullscreen unmute"
+              className="
+        w-full
+          sm:w-[900px]
+          aspect-video 
+          rounded-lg 
+          border border-indigo-900/30 
+          shadow-inner
+          z-50
+          opacity-100 
+          scale-100
+        "
+            ></iframe>
+          </div>
         </div>
       </div>
 
-      <div className="absolute mt-8 inset-0 z-0">
+      {/* Blurred Background */}
+      <div className="absolute mt-16 inset-0 z-0">
         <img
           src={backgroundPath}
           alt={`${MovieDetail.title} background`}
@@ -179,7 +258,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 to-slate-950/90" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 max-w-6xl">
+      {/* Main Content */}
+      <div
+        className={`
+        relative z-10 container mx-auto px-4 max-w-6xl 
+       
+      `}
+      >
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-start">
           <div className="relative max-w-md mx-auto md:sticky md:top-8">
             <img
@@ -233,8 +318,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 className={`flex items-center px-5 py-2 rounded-lg transition-colors duration-300 ${
                   isFavorite
                     ? "bg-red-700/70 text-white hover:bg-red-700"
-                    : // : "bg-gray-700/50 text
-                      "bg-gray-700/50 text-white hover:bg-gray-700/70"
+                    : "bg-gray-700/50 text-white hover:bg-gray-700/70"
                 }`}
               >
                 <Heart className="w-5 h-5 mr-2" />
@@ -297,7 +381,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           src={
                             cast.profile_path
                               ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-                              : "https://via.placeholder.com/100x150.png?text=No+Image"
+                              : "https://via.placeholder.com/100x150.png?path"
                           }
                           alt={cast.name}
                           className="w-24 h-36 object-cover rounded-lg shadow-md"
@@ -317,6 +401,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           </div>
         </div>
       </div>
+      <RecommendedMovies />
     </div>
   );
 };

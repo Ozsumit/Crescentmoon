@@ -51,7 +51,7 @@ const RecommendedMovies = () => {
       }
 
       // Convert genre IDs to a comma-separated string
-      const genreQuery = genreIds.join(',');
+      const genreQuery = genreIds.join(",");
 
       // Fetch recommended movies based on genres
       const moviesResponse = await fetch(
@@ -83,20 +83,18 @@ const RecommendedMovies = () => {
     const fetchContinueWatchingDetails = async () => {
       try {
         // Fetch details for each movie
-        const movieDetailsPromises = storedMovies.map((movie) => 
+        const movieDetailsPromises = storedMovies.map((movie) =>
           fetchMovieDetails(movie.id)
         );
-        
+
         const movieDetails = await Promise.all(movieDetailsPromises);
-        
+
         // Extract unique genre IDs
         const genreIds = Array.from(
           new Set(
             movieDetails
-              .filter(detail => detail && detail.genres)
-              .flatMap(detail => 
-                detail.genres.map(genre => genre.id)
-              )
+              .filter((detail) => detail && detail.genres)
+              .flatMap((detail) => detail.genres.map((genre) => genre.id))
           )
         );
 
@@ -226,9 +224,9 @@ const RecommendedMovies = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold text-white mb-6">
-        {continueWatchingMovies.length > 0 
-          ? "Recommended Based on Your Watching" 
+      <h2 className="text-2xl font-bold z-[100] text-white mb-6">
+        {continueWatchingMovies.length > 0
+          ? "Recommended Based on Your Watching"
           : "Popular Recommendations"}
       </h2>
       {recommendedMovies.length > 0 ? (

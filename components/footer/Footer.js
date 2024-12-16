@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Github, Instagram, Facebook, Moon, Star } from "lucide-react";
+import WelcomeModalTrigger from "../welcome";
 
 const Footer = () => {
   const [movieOfTheDay, setMovieOfTheDay] = useState(null);
@@ -190,6 +191,8 @@ const Footer = () => {
               >
                 Learn More
               </Link>
+            <WelcomeModalTrigger>Help</WelcomeModalTrigger>
+
             </div>
           </div>
         </div>

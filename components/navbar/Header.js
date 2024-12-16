@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Home, Film, Tv, Search, Heart, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,15 +9,51 @@ import Logo from "./Logo";
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastInteractionTime, setLastInteractionTime] = useState(Date.now());
 
+  // Debounce function to reset interaction timer
+  const resetInteractionTimer = useCallback(() => {
+    setLastInteractionTime(Date.now());
+    setIsNavbarVisible(true);
+  }, []);
+
+  // Effect for scroll event
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+      resetInteractionTimer();
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [resetInteractionTimer]);
+
+  // Effect for mouse movement and keyboard interaction
+  useEffect(() => {
+    const handleMouseMove = () => resetInteractionTimer();
+    const handleKeyPress = () => resetInteractionTimer();
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("keypress", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("keypress", handleKeyPress);
+    };
+  }, [resetInteractionTimer]);
+
+  // Effect to hide navbar after 5 seconds of inactivity
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const currentTime = Date.now();
+      if (currentTime - lastInteractionTime > 5000) {
+        setIsNavbarVisible(false);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lastInteractionTime]);
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
@@ -27,13 +63,18 @@ const Header = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    resetInteractionTimer();
   };
 
   return (
-    <nav
+    <motion.nav
+      initial={{ y: 0 }}
+      animate={{ y: isNavbarVisible ? 0 : "-100%" }}
+      transition={{ type: "tween", duration: 0.3 }}
+      onHoverStart={resetInteractionTimer}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isMobileMenuOpen
-          ? "bg-gray-800/90 backdrop-blur-md shadow-lg  border-gray-700"
+          ? "bg-gray-800/90 backdrop-blur-md shadow-lg border-gray-700"
           : `rounded-b-xl ${
               isScrolled
                 ? "bg-gray-800/70 backdrop-blur-xl shadow-2xl"
@@ -43,7 +84,7 @@ const Header = () => {
       style={{
         WebkitBackdropFilter: "blur(10px)",
         backdropFilter: "blur(10px)",
-      }} // Add this line
+      }}
     >
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
@@ -63,6 +104,7 @@ const Header = () => {
                 <Link
                   href={link.href}
                   className="group flex items-center space-x-2 text-white/80 hover:text-white transition-colors"
+                  onClick={resetInteractionTimer}
                 >
                   <link.icon
                     size={20}
@@ -82,6 +124,7 @@ const Header = () => {
               <Link
                 href="/search"
                 className="text-white/80 hover:text-white transition-colors"
+                onClick={resetInteractionTimer}
               >
                 <Search size={22} />
               </Link>
@@ -91,6 +134,7 @@ const Header = () => {
               <Link
                 href="/favourites"
                 className="text-white/80 hover:text-white transition-colors"
+                onClick={resetInteractionTimer}
               >
                 <Heart size={22} />
               </Link>
@@ -118,7 +162,7 @@ const Header = () => {
             transition={{ type: "tween" }}
             className="lg:hidden absolute top-16 sm:top-20 left-0 right-0 bg-gray-800/95 backdrop-blur-2xl shadow-2xl rounded-b-xl border-gray-700"
           >
-            <div className="px-4 py-4   sm:py-6 space-y-4 sm:space-y-6">
+            <div className="px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
               {navLinks.map((link) => (
                 <motion.div
                   key={link.href}
@@ -143,7 +187,7 @@ const Header = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 };
 
