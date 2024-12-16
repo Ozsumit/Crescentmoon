@@ -10,7 +10,6 @@ import {
   Download,
   User,
 } from "lucide-react";
-import RecommendedMovies from "../recommended";
 
 const VIDEO_SOURCES = [
   {
@@ -58,7 +57,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [serverMenuOpen, setServerMenuOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [watchProgress, setWatchProgress] = useState(0);
   const [watchProgress, setWatchProgress] = useState(0);
 
   const posterPath = MovieDetail.poster_path
@@ -131,37 +129,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     );
   };
 
-  const updateContinueWatching = () => {
-    const continueWatching = JSON.parse(
-      localStorage.getItem("continueWatching") || "[]"
-    );
-
-    const existingMovieIndex = continueWatching.findIndex(
-      (item) => item.id === MovieDetail.id
-    );
-
-    const movieEntry = {
-      ...MovieDetail,
-      watchedAt: Date.now(),
-      progress: watchProgress,
-    };
-
-    if (existingMovieIndex !== -1) {
-      continueWatching[existingMovieIndex] = movieEntry;
-    } else {
-      continueWatching.push(movieEntry);
-    }
-
-    const sortedContinueWatching = continueWatching
-      .sort((a, b) => b.watchedAt - a.watchedAt)
-      .slice(0, 10);
-
-    localStorage.setItem(
-      "continueWatching",
-      JSON.stringify(sortedContinueWatching)
-    );
-  };
-
   const fetchCastInfo = async () => {
     setIsLoadingCast(true);
     try {
@@ -184,13 +151,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   const handleIframeLoad = () => {
     // Simulate progress tracking
-    const randomProgress = Math.floor(Math.random() * 100);
-    setWatchProgress(randomProgress);
-    updateContinueWatching();
-  };
-
-  const handleIframeLoad = () => {
-    // Simulate progress tracking 
     const randomProgress = Math.floor(Math.random() * 100);
     setWatchProgress(randomProgress);
     updateContinueWatching();
@@ -284,17 +244,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         "
             ></iframe>
           </div>
-          <iframe
-            src={iframeSrc}
-            allow="autoplay; fullscreen"
-            className="w-full aspect-video rounded-lg border border-indigo-900/30 shadow-inner max-h-[56rem]"
-            onLoad={handleIframeLoad}
-          ></iframe>
         </div>
       </div>
 
-      {/* Blurred Background */}
-      <div className="absolute mt-16 inset-0 z-0">
+      <div className="absolute mt-8 inset-0 z-0">
         <img
           src={backgroundPath}
           alt={`${MovieDetail.title} background`}
@@ -303,13 +256,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 to-slate-950/90" />
       </div>
 
-      {/* Main Content */}
-      <div
-        className={`
-        relative z-10 container mx-auto px-4 max-w-6xl 
-       
-      `}
-      >
+      <div className="relative z-10 container mx-auto px-4 max-w-6xl">
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 items-start">
           <div className="relative max-w-md mx-auto md:sticky md:top-8">
             <img
@@ -363,7 +310,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 className={`flex items-center px-5 py-2 rounded-lg transition-colors duration-300 ${
                   isFavorite
                     ? "bg-red-700/70 text-white hover:bg-red-700"
-                    : "bg-gray-700/50 text-white hover:bg-gray-700/70"
                     : "bg-gray-700/50 text-white hover:bg-gray-700/70"
                 }`}
               >
@@ -427,7 +373,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           src={
                             cast.profile_path
                               ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-                              : "https://via.placeholder.com/100x150.png?path"
+                              : "https://via.placeholder.com/100x150.png?text=No+Image"
                           }
                           alt={cast.name}
                           className="w-24 h-36 object-cover rounded-lg shadow-md"
@@ -447,7 +393,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           </div>
         </div>
       </div>
-      <RecommendedMovies />
     </div>
   );
 };
