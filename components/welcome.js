@@ -38,7 +38,7 @@ const WelcomeModal = ({ onClose }) => {
   const [characterPose, setCharacterPose] = useState("wave");
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [idleAnimationInterval, setIdleAnimationInterval] = useState(null);
-  const CURRENT_VERSION = "1.2.2"; // Incremented version
+  const CURRENT_VERSION = "1.2.3"; // Incremented version
 
   // Character images mapping
   const characterImages = {
