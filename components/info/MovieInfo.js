@@ -162,28 +162,25 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
     fetchCastInfo();
     handleServerChange(selectedServer);
-  }, [MovieDetail.id, id]);
+  }, [MovieDetail.id, id, selectedServer]);
 
   return (
     <div
       className={`
-        relative min-h-screen pt-8 mb-8 px-4 
-        bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 
-        py-16 text-slate-100 
-       
+        relative min-h-screen pt-8 mb-8 px-4
+        bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950
+        py-16 text-slate-100
       `}
     >
       <div
         className={`
-         w-full mb-16 mt-12 z-40 relative flex justify-center 
-       
+         w-full mb-16 mt-12 z-40 relative flex justify-center
        `}
       >
         <div
           className={`
-      bg-slate-900/80 drop-shadow-lg rounded-xl p-3 
+      bg-slate-900/80 drop-shadow-lg rounded-xl p-3
       border border-indigo-900/40 shadow-xl relative w-[930px]
-    
     `}
         >
           {/* Server Selection Menu */}
@@ -206,8 +203,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         setServerMenuOpen(false);
                       }}
                       className={`
-                  flex items-center w-full px-3 py-2 text-xs text-left 
-                  transition-colors duration-200 
+                  flex items-center w-full px-3 py-2 text-xs text-left
+                  transition-colors duration-200
                   ${
                     selectedServer.name === server.name
                       ? "bg-indigo-700 text-white"
@@ -227,19 +224,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           {/* Video Iframe */}
           <div className="flex justify-center z-50 relative">
             <iframe
-              // onClick={toggleTrailer}
               onLoad={handleIframeLoad}
               src={iframeSrc}
               allow="autoplay;fullscreen"
               className="
         w-full
           sm:w-[900px]
-          aspect-video 
-          rounded-lg 
-          border border-indigo-900/30 
+          aspect-video
+          rounded-lg
+          border border-indigo-900/30
           shadow-inner
           z-50
-          opacity-100 
+          opacity-100
           scale-100
         "
             ></iframe>
