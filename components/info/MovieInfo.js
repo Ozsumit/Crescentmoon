@@ -230,7 +230,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               // onClick={toggleTrailer}
               onLoad={handleIframeLoad}
               src={iframeSrc}
-              allow="autoplay fullscreen unmute"
+              allow="autoplay;fullscreen"
               className="
         w-full
           sm:w-[900px]
