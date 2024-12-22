@@ -184,7 +184,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     `}
         >
           {/* Server Selection Menu */}
-          <div className="absolute top-3 right-3 z-50">
+          <div className="absolute top-3 right-3 z-[100]">
             <div className="relative">
               <button
                 className="px-2.5 py-1.5 bg-gray-800 text-indigo-200 hover:bg-gray-700 rounded-lg shadow-lg border border-indigo-900/30 transition-colors"
