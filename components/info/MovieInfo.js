@@ -227,21 +227,21 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           {/* Video Iframe */}
           <div className="flex justify-center z-50 relative">
             <iframe
-              // onClick={toggleTrailer}
               onLoad={handleIframeLoad}
               src={iframeSrc}
-              allow="autoplay fullscreen unmute"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
               className="
-        w-full
-          sm:w-[900px]
-          aspect-video 
-          rounded-lg 
-          border border-indigo-900/30 
-          shadow-inner
-          z-50
-          opacity-100 
-          scale-100
-        "
+    w-full
+    sm:w-[900px]
+    aspect-video 
+    rounded-lg 
+    border border-indigo-900/30 
+    shadow-inner
+    z-50
+    opacity-100 
+    scale-100
+  "
             ></iframe>
           </div>
         </div>
