@@ -15,7 +15,7 @@ const VIDEO_SOURCES = [
   {
     name: "VidLink",
     url: `https://vidlink.pro/movie/`,
-    params: "?multiLang=true",
+    params: "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=vid&player=default&title=true&poster=true&autoplay=true&nextbutton=true",
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
