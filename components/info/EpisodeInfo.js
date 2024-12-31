@@ -24,12 +24,12 @@ const VIDEO_SOURCES = [
   },
   {
     name: "2Embed",
-    url: `https://2embed.cc/embedtv/`,
+    url: `https://2embed.cc/embed/tv/`,
     icon: <Server className="w-4 h-4" />,
   },
   {
     name: "VidSrc",
-    url: `https://v2.vidsrc.me/embedtv/`,
+    url: `https://vidsrc.net/embed/tv/`,
     icon: <Server className="w-4 h-4" />,
   },
   {
@@ -133,7 +133,7 @@ const EpisodeInfo = ({
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12 text-white">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 pt-16 to-slate-900 min-h-screen py-12 text-white">
       <div className="container mx-auto px-4 max-w-6xl">
         {isLoading ? (
           <div className="flex justify-center items-center h-screen">
@@ -179,14 +179,14 @@ const EpisodeInfo = ({
                   <button
                     key={server.name}
                     onClick={() => handleServerChange(server)}
-                    className={`p-2 rounded-full transition-all duration-300
+                    className={`p-2 w-[7rem] rounded-full flex gap-2 flex-roww justify-center  items-center transition-all duration-300
                       ${
                         selectedServer.name === server.name
                           ? "bg-indigo-600 text-white"
                           : "bg-slate-700 text-slate-300 hover:bg-slate-600"
                       }`}
                   >
-                    {server.icon}
+                    {server.icon} {server.name}
                   </button>
                 ))}
               </div>
@@ -199,7 +199,7 @@ const EpisodeInfo = ({
                   src={iframeSrc}
                   title="Episode Player"
                   frameBorder="0"
-                  allow="autoplay; fullscreen"
+                  allow="autoplay  fullscreen"
                   allowFullScreen
                   className="w-full h-full rounded-xl shadow-2xl"
                 ></iframe>
@@ -219,9 +219,13 @@ const EpisodeInfo = ({
                   )
                 }
                 disabled={currentEpisodeIndex === 0}
-                className="p-2 rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all duration-300"
+                className={`p-2  rounded-full flex gap-2 flex-roww justify-center  items-center transition-all duration-300${
+                  currentEpisodeIndex === 0
+                    ? "bg-slate-700 text-slate-300 cursor-not-allowed"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5" /> Previous Episode
               </button>
               <button
                 onClick={() =>
@@ -230,9 +234,13 @@ const EpisodeInfo = ({
                   )
                 }
                 disabled={currentEpisodeIndex === totalEpisodes - 1}
-                className="p-2 rounded-full bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all duration-300"
+                className={`p-2  rounded-full flex gap-2 flex-roww justify-center  items-center transition-all duration-300 ${
+                  currentEpisodeIndex === totalEpisodes - 1
+                    ? "bg-slate-700 text-slate-300 cursor-not-allowed"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
               >
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5" /> Next Episode
               </button>
             </div>
 
@@ -363,4 +371,3 @@ const EpisodeInfo = ({
 };
 
 export default EpisodeInfo;
-s
