@@ -45,7 +45,8 @@ const EpisodeInfo = ({
   seriesData,
   onEpisodeChange,
 }) => {
-  const defaultServer = VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[3];
+  const defaultServer =
+    VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[3];
   const [iframeSrc, setIframeSrc] = useState("");
   const [selectedServer, setSelectedServer] = useState(defaultServer);
   const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
@@ -124,7 +125,10 @@ const EpisodeInfo = ({
     setIframeSrc(
       `${serverUrl}${seriesId}/${selectedEpisode.season_number}/${selectedEpisode.episode_number}${serverParams}`
     );
-    fetchEpisodeInfo(selectedEpisode.season_number, selectedEpisode.episode_number);
+    fetchEpisodeInfo(
+      selectedEpisode.season_number,
+      selectedEpisode.episode_number
+    );
   }, []);
 
   return (
@@ -172,8 +176,8 @@ const EpisodeInfo = ({
                   <button
                     key={server.name}
                     onClick={() => handleServerChange(server)}
-                    className={`p-2 rounded-full transition-all duration-300 
-                      ${
+                    className={`p-2 rounded-full transition-all duration-300
+                      \\${
                         selectedServer.name === server.name
                           ? "bg-indigo-600 text-white"
                           : "bg-slate-700 text-slate-300 hover:bg-slate-600"
@@ -206,7 +210,7 @@ const EpisodeInfo = ({
               <button
                 onClick={handlePreviousEpisode}
                 disabled={currentEpisodeIndex === 0}
-                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 ${
+                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 \\${
                   currentEpisodeIndex === 0
                     ? "bg-slate-700 text-slate-500 cursor-not-allowed"
                     : "bg-slate-700 text-slate-300 hover:bg-slate-600"
@@ -217,7 +221,7 @@ const EpisodeInfo = ({
               <button
                 onClick={handleNextEpisode}
                 disabled={currentEpisodeIndex === totalEpisodes - 1}
-                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 ${
+                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 \\${
                   currentEpisodeIndex === totalEpisodes - 1
                     ? "bg-slate-700 text-slate-500 cursor-not-allowed"
                     : "bg-slate-700 text-slate-300 hover:bg-slate-600"
@@ -247,6 +251,30 @@ const EpisodeInfo = ({
                   </div>
                 )}
                 <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-8">
+                    <button
+                      onClick={handlePreviousEpisode}
+                      disabled={currentEpisodeIndex === 0}
+                      className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 \\${
+                        currentEpisodeIndex === 0
+                          ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                          : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                      }`}
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={handleNextEpisode}
+                      disabled={currentEpisodeIndex === totalEpisodes - 1}
+                      className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 \\${
+                        currentEpisodeIndex === totalEpisodes - 1
+                          ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                          : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                      }`}
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
                   <div className="bg-slate-800 p-6 rounded-xl">
                     <h3 className="text-xl font-semibold mb-4 text-indigo-400">
                       Episode Overview
@@ -304,10 +332,11 @@ const EpisodeInfo = ({
                   <div
                     key={episode.episode_number}
                     className={`
-                      relative rounded-lg overflow-hidden cursor-pointer 
+                      relative rounded-lg overflow-hidden cursor-pointer
                       transition-all duration-300 group
-                      ${
-                        selectedEpisode.episode_number === episode.episode_number
+                      \\${
+                        selectedEpisode.episode_number ===
+                        episode.episode_number
                           ? "ring-4 ring-indigo-500 scale-105 bg-indigo-800"
                           : "hover:scale-105 hover:ring-2 hover:ring-slate-600"
                       }
