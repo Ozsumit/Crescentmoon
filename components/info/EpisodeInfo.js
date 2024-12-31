@@ -34,7 +34,7 @@ const VIDEO_SOURCES = [
   },
   {
     name: "EmbedSu",
-    url: `https://embed.su/embedtv/`,
+    url: `https://embed.su/embed/tv/`,
     params: "?multiLang=true",
     icon: <Server className="w-4 h-4" />,
   },
@@ -49,7 +49,7 @@ const EpisodeInfo = ({
 }) => {
   // Find the default server (VidLink)
   const defaultServer =
-    VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[0];
+    VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[3];
 
   const [iframeSrc, setIframeSrc] = useState("");
   const [selectedServer, setSelectedServer] = useState(defaultServer);
