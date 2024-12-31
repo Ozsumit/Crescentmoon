@@ -12,15 +12,13 @@ import {
   User,
 } from "lucide-react";
 
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
 const VIDEO_SOURCES = [
   {
     name: "VidLink",
     url: `https://vidlink.pro/tv/`,
     params: "?multiLang=true",
     icon: <Server className="w-4 h-4" />,
-    default: true, // Added default flag
+    default: true,
   },
   {
     name: "2Embed",
@@ -47,10 +45,7 @@ const EpisodeInfo = ({
   seriesData,
   onEpisodeChange,
 }) => {
-  // Find the default server (VidLink)
-  const defaultServer =
-    VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[3];
-
+  const defaultServer = VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[3];
   const [iframeSrc, setIframeSrc] = useState("");
   const [selectedServer, setSelectedServer] = useState(defaultServer);
   const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
@@ -60,32 +55,37 @@ const EpisodeInfo = ({
 
   const totalEpisodes = seasonData.episodes.length;
   const totalSeasons = seriesData.number_of_seasons;
-
   const currentEpisodeIndex = seasonData.episodes.findIndex(
     (ep) => ep.episode_number === selectedEpisode.episode_number
   );
 
   const handleEpisodeChange = (episode) => {
     setSelectedEpisode(episode);
-
-    // Automatically generate iframe source when episode changes
     const serverUrl = selectedServer.url;
     const serverParams = selectedServer.params || "";
     setIframeSrc(
       `${serverUrl}${seriesId}/${episode.season_number}/${episode.episode_number}${serverParams}`
     );
-
     fetchEpisodeInfo(episode.season_number, episode.episode_number);
-
     if (onEpisodeChange) {
       onEpisodeChange(episode);
     }
   };
 
+  const handlePreviousEpisode = () => {
+    if (currentEpisodeIndex > 0) {
+      handleEpisodeChange(seasonData.episodes[currentEpisodeIndex - 1]);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    if (currentEpisodeIndex < totalEpisodes - 1) {
+      handleEpisodeChange(seasonData.episodes[currentEpisodeIndex + 1]);
+    }
+  };
+
   const handleServerChange = (server) => {
     setSelectedServer(server);
-
-    // Automatically update iframe source and play when server changes
     const serverUrl = server.url;
     const serverParams = server.params || "";
     setIframeSrc(
@@ -119,17 +119,12 @@ const EpisodeInfo = ({
   };
 
   useEffect(() => {
-    // Set initial iframe source when component mounts
     const serverUrl = defaultServer.url;
     const serverParams = defaultServer.params || "";
     setIframeSrc(
       `${serverUrl}${seriesId}/${selectedEpisode.season_number}/${selectedEpisode.episode_number}${serverParams}`
     );
-
-    fetchEpisodeInfo(
-      selectedEpisode.season_number,
-      selectedEpisode.episode_number
-    );
+    fetchEpisodeInfo(selectedEpisode.season_number, selectedEpisode.episode_number);
   }, []);
 
   return (
@@ -141,7 +136,6 @@ const EpisodeInfo = ({
           </div>
         ) : (
           <>
-            {/* Episode Header */}
             <div className="text-center mb-10">
               <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">
                 {selectedEpisode.name}
@@ -172,7 +166,6 @@ const EpisodeInfo = ({
               </div>
             </div>
 
-            {/* Video Player Controls */}
             <div className="flex justify-center mb-8 relative">
               <div className="flex items-center space-x-4">
                 {VIDEO_SOURCES.map((server) => (
@@ -192,7 +185,6 @@ const EpisodeInfo = ({
               </div>
             </div>
 
-            {/* Video Player */}
             <div className="aspect-video mb-10">
               {iframeSrc ? (
                 <iframe
@@ -210,7 +202,31 @@ const EpisodeInfo = ({
               )}
             </div>
 
-            {/* Episode Details */}
+            <div className="flex justify-between items-center mb-8">
+              <button
+                onClick={handlePreviousEpisode}
+                disabled={currentEpisodeIndex === 0}
+                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 ${
+                  currentEpisodeIndex === 0
+                    ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleNextEpisode}
+                disabled={currentEpisodeIndex === totalEpisodes - 1}
+                className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-300 ${
+                  currentEpisodeIndex === totalEpisodes - 1
+                    ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
+              >
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+
             {episodeExtraInfo && (
               <div className="grid md:grid-cols-2 gap-8 mb-10">
                 {episodeExtraInfo.still_path && (
@@ -279,7 +295,6 @@ const EpisodeInfo = ({
               </div>
             )}
 
-            {/* Episode Selector */}
             <div>
               <h3 className="text-2xl font-semibold mb-6 text-center">
                 All Episodes in Season {selectedEpisode.season_number}
@@ -292,8 +307,7 @@ const EpisodeInfo = ({
                       relative rounded-lg overflow-hidden cursor-pointer 
                       transition-all duration-300 group
                       ${
-                        selectedEpisode.episode_number ===
-                        episode.episode_number
+                        selectedEpisode.episode_number === episode.episode_number
                           ? "ring-4 ring-indigo-500 scale-105 bg-indigo-800"
                           : "hover:scale-105 hover:ring-2 hover:ring-slate-600"
                       }
@@ -307,20 +321,11 @@ const EpisodeInfo = ({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div
-                        className="
-                          aspect-video bg-slate-700 flex items-center justify-center 
-                          text-slate-300 font-semibold
-                        "
-                      >
+                      <div className="aspect-video bg-slate-700 flex items-center justify-center text-slate-300 font-semibold">
                         Ep {episode.episode_number}
                       </div>
                     )}
-                    <div
-                      className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 
-                      transform translate-y-full group-hover:translate-y-0 
-                      transition-transform duration-300"
-                    >
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       <p className="text-sm text-white truncate">
                         {episode.name || `Episode ${episode.episode_number}`}
                       </p>
