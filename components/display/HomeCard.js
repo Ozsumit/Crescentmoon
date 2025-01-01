@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Heart, Star, Calendar, Info } from "lucide-react";
+import { Heart, Star, Calendar, Info, Tv, Film } from "lucide-react";
 
 const HomeCards = ({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -47,6 +47,9 @@ const HomeCards = ({ MovieCard }) => {
     date: formatDate(MovieCard.release_date || MovieCard.first_air_date),
     type: MovieCard.media_type === "tv" ? "Series" : "Movie",
     overview: MovieCard.overview || "No overview available",
+    ...(MovieCard.media_type === "tv" && {
+      totalSeasons: MovieCard.number_of_seasons || "N/A",
+    }),
   };
 
   // Handle adding/removing favorites
@@ -124,6 +127,13 @@ const HomeCards = ({ MovieCard }) => {
             <Calendar size={14} className="mr-1" />
             <span>{additionalDetails.date}</span>
           </div>
+
+          {MovieCard.media_type === "tv" && (
+            <div className="flex items-center gap-1">
+              <Tv size={14} className="text-blue-400" />
+              <span>S{additionalDetails.totalSeasons}</span>
+            </div>
+          )}
         </div>
       </div>
       {/* Favorite Toggle Button */}

@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Home, Film, Tv, Search, Heart, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
+import SearchBar from "../searchbar";
+import PopoverSearchBar from "../searchbar";
+import QuickSearch from "../searchbar";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -121,13 +124,13 @@ const Header = () => {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4 sm:space-x-6">
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Link
+              {/* <Link
                 href="/search"
                 className="text-white/80 hover:text-white transition-colors"
-                onClick={resetInteractionTimer}
-              >
-                <Search size={22} />
-              </Link>
+            
+              */}
+
+              <QuickSearch />
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>

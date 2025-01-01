@@ -15,20 +15,21 @@ const VIDEO_SOURCES = [
   {
     name: "VidLink",
     url: `https://vidlink.pro/movie/`,
-    params: "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=vid&player=default&title=true&poster=true&autoplay=true&nextbutton=true",
+    params:
+      "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=vid&player=default&title=true&poster=true&autoplay=true&nextbutton=true",
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
   {
     name: "2Embed",
-    url: `https://2embed.cc/embed/`,
+    url: `https://2embed.cc/embed/movie/`,
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
   {
     name: "VidSrc",
     params: "?multiLang=true",
-    url: `https://v2.vidsrc.me/embed/`,
+    url: `https://v2.vidsrc.me/embed/movie/`,
     icon: <Server className="w-4 h-4" />,
     downloadSupport: true,
     getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
@@ -42,7 +43,8 @@ const VIDEO_SOURCES = [
   },
   {
     name: "MultiEmbed",
-    url: `https://multiembed.mov/?video_id=`,
+    url: `https://multiembed.mov/directstream.php?video_id=`,
+    params: "&tmdb=1",
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
@@ -163,7 +165,16 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     fetchCastInfo();
     handleServerChange(selectedServer);
   }, [MovieDetail.id, id, selectedServer]);
+  useEffect(() => {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== "https://vidlink.pro") return;
 
+      if (event.data?.type === "MEDIA_DATA") {
+        const mediaData = event.data.data;
+        localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
+      }
+    });
+  }, []);
   return (
     <div
       className={`
@@ -226,9 +237,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             <iframe
               onLoad={handleIframeLoad}
               src={iframeSrc}
-              allow="autoplay; fullscreen; picture-in-picture"
+              allow="autoplay fullscreen picture-in-picture"
               frameborder="0"
-  allowfullscreen
+              allowfullscreen
               className="
     w-full
     sm:w-[900px]
@@ -241,7 +252,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     scale-100
   "
             ></iframe>
-
           </div>
         </div>
       </div>

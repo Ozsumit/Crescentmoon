@@ -1,19 +1,22 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronRight, Pause, Play, Volume2, VolumeX } from "lucide-react";
 
 const SpotlightCarousel = () => {
   const [spotlights, setSpotlights] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isMounted, setIsMounted] = useState(false); // State to ensure client-side rendering
+  const [isMuted, setIsMuted] = useState(true);
+  const [trailers, setTrailers] = useState({});
+  const [isMounted, setIsMounted] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    setIsMounted(true); // Mark component as mounted
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -24,7 +27,12 @@ const SpotlightCarousel = () => {
       try {
         const response = await fetch(URL);
         const data = await response.json();
-        setSpotlights(data.results.slice(0, 6) || []);
+        const results = data.results.slice(0, 6) || [];
+        setSpotlights(results);
+
+        results.forEach((item) => {
+          fetchTrailer(item.id, item.media_type);
+        });
       } catch (error) {
         console.error("Error fetching spotlight data:", error);
       }
@@ -33,25 +41,97 @@ const SpotlightCarousel = () => {
     fetchSpotlights();
   }, []);
 
-  useEffect(() => {
-    if (isPaused) return;
+  const fetchTrailer = async (id, mediaType) => {
+    const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const URL = `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${API_KEY}`;
 
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % spotlights.length);
-    }, 5000);
+    try {
+      const response = await fetch(URL);
+      const data = await response.json();
+      const trailer = data.results.find(
+        (video) => video.type === "Trailer" && video.site === "YouTube"
+      );
 
-    return () => clearInterval(timer);
-  }, [spotlights.length, isPaused]);
+      if (trailer) {
+        setTrailers((prev) => ({
+          ...prev,
+          [id]: trailer.key,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching trailer:", error);
+    }
+  };
 
   const handleNextSlide = () => {
+    setShowTrailer(false);
     setCurrentSlide((prev) => (prev + 1) % spotlights.length);
+
+    // Show trailer after 10 seconds for the new slide
+    setTimeout(() => {
+      setShowTrailer(true);
+    }, 10000);
   };
+
+  useEffect(() => {
+    // Show trailer after 10 seconds for initial slide
+    const timer = setTimeout(() => {
+      setShowTrailer(true);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Listen for video end
+    const handleMessage = (event) => {
+      if (event.data && typeof event.data === "string") {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.event === "onStateChange" && data.info === 0 && !isPaused) {
+            handleNextSlide();
+          }
+        } catch (e) {
+          // Handle parsing error
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isPaused]);
 
   const togglePause = () => {
     setIsPaused(!isPaused);
+    const iframe = document.querySelector("iframe");
+    if (iframe) {
+      const command = isPaused ? "playVideo" : "pauseVideo";
+      iframe.contentWindow.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: command,
+        }),
+        "*"
+      );
+    }
   };
 
-  if (!isMounted || spotlights.length === 0) return null; // Avoid rendering until mounted and data is loaded
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    const iframe = document.querySelector("iframe");
+    if (iframe) {
+      const command = isMuted ? "unMute" : "mute";
+      iframe.contentWindow.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: command,
+        }),
+        "*"
+      );
+    }
+  };
+
+  if (!isMounted || spotlights.length === 0) return null;
 
   const currentItem = spotlights[currentSlide];
   const title = currentItem.title || currentItem.name;
@@ -60,23 +140,22 @@ const SpotlightCarousel = () => {
   const posterPath = currentItem.backdrop_path
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
     : "https://i.imgur.com/xDHFGVl.jpeg";
+  const trailerKey = trailers[currentItem.id];
 
   const isTV = currentItem.media_type === "tv";
   const href = isTV ? "/series/[id]" : "/movie/[id]";
   const as = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;
 
   return (
-    <div className="relative w-full h-[500px] md:h-[600px] overflow-hidden group">
-      {/* Gradient Overlay */}
+    <div className="relative w-full h-screen overflow-hidden group">
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none"></div>
 
-      {/* Background Image */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
           className="absolute inset-0"
         >
@@ -85,12 +164,31 @@ const SpotlightCarousel = () => {
             alt={title}
             layout="fill"
             objectFit="cover"
-            className="absolute inset-0 w-full h-full object-cover brightness-[0.6]"
+            priority
+            className={`absolute inset-0 w-full h-full object-cover brightness-[0.6] transition-opacity duration-1000 ${
+              showTrailer ? "opacity-0" : "opacity-100"
+            }`}
           />
+
+          {trailerKey && (
+            <div
+              className={`relative w-full h-full transition-opacity duration-1000 ${
+                showTrailer ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <iframe
+                ref={videoRef}
+                className="absolute w-full h-full scale-150"
+                src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&vq=hd1440&autoplay=1&mute=1&controls=0`}
+                // src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&autoplay=1&mute=1&controls=0&modestbranding=1&loop=0&playlist=${trailerKey}&hd=1&playsinline=1?vq=hd720`}
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
-      {/* Content Overlay */}
       <div className="relative z-20 flex items-center h-full px-4 md:px-16">
         <AnimatePresence mode="wait">
           <motion.div
@@ -137,7 +235,6 @@ const SpotlightCarousel = () => {
         </AnimatePresence>
       </div>
 
-      {/* Slide Controls */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">
         <div className="flex space-x-2">
           {spotlights.map((_, index) => (
@@ -149,6 +246,15 @@ const SpotlightCarousel = () => {
             />
           ))}
         </div>
+
+        {trailerKey && (
+          <button
+            onClick={toggleMute}
+            className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-all"
+          >
+            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </button>
+        )}
 
         <button
           onClick={togglePause}

@@ -65,21 +65,18 @@ const Search = () => {
       <div className="container mx-auto mt-16 px-4 py-8 flex-grow">
         <SearchTitle />
         <SearchBar onSearch={handleSearch} onTyping={handleTyping} />
-
         {/* Loading and Error States */}
         {isLoading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="animate-spin text-indigo-400" size={48} />
           </div>
         )}
-
         {error && (
           <div className="bg-red-900/30 border border-red-700 rounded-xl p-4 my-4 text-center">
             <p className="text-red-300">{error}</p>
           </div>
         )}
-
-        {/* Search Results */}
+        {/* Search results */}
         {!isLoading && !error && (
           <div className="mt-8">
             {data.length > 0 ? (
