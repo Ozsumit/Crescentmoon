@@ -97,35 +97,6 @@ const fetchMediaDetails = async (mediaId, mediaType) => {
   }
 };
 
-// Initialize a variable for watched value
-let watchedValue;
-
-// Retrieve the entire object from localStorage
-const rawData = localStorage.getItem("vidlinkProgress");
-
-if (rawData) {
-  // Parse the JSON string into a JavaScript object
-  const data = JSON.parse(rawData);
-
-  // Example: Access progress for a specific ID, e.g., "786892"
-  const movieId = { movieId };
-  if (data[movieId]) {
-    watchedValue = data[movieId].progress.watched;
-    console.log(`Watched for ID ${movieId}: ${watchedValue} seconds`);
-  } else {
-    console.log(`No data found for ID: ${movieId}`);
-  }
-} else {
-  console.log("No vidlinkProgress data found in localStorage.");
-}
-
-// Use the watchedValue variable outside the block
-if (watchedValue !== undefined) {
-  console.log(`The extracted watched value is: ${watchedValue} seconds`);
-} else {
-  console.log("Watched value is not available.");
-}
-
 const calculateProgress = (watched, duration) => {
   if (!watched || !duration) return 0;
   return Math.min((watched / duration) * 100, 100);
