@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Footer from "@/components/footer/Footer";
 import AdBlocker from "@/components/filters";
+import WelcomeModal, { WelcomeModalTrigger } from "@/components/welcome";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,7 +18,12 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <Header />
         <div className="mt-0">{children}</div>
-<AdBlocker/>
+        {/* <WelcomeModal onClose={() => {}} /> */}
+        {/* <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger>// Auto-show on first visit or version update
+
+// Or use the trigger button
+<WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger> */}
+        <AdBlocker />
         <Footer />
       </body>
     </html>

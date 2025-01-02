@@ -76,28 +76,41 @@ const HomeCards = ({ MovieCard }) => {
     setIsFavorite(favorites.some((item) => item.id === MovieCard.id));
   }, [MovieCard.id]);
 
+  const renderAdditionalDetails = () => {
+    if (additionalDetails.type === "tv") {
+      return (
+        <div className="flex items-center gap-1">
+          <Tv size={14} className="text-blue-400" />
+          <span>S{additionalDetails.totalSeasons}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1">
+        <Film size={14} className="text-purple-400" />
+        <span>Movie</span>
+      </div>
+    );
+  };
   return (
-    <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto  overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
+    <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
       <Link href={getLink()} title={renderTitle()} className="block relative">
         <Image
           src={getImagePath()}
           alt={renderTitle()}
-          className="w-full h-32 sm:h-48  object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
+          className="w-full h-32 sm:h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
           width={288}
           height={176}
           unoptimized
         />
         {/* Subtle Type Tag */}
         <div className="absolute top-2 left-2 bg-black/40 text-white/90 px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">
-          {additionalDetails.type}
+          {renderAdditionalDetails()}
         </div>
       </Link>
       {/* Hover Overlay with Information */}
       <Link href={href} as={as}>
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
-          {/* <h3 className="font-semibold text-lg mb-2 text-shadow-md">
-            {renderTitle()}
-          </h3> */}
           <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
             {additionalDetails.overview}
           </p>
@@ -109,7 +122,7 @@ const HomeCards = ({ MovieCard }) => {
             <Info size={16} className="mr-2" />
             More Details
           </Link>
-        </div>{" "}
+        </div>
       </Link>
       <div className="p-4">
         <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">

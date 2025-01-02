@@ -70,7 +70,7 @@ const TvInfo = ({ TvDetail, genreArr }) => {
   }, [TvDetail.id]);
 
   return (
-    <div className="bg-gradient-to-br rounded-lg  pt-[8.5rem] from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
+    <div className="bg-gradient-to-br rounded-lg pt-[8.5rem] from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-[350px_1fr] gap-8">
           {/* Poster Section */}
@@ -112,7 +112,7 @@ const TvInfo = ({ TvDetail, genreArr }) => {
             </div>
 
             {/* Genres */}
-            <div className="flex flex-wrap gap-2 items-center  justify-center mb-6">
+            <div className="flex flex-wrap gap-2 items-center justify-center mb-6">
               {genreArr?.map((genre, index) => (
                 <span
                   key={index}
@@ -139,12 +139,17 @@ const TvInfo = ({ TvDetail, genreArr }) => {
               </button>
             </div>
 
-            {/* Overview */}
-            <p className="text-slate-400 text-base leading-relaxed text-center mb-6">
-              {TvDetail.overview || "No overview available for this TV show."}
-            </p>
+            {/* Overview Section */}
+            <div className="bg-slate-800 p-6 rounded-xl mb-6">
+              <h3 className="text-xl font-semibold mb-4 text-indigo-400">
+                Overview
+              </h3>
+              <p className="text-slate-400 text-base leading-relaxed text-center mb-6">
+                {TvDetail.overview || "No overview available for this TV show."}
+              </p>
+            </div>
 
-            {/* Cast Info */}
+            {/* Cast Info Section */}
             {isLoading ? (
               <div className="flex justify-center items-center mb-6">
                 <Loader className="w-12 h-12 animate-spin text-indigo-500" />
@@ -186,8 +191,6 @@ const TvInfo = ({ TvDetail, genreArr }) => {
                 </div>
               )
             )}
-
-            {/* Favorite Button */}
 
             {/* Additional Info */}
             <div className="space-y-2 text-slate-300 mt-6">

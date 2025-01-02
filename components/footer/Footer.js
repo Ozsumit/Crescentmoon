@@ -191,8 +191,6 @@ const Footer = () => {
               >
                 Learn More
               </Link>
-            <WelcomeModalTrigger>Help</WelcomeModalTrigger>
-
             </div>
           </div>
         </div>

@@ -18,3 +18,12 @@ body {
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;
 }
+.mobile-icon-only .mobile-text {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-icon-only .mobile-text {
+    display: inline;
+  }
+}

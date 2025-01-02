@@ -1,3 +1,4 @@
+// "use client";
 import SpotlightCarousel from "@/components/display/carausel";
 import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
@@ -36,7 +37,11 @@ export default async function Home() {
       <div className="w-full flex px-0 sm:px-4  justify-center items-center">
         <HomeDisplay movies={data} />
       </div>
-      <WelcomeModal />
+      {/* <WelcomeModal /> */}
+      {/* // Auto-show on first visit or version update */}
+      {/* <WelcomeModal onClose={() => {}} /> */}
+
+      {/* // Or use the trigger button */}
       <AdblockerModal />
     </div>
   );

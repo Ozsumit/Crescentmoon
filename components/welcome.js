@@ -10,7 +10,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-// Exportable Welcome Modal Trigger Button
 export const WelcomeModalTrigger = ({ children, onClick, className = "" }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -27,20 +26,24 @@ export const WelcomeModalTrigger = ({ children, onClick, className = "" }) => {
       >
         {children || "Open Welcome Modal"}
       </button>
-      {isModalOpen && <WelcomeModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && (
+        <WelcomeModal
+          onClose={() => setIsModalOpen(false)}
+          isTriggered={true}
+        />
+      )}
     </>
   );
 };
 
-const WelcomeModal = ({ onClose }) => {
+const WelcomeModal = ({ onClose, isTriggered = false }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentSection, setCurrentSection] = useState(0);
   const [characterPose, setCharacterPose] = useState("wave");
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [idleAnimationInterval, setIdleAnimationInterval] = useState(null);
-  const CURRENT_VERSION = "1.2.3"; // Incremented version
+  const CURRENT_VERSION = "1.2.3";
 
-  // Character images mapping
   const characterImages = {
     wave: "https://github.com/Ozsumit/fiiles.images/blob/main/gene_20241216_195549.png?raw=true",
     point:
@@ -118,15 +121,17 @@ const WelcomeModal = ({ onClose }) => {
   ];
 
   const startIdleAnimations = useCallback(() => {
+    if (idleAnimationInterval) return;
+
     const idleInterval = setInterval(() => {
       const idlePoses = ["idle1", "idle2"];
       const randomPose =
         idlePoses[Math.floor(Math.random() * idlePoses.length)];
       setCharacterPose(randomPose);
-    }, 1000); // Change pose every 3 seconds
+    }, 3000);
 
     setIdleAnimationInterval(idleInterval);
-  }, []);
+  }, [idleAnimationInterval]);
 
   const stopIdleAnimations = useCallback(() => {
     if (idleAnimationInterval) {
@@ -136,60 +141,79 @@ const WelcomeModal = ({ onClose }) => {
   }, [idleAnimationInterval]);
 
   useEffect(() => {
-    const storedVersion = localStorage.getItem("cresentMoonVersion");
-    const isFirstVisit = !localStorage.getItem("hasVisitedCresentMoon");
+    const shouldShowModal = () => {
+      if (isTriggered) return true;
 
-    if (isFirstVisit || storedVersion !== CURRENT_VERSION) {
+      const storedVersion = localStorage.getItem("cresentMoonVersion");
+      const hasVisited = localStorage.getItem("hasVisitedCresentMoon");
+
+      return (
+        !hasVisited || (storedVersion && storedVersion !== CURRENT_VERSION)
+      );
+    };
+
+    const modalVisible = shouldShowModal();
+
+    if (modalVisible) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
       startIdleAnimations();
+
+      const handleEscape = (e) => {
+        if (e.key === "Escape") handleClose();
+      };
+      window.addEventListener("keydown", handleEscape);
+
+      return () => {
+        window.removeEventListener("keydown", handleEscape);
+        stopIdleAnimations();
+        document.body.style.overflow = "unset";
+      };
     }
+  }, [isTriggered, startIdleAnimations, stopIdleAnimations]);
 
-    return () => {
-      document.body.style.overflow = "unset";
-      stopIdleAnimations();
-    };
-  }, [startIdleAnimations, stopIdleAnimations]);
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false);
     localStorage.setItem("hasVisitedCresentMoon", "true");
     localStorage.setItem("cresentMoonVersion", CURRENT_VERSION);
     document.body.style.overflow = "unset";
     stopIdleAnimations();
     onClose?.();
-  };
+  }, [CURRENT_VERSION, onClose, stopIdleAnimations]);
 
-  const handleNext = () => {
-    // Prevent multiple clicks
+  const handleNext = useCallback(() => {
     if (isNextButtonDisabled) return;
 
-    // Disable button and start cooldown
     setIsNextButtonDisabled(true);
-    setTimeout(() => setIsNextButtonDisabled(false), 1000);
+    setTimeout(() => setIsNextButtonDisabled(false), 500);
 
-    // Stop idle animations when user interacts
     stopIdleAnimations();
 
     if (currentSection < sections.length - 1) {
-      const nextSection = currentSection + 1;
-      setCurrentSection(nextSection);
-      setCharacterPose(sections[nextSection].characterPose);
+      setCurrentSection((prev) => prev + 1);
+      setCharacterPose(sections[currentSection + 1].characterPose);
+      startIdleAnimations();
     } else {
       handleClose();
     }
-  };
+  }, [
+    currentSection,
+    handleClose,
+    isNextButtonDisabled,
+    sections.length,
+    startIdleAnimations,
+    stopIdleAnimations,
+  ]);
 
-  const handlePrevious = () => {
-    // Stop idle animations when user interacts
+  const handlePrevious = useCallback(() => {
     stopIdleAnimations();
 
     if (currentSection > 0) {
-      const prevSection = currentSection - 1;
-      setCurrentSection(prevSection);
-      setCharacterPose(sections[prevSection].characterPose);
+      setCurrentSection((prev) => prev - 1);
+      setCharacterPose(sections[currentSection - 1].characterPose);
+      startIdleAnimations();
     }
-  };
+  }, [currentSection, sections, startIdleAnimations, stopIdleAnimations]);
 
   const renderListItem = (item) => {
     if (typeof item === "object" && item.url) {
@@ -215,10 +239,10 @@ const WelcomeModal = ({ onClose }) => {
   const currentSectionData = sections[currentSection];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center  justify-center bg-black bg-opacity-80 p-4 overflow-hidden">
-      <div className="  bg-gray-900/80 backdrop-blur-lg z-20 text-gray-200 rounded-2xl shadow-2xl w-full max-w-md mx-auto relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 overflow-hidden">
+      <div className="bg-gray-900/80 backdrop-blur-lg z-20 text-gray-200 rounded-2xl shadow-2xl w-full max-w-md mx-auto relative overflow-hidden">
         <div className="p-6 pt-4 z-40 relative">
-          <div className="flex  items-center  mb-4">
+          <div className="flex items-center mb-4">
             {currentSectionData.icon}
             <h3 className="text-lg text-left font-semibold text-indigo-400">
               {currentSectionData.title}
@@ -229,7 +253,6 @@ const WelcomeModal = ({ onClose }) => {
             {currentSectionData.items.map(renderListItem)}
           </ul>
 
-          {/* Navigation Dots */}
           <div className="flex z-40 justify-center space-x-2 mb-4">
             {sections.map((_, index) => (
               <div
@@ -241,7 +264,6 @@ const WelcomeModal = ({ onClose }) => {
             ))}
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex z-40 space-x-2">
             {currentSection > 0 && (
               <button
@@ -271,8 +293,6 @@ const WelcomeModal = ({ onClose }) => {
             </button>
           </div>
         </div>
-
-        {/* Animated Character */}
       </div>
       <div className="absolute bottom-[-50%] sm:bottom-0 left-0 z-30 w-[35rem] h-[35rem] transform transition-all duration-300 ease-in-out">
         <img
@@ -282,10 +302,10 @@ const WelcomeModal = ({ onClose }) => {
           alt={`Anime Girl ${characterPose} Pose`}
           className="object-contain -z-10 sm:-bottom-32 bottom-[-50%]"
         />
-        <div className="fixed bottom-[22rem] sm:bottom-4 top-50  left-1 sm:left-14 right-4 z-10">
+        <div className="fixed bottom-[22rem] sm:bottom-4 top-50 left-1 sm:left-14 right-4 z-10">
           <div className="bg-gray-800 bg-opacity-90 rounded-xl p-3 max-w-[50vw] relative">
             <div
-              className="absolute -right-2 top-[50%] bottom-[50%] rotate-90 sm:-top-2 sm:left-[50%]   sm:right-[50%] sm:rotate-0 w-0 h-0 
+              className="absolute -right-2 top-[50%] bottom-[50%] rotate-90 sm:-top-2 sm:left-[50%] sm:right-[50%] sm:rotate-0 w-0 h-0 
                 border-l-8 border-l-transparent
                 border-r-8 border-r-transparent
                 border-b-8 border-gray-800 border-opacity-90"
