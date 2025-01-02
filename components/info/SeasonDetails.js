@@ -1,11 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { Calendar, Film, Star } from "lucide-react";
-import SeasonDetails from "./SeasonDetails";
-import EpisodeDisplay from "../display/EpisodeDisplay";
+import { Calendar, ChevronLeft, Film, Star } from "lucide-react";
+import Link from "next/link";
 
 const SeasonInfo = (props) => {
-  let { SeasonInfos, id } = props;
+  let { SeasonInfos, seriesId } = props;
   let episodes = SeasonInfos.episodes || [];
 
   // Fallback for missing poster
@@ -20,6 +19,20 @@ const SeasonInfo = (props) => {
   return (
     <div className="bg-gradient-to-br rounded-lg from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
       <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href={`##`}
+            aria-label=" this button is not working"
+            className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-full"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span>Back to seasons </span>
+          </Link>
+
+          <div className="text-slate-400">
+            {SeasonInfos.name} • Season {SeasonInfos.season_number}
+          </div>
+        </div>
         <div className="grid md:grid-cols-[350px_1fr] gap-8">
           {/* Poster Section */}
           <div className="relative mx-auto max-w-[350px] w-full group">
@@ -83,7 +96,6 @@ const SeasonInfo = (props) => {
         </div>
 
         {/* Episodes Section */}
-       
       </div>
     </div>
   );

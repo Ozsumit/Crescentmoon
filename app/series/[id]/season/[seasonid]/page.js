@@ -2,7 +2,7 @@ import SeasonInfo from "@/components/info/SeasonInfo";
 import React from "react";
 
 async function getData(id, seasonid) {
-  const apiKey =process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   const resp = await fetch(
     `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}?api_key=${apiKey}`
@@ -18,7 +18,7 @@ async function getData(id, seasonid) {
 
 const SeasonsDetailsPage = async ({ params }) => {
   let { data, id } = await getData(params.id, params.seasonid);
-  return <SeasonInfo SeasonInfos={data} id={id} />;
+  return <SeasonInfo SeasonInfos={data} seriesId={id} />;
 };
 
 export default SeasonsDetailsPage;
