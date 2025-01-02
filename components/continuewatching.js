@@ -270,7 +270,7 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                handleFavoriteToggle(media.id);
+                handleFavoriteToggle(media);
               }}
               className="bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
               aria-label={
@@ -342,7 +342,7 @@ const ContinueWatching = () => {
   };
 
   useEffect(() => {
-    const loadStoredData = () => {
+    const loadStoredData = async () => {
       try {
         const progressData = JSON.parse(
           localStorage.getItem("vidLinkProgress") || "{}"
@@ -356,7 +356,15 @@ const ContinueWatching = () => {
           (a, b) => (b.last_updated || 0) - (a.last_updated || 0)
         );
 
-        setMediaItems(mediaArray);
+        // Fetch additional details for each media item
+        const updatedMediaArray = await Promise.all(
+          mediaArray.map(async (media) => {
+            const details = await fetchMediaDetails(media.id, media.type);
+            return { ...media, ...details };
+          })
+        );
+
+        setMediaItems(updatedMediaArray);
         setFavorites(storedFavorites);
       } catch (error) {
         console.error("Error loading stored data:", error);
@@ -382,13 +390,17 @@ const ContinueWatching = () => {
     }
   };
 
-  const handleFavoriteToggle = (mediaId) => {
-    const updatedFavorites = favorites.includes(mediaId)
-      ? favorites.filter((id) => id !== mediaId)
-      : [...favorites, mediaId];
-
-    setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  const handleFavoriteToggle = (media) => {
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    if (favorites.some((item) => item.id === media.id)) {
+      const updatedFavorites = favorites.filter((item) => item.id !== media.id);
+      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+      setFavorites(updatedFavorites);
+    } else {
+      favorites.push(media);
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      setFavorites(favorites);
+    }
   };
 
   const clearAllMedia = () => {
@@ -435,7 +447,7 @@ const ContinueWatching = () => {
               <MediaCard
                 key={media.id}
                 media={media}
-                isFavorite={favorites.includes(media.id)}
+                isFavorite={favorites.some((item) => item.id === media.id)}
                 handleFavoriteToggle={handleFavoriteToggle}
                 onRemove={handleRemoveMedia}
               />

@@ -64,6 +64,7 @@ const EpisodeCard = ({ episodeinfo, seriesId }) => {
     : "/placeholder-episode.jpg"; // Make sure to add a placeholder image
 
   // Construct the proper link
+  // /series/${movieData.series_id}/season/${movieData.season_number}/${movieData.episode_number}
   const episodeLink = `/series/${seriesId}/season/${season_number}/${episode_number}`;
 
   return (

@@ -38,7 +38,7 @@ const SeasonInfo = (props) => {
 
           {/* Episodes Display Component */}
           <div className="animate-fade-in">
-            <EpisodeDisplay EpisodeInfos={episodes} seriesId={id} />
+            <EpisodeDisplay EpisodeInfos={episodes} seriesId={seriesId} />
           </div>
 
           {/* Alternative Episode Styling (if needed) */}

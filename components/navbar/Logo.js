@@ -12,13 +12,13 @@ const Logo = () => {
         <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text text-3xl sm:text-4xl mr-0">
           C
         </span>
-        <span className="text-gray-800 dark:text-gray-200">rescent</span>
+        <span className="text-gray-200 dark:text-gray-200">rescent</span>
       </span>
       <span className="ml-2 flex items-baseline">
         <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-transparent bg-clip-text text-3xl sm:text-4xl mr-0">
           M
         </span>
-        <span className="text-gray-800 dark:text-gray-200">oon</span>
+        <span className="text-gray-200 dark:text-gray-200">oon</span>
       </span>
     </Link>
   );

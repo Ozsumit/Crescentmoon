@@ -99,11 +99,11 @@ const QuickSearch = ({ onSelect }) => {
     <div className="relative w-full max-w-md mx-auto">
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full flex items-center gap-2 px-4 py-2 bg-white-100/50 hover:bg-slate-800 transition-colors rounded-lg border border-slate-700/50 text-slate-400 mobile-icon-only"
+        className="w-full flex items-center gap-2 px-4 py-2 bg-white-100/50 hover:bg-slate-800 transition-colors rounded-lg border border-slate-700/50 text-slate-400"
       >
         <SearchIcon className="w-4 h-4" />
-        <span className="flex-1 text-left desktop-text">
-          Click <kbd>Ctrl+K</kbd> to search
+        <span className="flex-1 text-left hidden md:flex items-center">
+          Click <kbd className="mx-1">Ctrl+K</kbd> to search
         </span>
       </button>
 

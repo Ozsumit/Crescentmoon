@@ -237,7 +237,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             <iframe
               onLoad={handleIframeLoad}
               src={iframeSrc}
-              allow="autoplay fullscreen picture-in-picture"
+              allow="autoplay; fullscreen; picture-in-picture"
               frameborder="0"
               allowfullscreen
               className="

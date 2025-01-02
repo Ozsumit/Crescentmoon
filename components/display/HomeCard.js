@@ -1,18 +1,17 @@
-"use client";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
 import { Heart, Star, Calendar, Info, Tv, Film } from "lucide-react";
 
-const HomeCards = ({ MovieCard }) => {
+const HomeCard = ({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const isTV = MovieCard.media_type === "tv";
   const title = isTV ? MovieCard.name : MovieCard.title;
   const href = isTV ? "/series/[id]" : "/movie/[id]";
   const as = isTV ? `/series/${MovieCard.id}` : `/movie/${MovieCard.id}`;
 
-  // Determine image and link based on item type
   const getImagePath = () => {
     if (MovieCard.poster_path)
       return `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
@@ -39,20 +38,6 @@ const HomeCards = ({ MovieCard }) => {
     });
   };
 
-  // Get additional details
-  const additionalDetails = {
-    rating: MovieCard.vote_average
-      ? `${MovieCard.vote_average.toFixed(1)}/10`
-      : "N/A",
-    date: formatDate(MovieCard.release_date || MovieCard.first_air_date),
-    type: MovieCard.media_type === "tv" ? "Series" : "Movie",
-    overview: MovieCard.overview || "No overview available",
-    ...(MovieCard.media_type === "tv" && {
-      totalSeasons: MovieCard.number_of_seasons || "N/A",
-    }),
-  };
-
-  // Handle adding/removing favorites
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -76,43 +61,43 @@ const HomeCards = ({ MovieCard }) => {
     setIsFavorite(favorites.some((item) => item.id === MovieCard.id));
   }, [MovieCard.id]);
 
-  const renderAdditionalDetails = () => {
-    if (additionalDetails.type === "tv") {
-      return (
-        <div className="flex items-center gap-1">
-          <Tv size={14} className="text-blue-400" />
-          <span>S{additionalDetails.totalSeasons}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="flex items-center gap-1">
-        <Film size={14} className="text-purple-400" />
-        <span>Movie</span>
-      </div>
-    );
-  };
   return (
     <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
       <Link href={getLink()} title={renderTitle()} className="block relative">
-        <Image
-          src={getImagePath()}
-          alt={renderTitle()}
-          className="w-full h-32 sm:h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
-          width={288}
-          height={176}
-          unoptimized
-        />
-        {/* Subtle Type Tag */}
+        <div
+          className={`relative ${
+            !imageLoaded ? "opacity-0" : "opacity-100"
+          } transition-opacity duration-300`}
+        >
+          <Image
+            src={getImagePath()}
+            alt={renderTitle()}
+            className="w-full h-32 sm:h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
+            width={288}
+            height={176}
+            unoptimized
+            onLoadingComplete={() => setImageLoaded(true)}
+          />
+        </div>
         <div className="absolute top-2 left-2 bg-black/40 text-white/90 px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">
-          {renderAdditionalDetails()}
+          {isTV ? (
+            <div className="flex items-center gap-1">
+              <Tv size={14} className="text-blue-400" />
+              <span>Series</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Film size={14} className="text-purple-400" />
+              <span>Movie</span>
+            </div>
+          )}
         </div>
       </Link>
-      {/* Hover Overlay with Information */}
+
       <Link href={href} as={as}>
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
           <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
-            {additionalDetails.overview}
+            {MovieCard.overview || "No overview available"}
           </p>
           <Link
             href={href}
@@ -124,32 +109,31 @@ const HomeCards = ({ MovieCard }) => {
           </Link>
         </div>
       </Link>
+
       <div className="p-4">
         <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
           {renderTitle()}
         </h3>
 
-        {/* Additional Details Section */}
         <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
           <div className="flex items-center">
             <Star size={14} className="mr-1 text-yellow-500" />
-            <span>{additionalDetails.rating}</span>
+            <span>
+              {MovieCard.vote_average
+                ? `${MovieCard.vote_average.toFixed(1)}/10`
+                : "N/A"}
+            </span>
           </div>
 
           <div className="flex items-center">
             <Calendar size={14} className="mr-1" />
-            <span>{additionalDetails.date}</span>
+            <span>
+              {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
+            </span>
           </div>
-
-          {MovieCard.media_type === "tv" && (
-            <div className="flex items-center gap-1">
-              <Tv size={14} className="text-blue-400" />
-              <span>S{additionalDetails.totalSeasons}</span>
-            </div>
-          )}
         </div>
       </div>
-      {/* Favorite Toggle Button */}
+
       <button
         onClick={handleFavoriteToggle}
         className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
@@ -166,4 +150,4 @@ const HomeCards = ({ MovieCard }) => {
   );
 };
 
-export default HomeCards;
+export default HomeCard;

@@ -7,6 +7,7 @@ import useGenreStore from "@/components/zustand";
 import ContinueWatching from "../continuewatching";
 import RecommendedMovies from "../recommended";
 import GenreSelector from "@/components/filter/Filter";
+import HorizontalHomeCard from "./HorHomeCards";
 
 const HomeDisplay = ({ movies: initialMovies, pageid }) => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
@@ -199,7 +200,7 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
               <h2 className="text-2xl font-bold text-white mb-4">
                 Trending Movies and TV Shows
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
+              <div className=" grid-cols-1 hidden lg:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
                 {combinedContent.map((item) => (
                   <HomeCards
                     key={`${item.media_type}-${item.id}`}
@@ -208,7 +209,15 @@ const HomeDisplay = ({ movies: initialMovies, pageid }) => {
                   />
                 ))}
               </div>
-
+              <div className="grid grid-cols-1 md:hidden sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
+                {combinedContent.map((item) => (
+                  <HorizontalHomeCard
+                    key={`${item.media_type}-${item.id}`}
+                    MovieCard={item}
+                    className="h-[300px] sm:h-[360px] lg:h-[420px]"
+                  />
+                ))}
+              </div>
               <RecommendedMovies />
 
               <div className="mt-6 sm:mt-10">

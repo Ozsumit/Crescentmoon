@@ -1,10 +1,42 @@
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
-import { Heart, Star, Calendar, Clock } from "lucide-react";
+import { Heart, Star, Calendar, Info, Tv, Film } from "lucide-react";
+import HorizontalfavCard from "./horfavcard";
 
-const FavoriteCard = ({ favoriteItem }) => {
-  // Handle removing from favorites
+const FavoriteCard = ({ favoriteItem, viewMode }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [movieData, setMovieData] = useState({
+    ...favoriteItem,
+    number_of_seasons: "N/A",
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      const data = await fetchMovieData(
+        favoriteItem.id,
+        favoriteItem.media_type
+      );
+      if (data) {
+        setMovieData((prevData) => ({
+          ...prevData,
+          ...data,
+          media_type: favoriteItem.media_type,
+        }));
+      }
+      setIsLoading(false);
+    };
+
+    if (favoriteItem.media_type === "tv") {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [favoriteItem.id, favoriteItem.media_type]);
+
   const handleRemoveFavorite = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -19,60 +51,58 @@ const FavoriteCard = ({ favoriteItem }) => {
     window.dispatchEvent(new Event("storage"));
   };
 
-  // Determine image and link based on item type
   const getImagePath = () => {
-    if (favoriteItem.poster_path)
-      return `https://image.tmdb.org/t/p/w342/${favoriteItem.poster_path}`;
-    if (favoriteItem.still_path)
-      return `https://image.tmdb.org/t/p/w342/${favoriteItem.still_path}`;
+    if (movieData.poster_path)
+      return `https://image.tmdb.org/t/p/w342/${movieData.poster_path}`;
+    if (movieData.still_path)
+      return `https://image.tmdb.org/t/p/w342/${movieData.still_path}`;
     return "/placeholder.jpg"; // Use a placeholder image
   };
 
   const getLink = () => {
     // Series link
-    if (favoriteItem.first_air_date) {
-      return `/series/${favoriteItem.id}`;
+    if (movieData.first_air_date) {
+      return `/series/${movieData.id}`;
     }
     // Season link
-    if (favoriteItem.season_number) {
-      return `/series/${favoriteItem.series_id}/season/${favoriteItem.season_number}`;
+    if (movieData.season_number) {
+      return `/series/${movieData.series_id}/season/${movieData.season_number}`;
     }
     // Episode link
-    if (favoriteItem.episode_number) {
-      return `/series/${favoriteItem.series_id}/season/${favoriteItem.season_number}/${favoriteItem.episode_number}`;
+    if (movieData.episode_number) {
+      return `/series/${movieData.series_id}/season/${movieData.season_number}/${movieData.episode_number}`;
     }
     // Movie link
-    if (favoriteItem.release_date) {
-      return `/movie/${favoriteItem.id}`;
+    if (movieData.release_date) {
+      return `/movie/${movieData.id}`;
     }
     return "#";
   };
 
   const renderTitle = () => {
     // Series
-    if (favoriteItem.first_air_date) {
-      return favoriteItem.name || "Unknown Series";
+    if (movieData.first_air_date) {
+      return movieData.name || "Unknown Series";
     }
     // Season
-    if (favoriteItem.season_number) {
-      return `Season ${favoriteItem.season_number}: ${
-        favoriteItem.name || "Unknown Season"
+    if (movieData.season_number) {
+      return `Season ${movieData.season_number}: ${
+        movieData.name || "Unknown Season"
       }`;
     }
     // Episode
-    if (favoriteItem.episode_number) {
-      return `S${favoriteItem.season_number} E${favoriteItem.episode_number}: ${
-        favoriteItem.name || "Unknown Episode"
+    if (movieData.episode_number) {
+      return `S${movieData.season_number} E${movieData.episode_number}: ${
+        movieData.name || "Unknown Episode"
       }`;
     }
     // Movie
-    if (favoriteItem.release_date) {
-      return favoriteItem.title || "Unknown Movie";
+    if (movieData.release_date) {
+      return movieData.title || "Unknown Movie";
     }
     return "Favorite Item";
   };
 
-  // Format date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -82,121 +112,103 @@ const FavoriteCard = ({ favoriteItem }) => {
     });
   };
 
-  // Get additional details
-  const getAdditionalDetails = () => {
-    // Series details
-    if (favoriteItem.first_air_date) {
-      return {
-        rating: favoriteItem.vote_average
-          ? `${favoriteItem.vote_average.toFixed(1)}/10`
-          : "N/A",
-        date: formatDate(favoriteItem.first_air_date),
-        type: "Series",
-      };
-    }
-
-    // Season details
-    if (favoriteItem.season_number) {
-      return {
-        episodeCount: favoriteItem.episode_count
-          ? `${favoriteItem.episode_count} Episodes`
-          : "N/A",
-        date: formatDate(favoriteItem.air_date),
-        type: "Season",
-      };
-    }
-
-    // Episode details
-    if (favoriteItem.episode_number) {
-      return {
-        runtime: favoriteItem.runtime ? `${favoriteItem.runtime} min` : "N/A",
-        date: formatDate(favoriteItem.air_date),
-        type: "Episode",
-      };
-    }
-
-    // Movie details
-    if (favoriteItem.release_date) {
-      return {
-        rating: favoriteItem.vote_average
-          ? `${favoriteItem.vote_average.toFixed(1)}/10`
-          : "N/A",
-        date: formatDate(favoriteItem.release_date),
-        type: "Movie",
-      };
-    }
-
-    return { type: "Unknown" };
+  const additionalDetails = {
+    rating: movieData.vote_average
+      ? `${movieData.vote_average.toFixed(1)}/10`
+      : "N/A",
+    date: formatDate(movieData.release_date || movieData.first_air_date),
+    type: movieData.media_type === "tv" ? "Series" : "Movie",
+    overview: movieData.overview || "No overview available",
   };
 
-  const additionalDetails = getAdditionalDetails();
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    setIsFavorite(favorites.some((item) => item.id === movieData.id));
+  }, [movieData.id]);
 
-  return (
-    <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative w-full max-w-sm mx-auto">
-      <Link href={getLink()} title={renderTitle()} className="block">
-        <Image
-          src={getImagePath()}
-          alt={renderTitle()}
-          className="w-full h-48 object-cover rounded-t-xl"
-          width={288}
-          height={176}
-          unoptimized
-        />
-        {/* Subtle Type Tag */}
-        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 rounded text-xs">
-          {additionalDetails.type}
+  if (viewMode === "grid") {
+    return (
+      <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
+        <Link href={getLink()} title={renderTitle()} className="block relative">
+          <div
+            className={`relative ${
+              !imageLoaded ? "opacity-0" : "opacity-100"
+            } transition-opacity duration-300`}
+          >
+            <Image
+              src={getImagePath()}
+              alt={renderTitle()}
+              className="w-full h-32 sm:h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
+              width={288}
+              height={176}
+              unoptimized
+              onLoadingComplete={() => setImageLoaded(true)}
+            />
+          </div>
+          <div className="absolute top-2 left-2 bg-black/40 text-white/90 px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">
+            {additionalDetails.type === "Series" ? (
+              <div className="flex items-center gap-1">
+                <Tv size={14} className="text-blue-400" />
+                <span>Series</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Film size={14} className="text-purple-400" />
+                <span>Movie</span>
+              </div>
+            )}
+          </div>
+        </Link>
+
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
+          <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
+            {additionalDetails.overview}
+          </p>
+          <Link
+            href={getLink()}
+            title={renderTitle()}
+            className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
+          >
+            <Info size={16} className="mr-2" />
+            More Details
+          </Link>
         </div>
-      </Link>
-      <div className="p-4">
-        <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
-          {renderTitle()}
-        </h3>
 
-        {/* Additional Details Section */}
-        <div className="flex justify-between items-center text-xs text-slate-400">
-          {additionalDetails.rating && (
+        <div className="p-4">
+          <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
+            {renderTitle()}
+          </h3>
+
+          <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
             <div className="flex items-center">
               <Star size={14} className="mr-1 text-yellow-500" />
               <span>{additionalDetails.rating}</span>
             </div>
-          )}
 
-          {additionalDetails.episodeCount && (
             <div className="flex items-center">
-              <Clock size={14} className="mr-1" />
-              <span>{additionalDetails.episodeCount}</span>
+              <Calendar size={14} className="mr-1" />
+              <span>{additionalDetails.date}</span>
             </div>
-          )}
-
-          {additionalDetails.runtime && (
-            <div className="flex items-center">
-              <Clock size={14} className="mr-1" />
-              <span>{additionalDetails.runtime}</span>
-            </div>
-          )}
-
-          <div className="flex items-center">
-            <Calendar size={14} className="mr-1" />
-            <span>{additionalDetails.date}</span>
           </div>
         </div>
-      </div>
 
-      {/* Remove Favorite Button */}
-      <button
-        onClick={handleRemoveFavorite}
-        className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-1 hover:bg-black/70 transition-colors"
-        aria-label="Remove from favorites"
-      >
-        <Heart
-          size={16}
-          fill="red"
-          stroke="red"
-          className="transition-colors"
-        />
-      </button>
-    </div>
-  );
+        <button
+          onClick={handleRemoveFavorite}
+          className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+          aria-label="Remove from favorites"
+        >
+          <Heart
+            size={20}
+            fill={isFavorite ? "red" : "none"}
+            stroke={isFavorite ? "red" : "white"}
+            className="transition-colors"
+          />
+        </button>
+      </div>
+    );
+  } else {
+    return <HorizontalfavCard favoriteItem={favoriteItem} />;
+  }
 };
 
 export default FavoriteCard;

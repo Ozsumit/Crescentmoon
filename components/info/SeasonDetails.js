@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Calendar, ChevronLeft, Film, Star } from "lucide-react";
 import Link from "next/link";
+import EpisodeDisplay from "../display/EpisodeDisplay";
 
 const SeasonInfo = (props) => {
   let { SeasonInfos, seriesId } = props;
@@ -96,6 +97,7 @@ const SeasonInfo = (props) => {
         </div>
 
         {/* Episodes Section */}
+        <EpisodeDisplay EpisodeInfos={episodes} seriesId={seriesId} />
       </div>
     </div>
   );
