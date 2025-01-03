@@ -1,0 +1,42 @@
+/* EBookReader.css */
+.ebook-reader {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  .book-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .book-item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    width: 200px;
+  }
+  
+  .book-item h2 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+  
+  .book-item p {
+    font-size: 0.9em;
+    margin-bottom: 10px;
+  }
+  
+  .book-item button {
+    margin-right: 10px;
+  }
+  
+  .book-content {
+    margin-top: 20px;
+  }
+  
+  .book-content pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
