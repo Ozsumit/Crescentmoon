@@ -16,7 +16,7 @@ const VIDEO_SOURCES = [
     name: "VidLink",
     url: `https://vidlink.pro/movie/`,
     params:
-      "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=vid&player=default&title=true&poster=true&autoplay=true&nextbutton=true",
+      "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=true&mute=false",
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
@@ -25,6 +25,12 @@ const VIDEO_SOURCES = [
     url: `https://2embed.cc/embed/movie/`,
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
+  },{
+    name: "Binge",
+    url: `https://vidbinge.dev/embed/movie/`,
+    icon: <Server className="w-4 h-4" />,
+    downloadSupport: false,
+    parseUrl: true,
   },
   {
     name: "VidSrc",
@@ -48,6 +54,7 @@ const VIDEO_SOURCES = [
     icon: <Server className="w-4 h-4" />,
     downloadSupport: false,
   },
+  
 ];
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -76,11 +83,20 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     return `${hours}h ${remainingMinutes}m`;
   };
 
-  const handleServerChange = (server) => {
+  const handleServerChange = async (server) => {
     setSelectedServer(server);
-    const serverUrl = server.url;
-    const serverParams = server.params || "";
-    setIframeSrc(`${serverUrl}${id}${serverParams}`);
+    let serverUrl = server.url;
+    let serverParams = server.params || "";
+
+    if (server.parseUrl) {
+      const response = await fetch(`${serverUrl}${id}`);
+      const data = await response.json();
+      serverUrl = data.url; // Assuming the URL is provided in the 'url' field of the response
+    } else {
+      serverUrl = `${serverUrl}${id}${serverParams}`;
+    }
+
+    setIframeSrc(serverUrl);
   };
 
   const handleFavoriteToggle = () => {
@@ -165,6 +181,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     fetchCastInfo();
     handleServerChange(selectedServer);
   }, [MovieDetail.id, id, selectedServer]);
+
   useEffect(() => {
     window.addEventListener("message", (event) => {
       if (event.origin !== "https://vidlink.pro") return;
@@ -175,6 +192,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       }
     });
   }, []);
+
   return (
     <div
       className={`
@@ -243,12 +261,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               className="
     w-full
     sm:w-[900px]
-    aspect-video 
-    rounded-lg 
-    border border-indigo-900/30 
+    aspect-video
+    rounded-lg
+    border border-indigo-900/30
     shadow-inner
     z-50
-    opacity-100 
+    opacity-100
     scale-100
   "
             ></iframe>

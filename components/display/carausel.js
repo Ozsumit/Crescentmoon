@@ -13,14 +13,27 @@ const SpotlightCarousel = () => {
   const [trailers, setTrailers] = useState({});
   const [isMounted, setIsMounted] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef(null);
+  const autoplayRef = useRef(null);
 
+  // Check for mobile on mount and resize
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
     setIsMounted(true);
+    checkMobile();
+
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
     const fetchSpotlights = async () => {
+      setIsLoading(true);
       const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
       const URL = `https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}`;
 
@@ -30,11 +43,13 @@ const SpotlightCarousel = () => {
         const results = data.results.slice(0, 6) || [];
         setSpotlights(results);
 
-        results.forEach((item) => {
-          fetchTrailer(item.id, item.media_type);
-        });
+        await Promise.all(
+          results.map((item) => fetchTrailer(item.id, item.media_type))
+        );
       } catch (error) {
         console.error("Error fetching spotlight data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -63,46 +78,46 @@ const SpotlightCarousel = () => {
     }
   };
 
+  const startAutoplay = () => {
+    stopAutoplay();
+    if (!isPaused) {
+      autoplayRef.current = setInterval(handleNextSlide, 15000);
+    }
+  };
+
+  const stopAutoplay = () => {
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoading && spotlights.length > 0) {
+      startAutoplay();
+    }
+    return () => stopAutoplay();
+  }, [isPaused, currentSlide, isLoading, spotlights.length]);
+
   const handleNextSlide = () => {
     setShowTrailer(false);
     setCurrentSlide((prev) => (prev + 1) % spotlights.length);
 
-    // Show trailer after 10 seconds for the new slide
-    setTimeout(() => {
-      setShowTrailer(true);
-    }, 10000);
+    if (!isMobile) {
+      setTimeout(() => {
+        setShowTrailer(true);
+      }, 5000);
+    }
   };
-
-  useEffect(() => {
-    // Show trailer after 10 seconds for initial slide
-    const timer = setTimeout(() => {
-      setShowTrailer(true);
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    // Listen for video end
-    const handleMessage = (event) => {
-      if (event.data && typeof event.data === "string") {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.event === "onStateChange" && data.info === 0 && !isPaused) {
-            handleNextSlide();
-          }
-        } catch (e) {
-          // Handle parsing error
-        }
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [isPaused]);
 
   const togglePause = () => {
     setIsPaused(!isPaused);
+    if (!isPaused) {
+      stopAutoplay();
+    } else {
+      startAutoplay();
+    }
+
     const iframe = document.querySelector("iframe");
     if (iframe) {
       const command = isPaused ? "playVideo" : "pauseVideo";
@@ -131,24 +146,48 @@ const SpotlightCarousel = () => {
     }
   };
 
-  if (!isMounted || spotlights.length === 0) return null;
+  // Loading state
+  if (!isMounted || isLoading) {
+    return (
+      <div className="w-full h-[100svh] flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!spotlights.length) {
+    return (
+      <div className="w-full h-[100svh] flex items-center justify-center bg-black text-white">
+        No spotlights available
+      </div>
+    );
+  }
 
   const currentItem = spotlights[currentSlide];
-  const title = currentItem.title || currentItem.name;
-  const releaseDate = currentItem.release_date || currentItem.first_air_date;
+  if (!currentItem) return null;
+
+  const title = currentItem.title || currentItem.name || "Untitled";
+  const releaseDate =
+    currentItem.release_date ||
+    currentItem.first_air_date ||
+    "Release date TBA";
   const description = currentItem.overview || "No description available.";
   const posterPath = currentItem.backdrop_path
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
     : "https://i.imgur.com/xDHFGVl.jpeg";
   const trailerKey = trailers[currentItem.id];
+  const rating = currentItem.vote_average?.toFixed(1) || "N/A";
 
   const isTV = currentItem.media_type === "tv";
   const href = isTV ? "/series/[id]" : "/movie/[id]";
   const as = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden group">
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none"></div>
+    <div className="relative w-full h-[100svh] overflow-hidden bg-black">
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -165,12 +204,12 @@ const SpotlightCarousel = () => {
             layout="fill"
             objectFit="cover"
             priority
-            className={`absolute inset-0 w-full h-full object-cover brightness-[0.6] transition-opacity duration-1000 ${
+            className={`absolute inset-0 w-full h-full object-cover brightness-75 transition-opacity duration-1000 ${
               showTrailer ? "opacity-0" : "opacity-100"
             }`}
           />
 
-          {trailerKey && (
+          {trailerKey && !isMobile && (
             <div
               className={`relative w-full h-full transition-opacity duration-1000 ${
                 showTrailer ? "opacity-100" : "opacity-0"
@@ -179,8 +218,7 @@ const SpotlightCarousel = () => {
               <iframe
                 ref={videoRef}
                 className="absolute w-full h-full scale-150"
-                src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&vq=hd1440&autoplay=1&mute=1&controls=0`}
-                // src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&autoplay=1&mute=1&controls=0&modestbranding=1&loop=0&playlist=${trailerKey}&hd=1&playsinline=1?vq=hd720`}
+                src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&vq=hd1440&autoplay=1&mute=1&controls=0&modestbranding=1&loop=0&playlist=${trailerKey}`}
                 allow="autoplay; encrypted-media"
                 allowFullScreen
               />
@@ -189,86 +227,109 @@ const SpotlightCarousel = () => {
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-20 flex items-center h-full px-4 md:px-16">
+      {/* Content */}
+      <div className="relative z-20 flex flex-col justify-end h-full pb-24 md:pb-16 md:justify-center px-4 md:px-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="text-white max-w-2xl space-y-4"
+            className="text-white max-w-2xl space-y-3 md:space-y-4"
           >
-            <div className="flex items-center space-x-3 mb-2">
-              <span className="bg-white/20 px-2 py-1 rounded text-xs">
-                {currentItem.media_type === "tv" ? "TV SERIES" : "MOVIE"}
+            {/* Meta info */}
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+              <span className="bg-white/20 px-2 py-1 rounded text-xs backdrop-blur-sm">
+                {isTV ? "TV SERIES" : "MOVIE"}
               </span>
-              <span className="text-sm opacity-80">{releaseDate}</span>
-              <div className="flex items-center text-sm">
-                <span className="mr-1">⭐</span>
-                {currentItem.vote_average?.toFixed(1) || "N/A"}
-              </div>
+              <span className="text-xs md:text-sm text-gray-300">
+                {releaseDate}
+              </span>
+              {rating !== "N/A" && (
+                <div className="flex items-center text-xs md:text-sm text-gray-300">
+                  <span className="mr-1">⭐</span>
+                  {rating}
+                </div>
+              )}
             </div>
 
-            <h2 className="text-3xl md:text-5xl font-bold mb-2 line-clamp-2">
+            {/* Title */}
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight">
               {title}
             </h2>
 
-            <p className="text-sm md:text-base text-gray-300 line-clamp-3 mb-4">
+            {/* Description */}
+            <p className="text-sm md:text-base text-gray-300 line-clamp-3 max-w-xl">
               {description}
             </p>
 
-            <div className="flex items-center space-x-4">
+            {/* CTA Button */}
+            <div className="pt-2">
               <Link
                 href={href}
                 as={as}
-                className="flex items-center bg-white text-black px-6 py-3 rounded-full hover:bg-gray-200 transition-all group"
+                className="inline-flex items-center bg-white text-black px-4 md:px-6 py-2 md:py-3 rounded-full hover:bg-gray-200 transition-all group"
               >
-                <Play
-                  className="mr-2 group-hover:scale-110 transition-transform"
-                  size={20}
-                />
-                Watch Now
+                <Play className="mr-2 w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+                <span className="text-sm md:text-base font-medium">
+                  Watch Now
+                </span>
               </Link>
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 z-20">
-        <div className="flex space-x-2">
+      {/* Controls */}
+      <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex flex-col items-center space-y-4 z-20 px-4">
+        {/* Control buttons */}
+        <div className="flex items-center justify-center space-x-2 md:space-x-4 backdrop-blur-sm bg-black/20 p-2 md:p-3 rounded-full">
+          {trailerKey && !isMobile && (
+            <button
+              onClick={toggleMute}
+              className="text-white p-1.5 md:p-2 rounded-full hover:bg-white/20 transition-all"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          )}
+
+          <button
+            onClick={togglePause}
+            className="text-white p-1.5 md:p-2 rounded-full hover:bg-white/20 transition-all"
+            aria-label={isPaused ? "Play" : "Pause"}
+          >
+            {isPaused ? <Play size={18} /> : <Pause size={18} />}
+          </button>
+
+          <button
+            onClick={handleNextSlide}
+            className="text-white p-1.5 md:p-2 rounded-full hover:bg-white/20 transition-all"
+            aria-label="Next"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {/* Progress indicators */}
+        <div className="flex space-x-1.5 md:space-x-2">
           {spotlights.map((_, index) => (
-            <div
+            <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentSlide ? "bg-white w-4" : "bg-white/50"
+              onClick={() => {
+                setCurrentSlide(index);
+                setShowTrailer(false);
+              }}
+              className={`h-1 rounded-full transition-all ${
+                index === currentSlide
+                  ? "w-6 md:w-8 bg-white"
+                  : "w-3 md:w-4 bg-white/50"
               }`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
-
-        {trailerKey && (
-          <button
-            onClick={toggleMute}
-            className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-all"
-          >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
-        )}
-
-        <button
-          onClick={togglePause}
-          className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-all"
-        >
-          {isPaused ? <Play size={16} /> : <Pause size={16} />}
-        </button>
-
-        <button
-          onClick={handleNextSlide}
-          className="bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-all"
-        >
-          <ChevronRight size={16} />
-        </button>
       </div>
     </div>
   );

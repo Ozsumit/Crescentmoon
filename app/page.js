@@ -28,7 +28,7 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" m-0 h-auto">
+    <div className=" m-0 bg-[#0e1320] h-auto">
       {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
