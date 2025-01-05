@@ -93,179 +93,119 @@ const ErrorDisplay = ({ message }) => (
 // Main Component
 const HomeDisplay = () => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
-  const [movies, setMovies] = useState([]);
-  const [tvShows, setTvShows] = useState([]);
+  const [contentData, setContentData] = useState({
+    movies: [],
+    tvShows: [],
+  });
   const [activeTab, setActiveTab] = useState("movies");
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
+  const [pageData, setPageData] = useState({
+    movies: 1,
+    tvShows: 1,
+  });
+  const [loading, setLoading] = useState({
+    movies: false,
+    tvShows: false,
+  });
   const [error, setError] = useState(null);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState({
+    movies: 1,
+    tvShows: 1,
+  });
+  const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
 
-  const observer = useRef();
-  const lastElementRef = useCallback(
-    (node) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPage) => prevPage + 1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore]
-  );
-
-  const fetchMovies = async (currentPage, genreIds) => {
+  const fetchContent = async (type, page, genres) => {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const movieUrl =
-      genreIds.length > 0
-        ? `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreIds
-            .map((g) => g.id)
-            .join(
-              ","
-            )}&page=${currentPage}&language=en-US&sort_by=popularity.desc`
-        : `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=${currentPage}&language=en-US`;
-
-    const response = await fetch(movieUrl);
-    if (!response.ok) throw new Error("Failed to fetch movies");
-    return response.json();
-  };
-
-  const fetchTVShows = async (currentPage, genreIds) => {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const tvUrl =
-      genreIds.length > 0
-        ? `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${genreIds
-            .map((g) => g.id)
-            .join(
-              ","
-            )}&page=${currentPage}&language=en-US&sort_by=popularity.desc`
-        : `https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&page=${currentPage}&language=en-US`;
-
-    const response = await fetch(tvUrl);
-    if (!response.ok) throw new Error("Failed to fetch TV shows");
-    return response.json();
-  };
-
-  const fetchContent = async (currentPage, genreIds, isInitialLoad = false) => {
+    const isMovie = type === "movies";
+    const baseUrl = isMovie ? "movie" : "tv";
+    
     try {
-      setIsLoading(true);
+      setLoading(prev => ({ ...prev, [type]: true }));
       setError(null);
 
-      const [movieData, tvData] = await Promise.all([
-        fetchMovies(currentPage, genreIds),
-        fetchTVShows(currentPage, genreIds),
-      ]);
+      const url = genres.length > 0
+        ? `https://api.themoviedb.org/3/discover/${isMovie ? 'movie' : 'tv'}?api_key=${apiKey}&with_genres=${genres.map(g => g.id).join(",")}&page=${page}&language=en-US&sort_by=popularity.desc`
+        : `https://api.themoviedb.org/3/${baseUrl}/popular?api_key=${apiKey}&page=${page}&language=en-US`;
 
-      const processedMovies = movieData.results.map((movie) => ({
-        ...movie,
-        media_type: "movie",
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to fetch ${type}`);
+      
+      const data = await response.json();
+      const processed = data.results.map(item => ({
+        ...item,
+        media_type: isMovie ? "movie" : "tv",
+        title: isMovie ? item.title : item.name,
+        release_date: isMovie ? item.release_date : item.first_air_date,
       }));
 
-      const processedTVShows = tvData.results.map((show) => ({
-        ...show,
-        media_type: "tv",
-        title: show.name,
-        release_date: show.first_air_date,
+      setContentData(prev => ({
+        ...prev,
+        [type]: page === 1 ? processed : [...prev[type], ...processed],
       }));
 
-      if (isInitialLoad || currentPage === 1) {
-        setMovies(processedMovies);
-        setTvShows(processedTVShows);
-      } else {
-        setMovies((prev) => [...prev, ...processedMovies]);
-        setTvShows((prev) => [...prev, ...processedTVShows]);
-      }
+      setTotalPages(prev => ({
+        ...prev,
+        [type]: data.total_pages,
+      }));
 
-      setTotalPages(Math.max(movieData.total_pages, tvData.total_pages));
-      setHasMore(
-        activeTab === "movies"
-          ? currentPage < movieData.total_pages
-          : currentPage < tvData.total_pages
-      );
     } catch (err) {
-      console.error("Error fetching content:", err);
-      setError("Unable to load content. Please try again later.");
+      console.error(`Error fetching ${type}:`, err);
+      setError(`Unable to load ${type}. Please try again later.`);
     } finally {
-      setIsLoading(false);
-      if (isInitialLoad) {
-        setInitialLoading(false);
-      }
+      setLoading(prev => ({ ...prev, [type]: false }));
     }
   };
 
   useEffect(() => {
-    setPage(1);
-    setInitialLoading(true);
-    fetchContent(1, activeGenres, true);
-  }, [activeGenres, activeTab]);
+    const currentType = activeTab === "movies" ? "movies" : "tvShows";
+    fetchContent(currentType, pageData[currentType], activeGenres);
+  }, [activeTab, activeGenres, pageData[activeTab === "movies" ? "movies" : "tvShows"]]);
 
-  useEffect(() => {
-    if (page > 1) {
-      fetchContent(page, activeGenres);
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    const contentType = value === "movies" ? "movies" : "tvShows";
+    if (contentData[contentType].length === 0) {
+      setPageData(prev => ({
+        ...prev,
+        [contentType]: 1
+      }));
     }
-  }, [page]);
+  };
 
-  const toggleGenreContainer = () => {
-    setIsGenreMenuOpen(!isGenreMenuOpen);
+  const handlePageChange = (newPage) => {
+    const currentType = activeTab === "movies" ? "movies" : "tvShows";
+    setPageData(prev => ({
+      ...prev,
+      [currentType]: newPage
+    }));
   };
 
   const handleClearFilters = () => {
     clearGenres();
-    setPage(1);
-    setInitialLoading(true);
-    fetchContent(1, [], true);
+    setPageData({ movies: 1, tvShows: 1 });
+    setContentData({ movies: [], tvShows: [] });
   };
 
   const renderContent = (contentList) => (
     <>
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
-        {contentList.map((item, index) => {
-          if (contentList.length === index + 1) {
-            return (
-              <div ref={lastElementRef} key={`${item.media_type}-${item.id}`}>
-                <HomeCards
-                  MovieCard={item}
-                  className="h-[300px] sm:h-[360px] lg:h-[420px]"
-                />
-              </div>
-            );
-          }
-          return (
-            <HomeCards
-              key={`${item.media_type}-${item.id}`}
-              MovieCard={item}
-              className="h-[300px] sm:h-[360px] lg:h-[420px]"
-            />
-          );
-        })}
+        {contentList.map((item) => (
+          <HomeCards
+            key={`${item.media_type}-${item.id}`}
+            MovieCard={item}
+            className="h-[300px] sm:h-[360px] lg:h-[420px]"
+          />
+        ))}
       </div>
       <div className="grid lg:hidden grid-cols-1 gap-4">
-        {contentList.map((item, index) => {
-          if (contentList.length === index + 1) {
-            return (
-              <div ref={lastElementRef} key={`${item.media_type}-${item.id}`}>
-                <HorizontalHomeCard
-                  MovieCard={item}
-                  className="h-[300px] sm:h-[360px] lg:h-[420px]"
-                />
-              </div>
-            );
-          }
-          return (
-            <HorizontalHomeCard
-              key={`${item.media_type}-${item.id}`}
-              MovieCard={item}
-              className="h-[300px] sm:h-[360px] lg:h-[420px]"
-            />
-          );
-        })}
+        {contentList.map((item) => (
+          <HorizontalHomeCard
+            key={`${item.media_type}-${item.id}`}
+            MovieCard={item}
+            className="h-[300px] sm:h-[360px] lg:h-[420px]"
+          />
+        ))}
       </div>
-      {isLoading && <LoadingIndicator />}
+      {loading[activeTab === "movies" ? "movies" : "tvShows"] && <LoadingIndicator />}
     </>
   );
 
@@ -273,7 +213,10 @@ const HomeDisplay = () => {
     return <ErrorDisplay message={error} />;
   }
 
-  if (initialLoading) {
+  const currentType = activeTab === "movies" ? "movies" : "tvShows";
+  const isInitialLoading = contentData[currentType].length === 0 && loading[currentType];
+
+  if (isInitialLoading) {
     return <ContentSkeleton />;
   }
 
@@ -291,7 +234,7 @@ const HomeDisplay = () => {
           <div className="flex flex-col items-center space-y-4 mb-6">
             <div className="flex flex-wrap justify-end items-right gap-2 sm:gap-4">
               <button
-                onClick={toggleGenreContainer}
+                onClick={() => setIsGenreMenuOpen(!isGenreMenuOpen)}
                 className="flex items-center space-x-2 bg-indigo-600/80 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors"
               >
                 <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -323,22 +266,18 @@ const HomeDisplay = () => {
           </div>
 
           <Tabs
-            defaultValue="movies"
+            value={activeTab}
+            onValueChange={handleTabChange}
             className="w-full"
-            onValueChange={(value) => {
-              setActiveTab(value);
-              setPage(1);
-              setInitialLoading(true);
-            }}
           >
             <TabsList className="flex bg-slate-700 justify-center p-0 text-gray-300 w-min mb-6">
-              <TabsTrigger
+              <TabsTrigger 
                 value="movies"
                 className="text-sm sm:text-base px-4 py-2 rounded-t-lg focus:outline-none"
               >
                 Movies
               </TabsTrigger>
-              <TabsTrigger
+              <TabsTrigger 
                 value="tv"
                 className="text-sm sm:text-base px-4 py-2 rounded-t-lg focus:outline-none"
               >
@@ -347,28 +286,27 @@ const HomeDisplay = () => {
             </TabsList>
 
             <TabsContent value="movies" className="focus-visible:outline-none">
-              {renderContent(movies)}
+              {renderContent(contentData.movies)}
             </TabsContent>
 
             <TabsContent value="tv" className="focus-visible:outline-none">
-              {renderContent(tvShows)}
+              {renderContent(contentData.tvShows)}
             </TabsContent>
+
             <HomePagination
-            page={page}
-            setPage={setPage}
-            totalPages={totalPages}
-          />
-            {/* Only show recommended section when not filtering */}
+              page={pageData[currentType]}
+              setPage={handlePageChange}
+              totalPages={totalPages[currentType]}
+            />
+
             {activeGenres.length === 0 && <RecommendedMovies />}
           </Tabs>
 
-        
-
-          {/* Back to top button - appears after scrolling */}
+          {/* Back to top button */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className={`fixed bottom-4 right-4 bg-indigo-600/80 text-white p-2 rounded-full shadow-lg transition-opacity duration-300 hover:bg-indigo-700 ${
-              page > 2 ? "opacity-100" : "opacity-0 pointer-events-none"
+              pageData[currentType] > 1 ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
             <svg
@@ -390,14 +328,6 @@ const HomeDisplay = () => {
       </div>
     </div>
   );
-};
-
-// Helper function to handle API errors
-const handleApiError = (error) => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "An unexpected error occurred";
 };
 
 export default HomeDisplay;
