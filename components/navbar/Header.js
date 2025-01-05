@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Home, Film, Tv, Search, Heart, Menu, X } from "lucide-react";
+import {
+  Home,
+  Film,
+  Tv,
+  Search,
+  Heart,
+  JapaneseYen,
+  Menu,
+  X,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 import SearchBar from "../searchbar";
@@ -62,6 +71,7 @@ const Header = () => {
     { href: "/", label: "Home", icon: Home },
     { href: "/movie", label: "Movies", icon: Film },
     { href: "/series", label: "TV", icon: Tv },
+    { href: "omega-beige.vercel.app", label: "Anime", icon: JapaneseYen },
   ];
 
   const toggleMobileMenu = () => {
