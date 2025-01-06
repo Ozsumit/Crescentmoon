@@ -71,7 +71,7 @@ const Header = () => {
     { href: "/", label: "Home", icon: Home },
     { href: "/movie", label: "Movies", icon: Film },
     { href: "/series", label: "TV", icon: Tv },
-    { href: "https://omega-beige.vercel.app", label: "Anime(β)", icon: JapaneseYen },
+    { href: "https://omega-beige.vercel.app", label: "Anime(α)", icon: JapaneseYen },
   ];
 
   const toggleMobileMenu = () => {
