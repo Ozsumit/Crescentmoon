@@ -251,15 +251,24 @@ const EpisodeInfo = ({
               {/* Video Player */}
               <div className="aspect-video rounded-lg overflow-hidden bg-slate-900 shadow-xl">
                 {iframeSrc ? (
-                  <iframe
-                    src={iframeSrc}
-                    title="Episode Player"
-                    frameBorder="0"
-                    allow="autoplay; fullscreen"
-                    allowFullScreen
-                    className="w-full h-full"
-                    onLoad={() => setIsVideoPlaying(true)}
-                  ></iframe>
+                      <iframe
+        src={iframeSrc}
+        title="Episode Player"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+        webkitallowfullscreen="true"
+        mozallowfullscreen="true"
+        frameBorder="0"
+        className="w-full h-full absolute inset-0"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%'
+        }}
+        onLoad={() => setIsVideoPlaying(true)}
+      ></iframe>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                     <p>Select a server to start watching</p>
