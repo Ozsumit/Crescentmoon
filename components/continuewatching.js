@@ -266,7 +266,7 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           >
-            <button
+            {/* <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -282,7 +282,7 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                 fill={isFavorite ? "red" : "none"}
                 stroke={isFavorite ? "red" : "white"}
               />
-            </button>
+            </button> */}
             <button
               onClick={(e) => {
                 e.preventDefault();
