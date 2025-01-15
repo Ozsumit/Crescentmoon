@@ -52,13 +52,12 @@ const HorizontalHomeCard = ({ MovieCard }) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric",
     });
   };
 
   const additionalDetails = {
     rating: movieData.vote_average
-      ? `${movieData.vote_average.toFixed(1)}/10`
+      ? `${movieData.vote_average.toFixed(1)}`
       : "N/A",
     date: formatDate(movieData.release_date || movieData.first_air_date),
     type: movieData.media_type === "tv" ? "Series" : "Movie",
@@ -89,81 +88,79 @@ const HorizontalHomeCard = ({ MovieCard }) => {
   }, [movieData.id]);
 
   return (
-    <div className="bg-slate-800/80 rounded-xl overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl relative group w-full">
-      <div className="flex">
+    <div className="group relative bg-slate-900/60 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-800 shadow-lg transition-all duration-300 hover:shadow-2xl hover:bg-slate-800/60">
+      <div className="flex flex-row h-40 sm:h-48">
         {/* Image Section */}
-        <div className="relative w-32 sm:w-48 flex-shrink-0">
+        <div className="relative w-28 sm:w-32 flex-shrink-0">
           <Link href={href} as={as} title={renderTitle()}>
-            <Image
-              src={getImagePath()}
-              alt={renderTitle()}
-              className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
-              width={192}
-              height={288}
-              unoptimized
-            />
+            <div className="relative h-full w-full overflow-hidden">
+              <Image
+                src={getImagePath()}
+                alt={renderTitle()}
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 640px) 112px, 128px"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900/20" />
+            </div>
           </Link>
           <button
             onClick={handleFavoriteToggle}
-            className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
-            aria-label={
-              isFavorite ? "Remove from favorites" : "Add to favorites"
-            }
+            className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-black/40 backdrop-blur-md transition-all duration-300 hover:bg-black/60 active:scale-95"
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
             <Heart
-              size={20}
-              fill={isFavorite ? "red" : "none"}
-              stroke={isFavorite ? "red" : "white"}
-              className="transition-colors"
+              size={16}
+              fill={isFavorite ? "rgb(239 68 68)" : "none"}
+              stroke={isFavorite ? "rgb(239 68 68)" : "white"}
+              className="transition-colors duration-300"
             />
           </button>
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 p-4 flex flex-col">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-slate-200 font-semibold text-lg line-clamp-1">
+        <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col">
+          <div className="mb-1 flex items-start justify-between gap-2">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-100 truncate pr-2">
               {renderTitle()}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 flex items-center px-2 py-1 rounded-full bg-slate-800/80 border border-slate-700/50">
               {isTV ? (
-                <div className="flex items-center gap-1">
-                  <Tv size={16} className="text-blue-400" />
-                  <span className="text-sm text-slate-400">Series</span>
-                </div>
+                <Tv size={13} className="text-sky-400" />
               ) : (
-                <div className="flex items-center gap-1">
-                  <Film size={16} className="text-purple-400" />
-                  <span className="text-sm text-slate-400">Movie</span>
-                </div>
+                <Film size={13} className="text-fuchsia-400" />
               )}
+              <span className="ml-1 text-xs font-medium text-slate-300">
+                {additionalDetails.type}
+              </span>
             </div>
           </div>
 
-          <p className="text-slate-400 text-sm mb-4 line-clamp-2">
+          <p className="text-sm text-slate-300 line-clamp-2 mb-2 leading-relaxed">
             {additionalDetails.overview}
           </p>
 
-          <div className="mt-auto">
-            <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-              <div className="flex items-center">
-                <Star size={16} className="mr-1 text-yellow-500" />
-                <span>{additionalDetails.rating}</span>
+          <div className="mt-auto space-y-2">
+            <div className="flex items-center gap-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-1">
+                <Star size={14} className="text-amber-400" />
+                <span className="font-semibold text-slate-200">{additionalDetails.rating}</span>
               </div>
 
-              <div className="flex items-center">
-                <Calendar size={16} className="mr-1" />
-                <span>{additionalDetails.date}</span>
+              <div className="flex items-center gap-1">
+                <Calendar size={14} className="text-slate-400" />
+                <span className="text-slate-300">{additionalDetails.date}</span>
               </div>
             </div>
 
             <Link
               href={href}
               as={as}
-              className="inline-flex items-center mt-4 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+              className="inline-flex items-center text-xs sm:text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors active:text-sky-500"
             >
-              <Info size={16} className="mr-2" />
-              More Details
+              <Info size={14} className="mr-1" />
+              More Info
             </Link>
           </div>
         </div>

@@ -19,22 +19,17 @@ const HomeCard = ({ MovieCard }) => {
   };
 
   const getLink = () => {
-    if (MovieCard.media_type === "tv") {
-      return `/series/${MovieCard.id}`;
-    }
+    if (MovieCard.media_type === "tv") return `/series/${MovieCard.id}`;
     return `/movie/${MovieCard.id}`;
   };
 
-  const renderTitle = () => {
-    return MovieCard.title || MovieCard.name || "Untitled";
-  };
+  const renderTitle = () => MovieCard.title || MovieCard.name || "Untitled";
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric",
     });
   };
 
@@ -62,90 +57,100 @@ const HomeCard = ({ MovieCard }) => {
   }, [MovieCard.id]);
 
   return (
-    <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
-      <Link href={getLink()} title={renderTitle()} className="block relative">
-        <div
-          className={`relative ${
-            !imageLoaded ? "opacity-0" : "opacity-100"
-          } transition-opacity duration-300`}
-        >
-          <Image
-            src={getImagePath()}
-            alt={renderTitle()}
-            className="w-full h-32 sm:h-48 object-cover rounded-xl transition-transform duration-300 ease-in-out group-hover:scale-110"
-            width={288}
-            height={176}
-            unoptimized
-            onLoadingComplete={() => setImageLoaded(true)}
-          />
-        </div>
-        <div className="absolute top-2 left-2 bg-black/40 text-white/90 px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">
-          {isTV ? (
-            <div className="flex items-center gap-1">
-              <Tv size={14} className="text-blue-400" />
-              <span>Series</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1">
-              <Film size={14} className="text-purple-400" />
-              <span>Movie</span>
-            </div>
-          )}
-        </div>
-      </Link>
-
-      <Link href={href} as={as}>
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
-          <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
-            {MovieCard.overview || "No overview available"}
-          </p>
-          <Link
-            href={href}
-            as={as}
-            className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
+    <div className="group relative overflow-hidden rounded-2xl bg-slate-900/90 transition-all duration-500 ease-out hover:shadow-lg hover:shadow-slate-700/20">
+      <Link href={getLink()} title={renderTitle()}>
+        <div className="relative aspect-[2/3] overflow-hidden">
+          <div
+            className={`h-full w-full transition-opacity duration-700 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
           >
-            <Info size={16} className="mr-2" />
-            More Details
-          </Link>
+            <Image
+              src={getImagePath()}
+              alt={renderTitle()}
+              className="h-full w-full transform object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-105"
+              width={288}
+              height={432}
+              unoptimized
+              onLoadingComplete={() => setImageLoaded(true)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900" />
+          </div>
+
+          {/* Media Type Badge */}
+          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-sm transition-transform duration-500 ease-out group-hover:-translate-y-1">
+            {isTV ? (
+              <>
+                <Tv size={12} className="text-blue-400" />
+                <span>Series</span>
+              </>
+            ) : (
+              <>
+                <Film size={12} className="text-purple-400" />
+                <span>Movie</span>
+              </>
+            )}
+          </div>
+
+          {/* Favorite Button */}
+          <button
+            onClick={handleFavoriteToggle}
+            className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-500 ease-out hover:bg-black/70"
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
+          >
+            <Heart
+              size={16}
+              fill={isFavorite ? "red" : "none"}
+              stroke={isFavorite ? "red" : "white"}
+              className="transition-colors duration-300"
+            />
+          </button>
+        </div>
+
+        {/* Content Container */}
+        <div className="absolute bottom-0 w-full bg-gradient-to-t from-slate-900 via-slate-900/95 to-transparent p-4 text-white">
+          {/* Rating and Date */}
+          <div className="mb-2 flex items-center gap-4 text-sm font-medium text-white/90">
+            <div className="flex items-center gap-1.5">
+              <Star size={14} className="text-yellow-400" />
+              <span className="font-semibold">
+                {MovieCard.vote_average
+                  ? `${MovieCard.vote_average.toFixed(1)}`
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-white/70">
+              <Calendar size={14} />
+              <span>
+                {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
+              </span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <h3 className="mb-1 line-clamp-1 text-lg font-semibold tracking-tight text-white">
+            {renderTitle()}
+          </h3>
+        </div>
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/95 p-6 opacity-0 backdrop-blur-sm transition-all duration-500 ease-out group-hover:opacity-100">
+          <div className="flex flex-col items-center gap-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+            {/* Synopsis - Limited to 2 lines */}
+            <p className="text-sm text-white/80 line-clamp-2 text-center">
+              {MovieCard.overview || "No overview available"}
+            </p>
+
+            {/* Details Button */}
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/20">
+              <Info size={14} />
+              View Details
+            </span>
+          </div>
         </div>
       </Link>
-
-      <div className="p-4">
-        <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
-          {renderTitle()}
-        </h3>
-
-        <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
-          <div className="flex items-center">
-            <Star size={14} className="mr-1 text-yellow-500" />
-            <span>
-              {MovieCard.vote_average
-                ? `${MovieCard.vote_average.toFixed(1)}/10`
-                : "N/A"}
-            </span>
-          </div>
-
-          <div className="flex items-center">
-            <Calendar size={14} className="mr-1" />
-            <span>
-              {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={handleFavoriteToggle}
-        className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
-        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-      >
-        <Heart
-          size={20}
-          fill={isFavorite ? "red" : "none"}
-          stroke={isFavorite ? "red" : "white"}
-          className="transition-colors"
-        />
-      </button>
     </div>
   );
 };

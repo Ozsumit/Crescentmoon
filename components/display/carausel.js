@@ -18,6 +18,70 @@ const SpotlightCarousel = () => {
   const videoRef = useRef(null);
   const autoplayRef = useRef(null);
 
+  const SpotlightSkeleton = () => (
+    <div className="w-full h-[100svh] bg-slate-900 relative overflow-hidden">
+      {/* Gradient overlays for skeleton */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
+
+      {/* Background skeleton pulse */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-800 to-slate-900 animate-pulse"></div>
+
+      {/* Content skeleton */}
+      <div className="relative z-20 flex flex-col justify-end h-full pb-24 md:pb-16 md:justify-center px-4 md:px-16">
+        <div className="space-y-3 md:space-y-4 max-w-2xl">
+          {/* Meta info skeleton */}
+          <div className="flex items-center gap-3">
+            <div className="w-20 h-6 bg-white/10 rounded animate-pulse"></div>
+            <div className="w-24 h-5 bg-white/10 rounded animate-pulse"></div>
+            <div className="w-16 h-5 bg-white/10 rounded animate-pulse"></div>
+          </div>
+
+          {/* Title skeleton */}
+          <div className="space-y-3">
+            <div className="w-3/4 h-12 md:h-14 bg-white/10 rounded animate-pulse"></div>
+            <div className="w-1/2 h-12 md:h-14 bg-white/10 rounded animate-pulse"></div>
+          </div>
+
+          {/* Description skeleton */}
+          <div className="space-y-2">
+            <div className="w-full h-4 bg-white/10 rounded animate-pulse"></div>
+            <div className="w-5/6 h-4 bg-white/10 rounded animate-pulse"></div>
+            <div className="w-4/6 h-4 bg-white/10 rounded animate-pulse"></div>
+          </div>
+
+          {/* CTA button skeleton */}
+          <div className="pt-2">
+            <div className="w-32 h-10 md:h-12 bg-white/10 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls skeleton */}
+      <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex flex-col items-center space-y-4 z-20 px-4">
+        {/* Control buttons skeleton */}
+        <div className="flex items-center justify-center space-x-4 backdrop-blur-sm bg-black/20 p-3 rounded-full">
+          <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse"></div>
+          <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse"></div>
+          <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse"></div>
+        </div>
+
+        {/* Progress indicators skeleton */}
+        <div className="flex space-x-2">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="h-1 rounded-full bg-white/20 animate-pulse"
+              style={{
+                width: i === 0 ? "2rem" : "1rem",
+                opacity: i === 0 ? 1 : 0.5,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   // Check for mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
@@ -146,15 +210,9 @@ const SpotlightCarousel = () => {
     }
   };
 
-  // Loading state
   if (!isMounted || isLoading) {
-    return (
-      <div className="w-full h-[100svh] flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
+    return <SpotlightSkeleton />;
   }
-
   // No data state
   if (!spotlights.length) {
     return (
