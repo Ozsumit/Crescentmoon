@@ -198,8 +198,13 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="mt-12 border-t border-gray-700 pt-6 text-sm flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 mb-4 md:mb-0 text-center w-full md:w-auto">
-            &copy; {currentYear} Crescent Moon. All rights reserved.
+          Powered by Tmdb. Developed by Vass.Inc
           </p>
+          
+          <p className="text-gray-400 mb-4 md:mb-0 text-center w-full md:w-auto">
+            &copy; {currentYear} Vass.Inc. All rights reserved.
+          </p>
+          
           <div className="space-x-4 flex flex-col md:flex-row items-center text-center w-full md:w-auto">
             <Link
               href="/privacy"
