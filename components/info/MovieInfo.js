@@ -38,6 +38,13 @@ const VIDEO_SOURCES = [
       "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=true&mute=false",
     icon: <Play className="w-4 h-4" />,
     downloadSupport: false,
+  }, {
+    name: "VidSrc",
+    params: "?multiLang=true",
+    url: `https://v2.vidsrc.me/embed/movie/`,
+    icon: <Award className="w-4 h-4" />,
+    downloadSupport: false,
+    // getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
   {
     name: "2Embed",
@@ -52,14 +59,7 @@ const VIDEO_SOURCES = [
     downloadSupport: false,
     parseUrl: true,
   },
-  {
-    name: "VidSrc",
-    params: "?multiLang=true",
-    url: `https://v2.vidsrc.me/embed/movie/`,
-    icon: <Award className="w-4 h-4" />,
-    downloadSupport: true,
-    getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
-  },
+ 
   {
     name: "EmbedSu",
     url: `https://embed.su/embed/movie/`,
