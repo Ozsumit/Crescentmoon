@@ -401,7 +401,7 @@ const ContinueWatching = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold text-white">Continue Watching</h2>
-          <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+          <span className="bg-blue-500/20 text-blue-400 px-3 min-w-12 py-1 rounded-full text-sm">
             {mediaItems.length} {mediaItems.length === 1 ? "title" : "titles"}
           </span>
         </div>
