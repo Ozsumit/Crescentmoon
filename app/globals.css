@@ -92,3 +92,40 @@ body {
     @apply bg-background text-foreground;
   }
 }
+/* Custom scrollbar styling to match TV info UI */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: rgb(15 23 42 / 0.3); /* slate-900 with opacity */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(51 65 85 / 0.5); /* slate-700 with opacity */
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(71 85 105 / 0.7); /* slate-600 with higher opacity */
+}
+
+/* Handle on active */
+::-webkit-scrollbar-thumb:active {
+  background: rgb(99 102 241 / 0.8); /* indigo-500 with opacity */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(51 65 85 / 0.5) rgb(15 23 42 / 0.3);
+}
+
+/* Make sure scrollbar blends with dark backgrounds */
+html {
+  background: rgb(2 6 23); /* Very dark background */
+}
