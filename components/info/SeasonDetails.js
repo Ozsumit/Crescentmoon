@@ -1,18 +1,32 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import { Calendar, ChevronLeft, Film, Star, LayoutGrid, LayoutList,ChevronDown ,ChevronUp , Heart, Info, Share2, Users } from "lucide-react";
-import Link from "next/link";
-import EpisodeDisplay from "../display/EpisodeDisplay";
+import {
+  Calendar,
+  ChevronLeft,
+  Film,
+  Star,
+  LayoutGrid,
+  LayoutList,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  Info,
+  Share2,
+  Users,
+  MessageCircle,
+  ThumbsUp,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EpisodeListCard from "./EpisodeListCard";
+import EpisodeDisplay from "../display/EpisodeDisplay";
 
 const CastMember = ({ cast }) => (
   <div className="flex items-center space-x-3">
@@ -32,12 +46,67 @@ const CastMember = ({ cast }) => (
   </div>
 );
 
-const Review = ({ review }) => (
-  <div className="bg-slate-900/50 rounded-lg p-4 shadow-lg mb-4">
-    <h3 className="text-lg font-semibold text-white">{review.author}</h3>
-    <p className="text-sm text-gray-400 mt-2">{review.content}</p>
-  </div>
-);
+const Review = ({ review }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLongContent = review.content.length > 300;
+  const displayContent = expanded
+    ? review.content
+    : review.content.slice(0, 300);
+
+  return (
+    <div className="bg-slate-900/50 rounded-lg p-6 shadow-lg mb-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors">
+      <div className="flex items-start space-x-4">
+        <Avatar className="w-10 h-10">
+          <AvatarImage
+            src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.author}`}
+          />
+          <AvatarFallback>
+            {review.author.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <h3 className="text-lg font-semibold text-slate-200">
+              {review.author}
+            </h3>
+            <div className="flex items-center space-x-2 text-slate-400">
+              <ThumbsUp className="w-4 h-4" />
+              <span className="text-sm">
+                {review.author_details?.rating || "N/A"}/10
+              </span>
+            </div>
+          </div>
+          <div className="mt-2 text-slate-300 text-sm leading-relaxed">
+            <p>
+              {displayContent}
+              {isLongContent && !expanded && "..."}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1"
+              >
+                {expanded ? "Show Less" : "Read More"}
+                {expanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="mt-2 text-slate-400 text-sm">
+            {new Date(review.created_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SeasonInfo = (props) => {
   let { SeasonInfos, seriesId } = props;
@@ -45,14 +114,13 @@ const SeasonInfo = (props) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [viewType, setViewType] = useState("list");
+  const [viewType, setViewType] = useState("grid");
   const [castInfo, setCastInfo] = useState([]);
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [showMoreCast, setShowMoreCast] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
-  // Fallback for missing poster
   const posterPath = SeasonInfos.poster_path
     ? `https://image.tmdb.org/t/p/w500/${SeasonInfos.poster_path}`
     : "https://i.imgur.com/a5SqB4h.jpeg";
@@ -98,6 +166,11 @@ const SeasonInfo = (props) => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === SeasonInfos.id));
 
+    const savedViewType = localStorage.getItem("viewType");
+    if (savedViewType) {
+      setViewType(savedViewType);
+    }
+
     const fetchData = async () => {
       setIsLoadingCast(true);
       setIsLoadingReviews(true);
@@ -107,16 +180,17 @@ const SeasonInfo = (props) => {
             `https://api.themoviedb.org/3/tv/${seriesId}/season/${SeasonInfos.season_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
           ),
           fetch(
-            `https://api.themoviedb.org/3/tv/${seriesId}/season/${SeasonInfos.season_number}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            `https://api.themoviedb.org/3/tv/${seriesId}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
           ),
         ]);
 
         const castData = await castResponse.json();
         const reviewsData = await reviewsResponse.json();
 
-        setCastInfo(castData.cast.slice(0, 10));
-        setReviews(reviewsData.results.slice(0, 5));
+        setCastInfo(castData.cast?.slice(0, 10) || []);
+        setReviews(reviewsData.results || []);
       } catch (error) {
+        console.error("Error fetching data:", error);
         showNotification("Failed to load some content");
       } finally {
         setIsLoadingCast(false);
@@ -126,6 +200,10 @@ const SeasonInfo = (props) => {
 
     fetchData();
   }, [SeasonInfos.id, seriesId, SeasonInfos.season_number]);
+
+  useEffect(() => {
+    localStorage.setItem("viewType", viewType);
+  }, [viewType]);
 
   return (
     <TooltipProvider>
@@ -147,7 +225,7 @@ const SeasonInfo = (props) => {
                   <div className="p-4 border-b border-slate-800/50 flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                       <Film className="w-5 h-5 text-indigo-400" />
-                      Episodes
+                      {SeasonInfos.name} Episodes
                     </h2>
                     <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
                       <Tooltip>
@@ -163,6 +241,9 @@ const SeasonInfo = (props) => {
                             <LayoutList className="w-4 h-4" />
                           </button>
                         </TooltipTrigger>
+                        <TooltipContent>
+                          <p>List view</p>
+                        </TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -177,6 +258,9 @@ const SeasonInfo = (props) => {
                             <LayoutGrid className="w-4 h-4" />
                           </button>
                         </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Grid view</p>
+                        </TooltipContent>
                       </Tooltip>
                     </div>
                   </div>
@@ -192,7 +276,10 @@ const SeasonInfo = (props) => {
                         />
                       ))
                     ) : (
-                      <EpisodeDisplay EpisodeInfos={episodes} seriesId={seriesId} />
+                      <EpisodeDisplay
+                        EpisodeInfos={episodes}
+                        seriesId={seriesId}
+                      />
                     )}
                   </div>
                 </div>
@@ -200,24 +287,49 @@ const SeasonInfo = (props) => {
                 <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
                   <div className="p-4 border-b border-slate-800/50">
                     <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
-                      <Users className="w-5 h-5 text-indigo-400" />
+                      <MessageCircle className="w-5 h-5 text-indigo-400" />
                       Reviews
+                      {reviews.length > 0 && (
+                        <span className="text-sm text-slate-400">
+                          ({reviews.length})
+                        </span>
+                      )}
                     </h2>
                   </div>
-                  <div className="p-4 max-h-[600px] overflow-y-auto space-y-4">
+                  <div className="p-4 max-h-[600px] overflow-y-auto">
                     {isLoadingReviews ? (
                       Array(3)
                         .fill(0)
                         .map((_, i) => (
-                          <div key={i} className="animate-pulse bg-slate-800 rounded-lg p-4 shadow-lg mb-4">
-                            <div className="h-4 bg-slate-700 rounded w-24 mb-2" />
-                            <div className="h-3 bg-slate-700 rounded w-full" />
+                          <div
+                            key={i}
+                            className="animate-pulse bg-slate-800/50 rounded-lg p-6 mb-4"
+                          >
+                            <div className="flex items-start space-x-4">
+                              <div className="w-10 h-10 bg-slate-700 rounded-full" />
+                              <div className="flex-1 space-y-3">
+                                <div className="h-4 bg-slate-700 rounded w-1/4" />
+                                <div className="space-y-2">
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-3/4" />
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         ))
-                    ) : (
+                    ) : reviews.length > 0 ? (
                       reviews.map((review) => (
                         <Review key={review.id} review={review} />
                       ))
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No reviews yet</p>
+                        <p className="text-sm">
+                          Be the first to review this season!
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -240,6 +352,7 @@ const SeasonInfo = (props) => {
 
                     <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-400">
                       <div className="flex items-center space-x-1">
+                        {/* <Star className */}
                         <Star className="text-yellow-400 w-4 h-4" />
                         <span>
                           {SeasonInfos.vote_average?.toFixed(1) || "N/A"}/10
@@ -294,7 +407,7 @@ const SeasonInfo = (props) => {
                   </Tooltip>
 
                   <p className="text-slate-300 text-sm leading-relaxed">
-                    {SeasonInfos.overview}
+                    {SeasonInfos.overview || "No overview available."}
                   </p>
 
                   <div className="space-y-3">

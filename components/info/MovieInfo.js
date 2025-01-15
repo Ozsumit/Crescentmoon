@@ -20,6 +20,8 @@ import {
   Award,
   Loader2,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -76,14 +78,78 @@ const VIDEO_SOURCES = [
   },
 ];
 
+const Review = ({ review }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLongContent = review.content.length > 300;
+  const displayContent = expanded
+    ? review.content
+    : review.content.slice(0, 300);
+
+  return (
+    <div className="bg-slate-900/50 rounded-lg p-6 shadow-lg mb-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors">
+      <div className="flex items-start space-x-4">
+        <Avatar className="w-10 h-10">
+          <AvatarImage
+            src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.author}`}
+          />
+          <AvatarFallback>
+            {review.author.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <h3 className="text-lg font-semibold text-slate-200">
+              {review.author}
+            </h3>
+            <div className="flex items-center space-x-2 text-slate-400">
+              <ThumbsUp className="w-4 h-4" />
+              <span className="text-sm">
+                {review.author_details?.rating || "N/A"}/10
+              </span>
+            </div>
+          </div>
+          <div className="mt-2 text-slate-300 text-sm leading-relaxed">
+            <p>
+              {displayContent}
+              {isLongContent && !expanded && "..."}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1"
+              >
+                {expanded ? "Show Less" : "Read More"}
+                {expanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="mt-2 text-slate-400 text-sm">
+            {new Date(review.created_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [iframeSrc, setIframeSrc] = useState("");
   const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[0]);
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -105,7 +171,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
   };
-  // import { useEffect } from 'react';
 
   const simulateKeyPress = () => {
     const keyEvent = new KeyboardEvent("keydown", {
@@ -121,25 +186,20 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     console.log("M key press simulated");
   };
 
-  // Auto-trigger on component mount with 3 second delay
   useEffect(() => {
-    // Ensure we're running on client side
     if (typeof window !== "undefined") {
       const timer = setTimeout(() => {
         simulateKeyPress();
       }, 3000);
 
-      // Cleanup timeout if component unmounts
       return () => clearTimeout(timer);
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // Optional: Monitor actual M key presses
   useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.key === "M" || event.key === "m") {
         console.log("M key was pressed!");
-        // Add your custom logic here
       }
     };
 
@@ -148,6 +208,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       document.removeEventListener("keydown", handleKeyPress);
     };
   }, []);
+
   const handleServerChange = async (server) => {
     setSelectedServer(server);
     let serverUrl = server.url;
@@ -239,26 +300,34 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     const fetchData = async () => {
       setIsLoadingCast(true);
       setIsLoadingRecommendations(true);
+      setIsLoadingReviews(true);
       try {
-        const [castResponse, recommendationsResponse] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-          ),
-        ]);
+        const [castResponse, recommendationsResponse, reviewsResponse] =
+          await Promise.all([
+            fetch(
+              `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+            fetch(
+              `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+            fetch(
+              `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+          ]);
 
         const castData = await castResponse.json();
         const recommendationsData = await recommendationsResponse.json();
+        const reviewsData = await reviewsResponse.json();
 
         setCastInfo(castData.cast.slice(0, 10));
         setRecommendations(recommendationsData.results.slice(0, 6));
+        setReviews(reviewsData.results.slice(0, 5));
       } catch (error) {
         showNotification("Failed to load some content");
       } finally {
         setIsLoadingCast(false);
         setIsLoadingRecommendations(false);
+        setIsLoadingReviews(false);
       }
     };
 
@@ -280,7 +349,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
           <div className="max-w-8xl mx-auto px-3 py-4 lg:px-8 lg:py-6">
             <div className="grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-              {/* Video Player Section */}
               <div className="order-1 lg:order-1">
                 <div
                   ref={videoContainerRef}
@@ -334,9 +402,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                                   {server.name}
                                 </button>
                               </TooltipTrigger>
-                              {/* <TooltipContent> */}
-                              {/* <p className="text-white">Switch to {server.name}</p> */}
-                              {/* </TooltipContent> */}
                             </Tooltip>
                           ))}
                         </div>
@@ -357,25 +422,60 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           <p>Share movie</p>
                         </TooltipContent>
                       </Tooltip>
-                      {/* 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={toggleFullscreen}
-                            className="p-2 text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                          >
-                            <Fullscreen className="w-4 h-4" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Toggle fullscreen</p>
-                        </TooltipContent>
-                      </Tooltip> */}
                     </div>
                   </div>
                 </div>
-
-                {/* Similar Movies Section - Desktop Only */}
+                <div className="order-4 lg:order-3 space-y-4">
+                <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
+                  <div className="p-4 border-b border-slate-800/50">
+                    <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-indigo-400" />
+                      Reviews
+                      {reviews.length > 0 && (
+                        <span className="text-sm text-slate-400">
+                          ({reviews.length})
+                        </span>
+                      )}
+                    </h2>
+                  </div>
+                  <div className="p-4 max-h-[600px] overflow-y-auto">
+                    {isLoadingReviews ? (
+                      Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div
+                            key={i}
+                            className="animate-pulse bg-slate-800/50 rounded-lg p-6 mb-4"
+                          >
+                            <div className="flex items-start space-x-4">
+                              <div className="w-10 h-10 bg-slate-700 rounded-full" />
+                              <div className="flex-1 space-y-3">
+                                <div className="h-4 bg-slate-700 rounded w-1/4" />
+                                <div className="space-y-2">
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-3/4" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    ) : reviews.length > 0 ? (
+                      reviews.map((review) => (
+                        <Review key={review.id} review={review} />
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No reviews yet</p>
+                        <p className="text-sm">
+                          Be the first to review this movie!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
                 <div className="hidden lg:block space-y-4 mt-6">
                   <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                     <Film className="w-5 h-5 text-indigo-400" />
@@ -402,9 +502,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 </div>
               </div>
 
-              {/* Movie Info Section */}
               <div className="order-2 lg:order-2 space-y-4">
-                <div className=" rounded-xl overflow-hidden shadow-xl border border-slate-800/50">
+                <div className="rounded-xl overflow-hidden shadow-xl border border-slate-800/50">
                   <img
                     src={posterPath}
                     alt={MovieDetail.title}
@@ -450,6 +549,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </span>
                     ))}
                   </div>
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -466,7 +566,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           }`}
                         />
                         <span className="text-sm font-medium">
-                          {isFavorite ? "Remove" : "Add to Favorites"}
+                          {isFavorite
+                            ? "Remove from Favorites"
+                            : "Add to Favorites"}
                         </span>
                       </button>
                     </TooltipTrigger>
@@ -478,11 +580,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </p>
                     </TooltipContent>
                   </Tooltip>
+
                   <p className="text-slate-300 text-sm leading-relaxed">
                     {MovieDetail.overview}
                   </p>
 
-                  {/* Cast Section */}
                   <div className="space-y-3">
                     <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
                       <Users className="w-4 h-4 text-indigo-400" />
@@ -529,7 +631,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex gap-3">
                     {selectedServer.downloadSupport && (
                       <Tooltip>
@@ -550,18 +651,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     )}
                   </div>
                 </div>
-
-                {/* Desktop-only poster */}
-                {/* <div className="hidden lg:block rounded-xl overflow-hidden shadow-xl border border-slate-800/50">
-                  <img
-                    src={posterPath}
-                    alt={MovieDetail.title}
-                    className="w-full"
-                  />
-                </div> */}
               </div>
 
-              {/* Similar Movies Section - Mobile Only */}
               <div className="order-3 lg:hidden space-y-4">
                 <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                   <Film className="w-5 h-5 text-indigo-400" />
@@ -586,11 +677,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       ))}
                 </div>
               </div>
+
+             
             </div>
           </div>
         </div>
 
-        {/* Notification Alert */}
         <div className="fixed bottom-4 right-4 z-50">
           <Alert
             className={`transition-opacity duration-300 ${

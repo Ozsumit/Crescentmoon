@@ -1,31 +1,115 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-  Star,
-  Clock,
-  CalendarDays,
-  Share2,
-  Info,
-  ChevronUp,
-  ChevronDown,
-  Users,
-  Film,
-  Heart,
   Calendar,
-  PlayCircle,
+  ChevronLeft,
+  Film,
+  Star,
   LayoutGrid,
   LayoutList,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  CalendarDays,
+  Info,
+  Share2,
+  Users,
+  MessageCircle,
+  ThumbsUp,
 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import EpisodeListCard from "./EpisodeListCard";
+import EpisodeDisplay from "../display/EpisodeDisplay";
 import HomeCards from "@/components/display/HomeCard";
-import Link from "next/link"; // Use 'react-router-dom' if you are using React Router
+import Link from "next/link";
+
+const CastMember = ({ cast }) => (
+  <div className="flex items-center space-x-3">
+    <img
+      src={
+        cast.profile_path
+          ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
+          : "https://via.placeholder.com/200x300?text=No+Image"
+      }
+      alt={cast.name}
+      className="w-12 h-12 rounded-full object-cover"
+    />
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-slate-200 truncate">{cast.name}</p>
+      <p className="text-xs text-slate-400 truncate">{cast.character}</p>
+    </div>
+  </div>
+);
+
+const Review = ({ review }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLongContent = review.content.length > 300;
+  const displayContent = expanded
+    ? review.content
+    : review.content.slice(0, 300);
+
+  return (
+    <div className="bg-slate-900/50 rounded-lg p-6 shadow-lg mb-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors">
+      <div className="flex items-start space-x-4">
+        <Avatar className="w-10 h-10">
+          <AvatarImage
+            src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.author}`}
+          />
+          <AvatarFallback>
+            {review.author.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <h3 className="text-lg font-semibold text-slate-200">
+              {review.author}
+            </h3>
+            <div className="flex items-center space-x-2 text-slate-400">
+              <ThumbsUp className="w-4 h-4" />
+              <span className="text-sm">
+                {review.author_details?.rating || "N/A"}/10
+              </span>
+            </div>
+          </div>
+          <div className="mt-2 text-slate-300 text-sm leading-relaxed">
+            <p>
+              {displayContent}
+              {isLongContent && !expanded && "..."}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1"
+              >
+                {expanded ? "Show Less" : "Read More"}
+                {expanded ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            )}
+          </div>
+          <div className="mt-2 text-slate-400 text-sm">
+            {new Date(review.created_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SeasonCard = ({ season, viewType, seriesId }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -34,10 +118,7 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
   if (viewType === "grid") {
     return (
       <Link href={`/series/${seriesId}/season/${season.season_number}`}>
-        {" "}
-        {/* Use 'to' instead of 'href' if you are using React Router */}
         <Card className="flex flex-col h-full bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600/50 transition-all duration-300">
-          {/* Poster Container */}
           <div className="relative w-full">
             <div className="relative aspect-[16/9] rounded-t-lg overflow-hidden">
               <img
@@ -49,7 +130,6 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
                 alt={season.name}
                 className="w-full h-full object-cover"
               />
-              {/* Rating Badge */}
               {season.vote_average > 0 && (
                 <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md">
                   <Star className="w-4 h-4 text-yellow-400" />
@@ -60,23 +140,17 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
               )}
             </div>
           </div>
-
-          {/* Content Section */}
           <div className="flex flex-col flex-grow p-4 space-y-3">
-            {/* Title */}
             <h3 className="text-lg font-semibold text-slate-100 line-clamp-1">
               {season.name}
             </h3>
-
-            {/* Episode Count and Date */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1.5 bg-slate-700/30 px-2 py-1 rounded-md">
-                <PlayCircle className="w-4 h-4 text-indigo-400" />
+                <Film className="w-4 h-4 text-indigo-400" />
                 <span className="text-sm text-slate-300">
                   {season.episode_count} Episodes
                 </span>
               </div>
-
               {season.air_date && (
                 <div className="flex items-center gap-1.5 bg-slate-700/30 px-2 py-1 rounded-md">
                   <Calendar className="w-4 h-4 text-pink-400" />
@@ -89,8 +163,6 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
                 </div>
               )}
             </div>
-
-            {/* Progress Bar */}
             <div className="mt-auto space-y-1.5">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400">Episode Progress</span>
@@ -112,8 +184,6 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
   }
   return (
     <Link href={`/series/${seriesId}/season/${season.season_number}`}>
-      {" "}
-      {/* Use 'to' instead of 'href' if you are using React Router */}
       <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-colors">
         <CardHeader className="flex flex-row items-start space-x-4 p-4">
           <div className="relative flex-shrink-0 w-24 group">
@@ -128,7 +198,6 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md" />
           </div>
-
           <div className="flex-1 space-y-2">
             <div className="flex justify-between items-start">
               <CardTitle className="text-base text-slate-100">
@@ -143,10 +212,9 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
                 </div>
               )}
             </div>
-
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-1 bg-slate-700/50 px-2 py-1 rounded-md">
-                <PlayCircle className="w-3 h-3 text-slate-300" />
+                <Film className="w-3 h-3 text-slate-300" />
                 <span className="text-xs text-slate-300">
                   {season.episode_count} Episodes
                 </span>
@@ -160,7 +228,6 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
                 </div>
               )}
             </div>
-
             {season.overview && (
               <div className="space-y-2">
                 <button
@@ -200,7 +267,6 @@ const SeasonsDisplay = ({ seasons, seriesId }) => {
             <Film className="w-5 h-5 text-indigo-400" />
             Seasons
           </h2>
-
           <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-1">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -215,11 +281,10 @@ const SeasonsDisplay = ({ seasons, seriesId }) => {
                   <LayoutList className="w-4 h-4" />
                 </button>
               </TooltipTrigger>
-              {/* <TooltipContent>
+              <TooltipContent>
                 <p>List view</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -233,13 +298,12 @@ const SeasonsDisplay = ({ seasons, seriesId }) => {
                   <LayoutGrid className="w-4 h-4" />
                 </button>
               </TooltipTrigger>
-              {/* <TooltipContent>
+              <TooltipContent>
                 <p>Grid view</p>
-              </TooltipContent> */}
+              </TooltipContent>
             </Tooltip>
           </div>
         </div>
-
         <div
           className={`p-4 max-h-[600px] overflow-y-auto ${
             viewType === "grid"
@@ -261,30 +325,14 @@ const SeasonsDisplay = ({ seasons, seriesId }) => {
   );
 };
 
-const CastMember = ({ cast }) => (
-  <div className="flex items-center space-x-3">
-    <img
-      src={
-        cast.profile_path
-          ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-          : "https://via.placeholder.com/200x300?text=No+Image"
-      }
-      alt={cast.name}
-      className="w-12 h-12 rounded-full object-cover"
-    />
-    <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium text-slate-200 truncate">{cast.name}</p>
-      <p className="text-xs text-slate-400 truncate">{cast.character}</p>
-    </div>
-  </div>
-);
-
 const TvInfo = ({ TvDetail, genreArr, id }) => {
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -338,26 +386,34 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
     const fetchData = async () => {
       setIsLoadingCast(true);
       setIsLoadingRecommendations(true);
+      setIsLoadingReviews(true);
       try {
-        const [castResponse, recommendationsResponse] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/tv/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-          ),
-        ]);
+        const [castResponse, recommendationsResponse, reviewsResponse] =
+          await Promise.all([
+            fetch(
+              `https://api.themoviedb.org/3/tv/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+            fetch(
+              `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+            fetch(
+              `https://api.themoviedb.org/3/tv/${id}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+            ),
+          ]);
 
         const castData = await castResponse.json();
         const recommendationsData = await recommendationsResponse.json();
+        const reviewsData = await reviewsResponse.json();
 
         setCastInfo(castData.cast.slice(0, 10));
         setRecommendations(recommendationsData.results.slice(0, 6));
+        setReviews(reviewsData.results.slice(0, 5));
       } catch (error) {
         showNotification("Failed to load some content");
       } finally {
         setIsLoadingCast(false);
         setIsLoadingRecommendations(false);
+        setIsLoadingReviews(false);
       }
     };
 
@@ -379,11 +435,61 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
 
           <div className="max-w-8xl mx-auto px-3 py-4 lg:px-8 lg:py-6">
             <div className="grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
-              <div className="order-1 lg:order-1">
+              <div className="order-2 lg:order-1 space-y-4">
                 <SeasonsDisplay
                   seasons={TvDetail.seasons}
                   seriesId={TvDetail.id}
                 />
+
+                <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
+                  <div className="p-4 border-b border-slate-800/50">
+                    <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-indigo-400" />
+                      Reviews
+                      {reviews.length > 0 && (
+                        <span className="text-sm text-slate-400">
+                          ({reviews.length})
+                        </span>
+                      )}
+                    </h2>
+                  </div>
+                  <div className="p-4 max-h-[600px] overflow-y-auto">
+                    {isLoadingReviews ? (
+                      Array(3)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div
+                            key={i}
+                            className="animate-pulse bg-slate-800/50 rounded-lg p-6 mb-4"
+                          >
+                            <div className="flex items-start space-x-4">
+                              <div className="w-10 h-10 bg-slate-700 rounded-full" />
+                              <div className="flex-1 space-y-3">
+                                <div className="h-4 bg-slate-700 rounded w-1/4" />
+                                <div className="space-y-2">
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-full" />
+                                  <div className="h-3 bg-slate-700 rounded w-3/4" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    ) : reviews.length > 0 ? (
+                      reviews.map((review) => (
+                        <Review key={review.id} review={review} />
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-slate-400">
+                        <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No reviews yet</p>
+                        <p className="text-sm">
+                          Be the first to review this season!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 <div className="hidden lg:block space-y-4 mt-6">
                   <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
@@ -411,7 +517,7 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
                 </div>
               </div>
 
-              <div className="order-2 lg:order-2 space-y-4">
+              <div className="order-1 lg:order-2 space-y-4">
                 <div className="rounded-xl overflow-hidden shadow-xl border border-slate-800/50">
                   <img
                     src={posterPath}
@@ -434,7 +540,7 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
                         </span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Clock className="text-indigo-400 w-4 h-4" />
+                        <Calendar className="text-indigo-400 w-4 h-4" />
                         <span>{TvDetail.number_of_seasons} Seasons</span>
                       </div>
                       <div className="flex items-center space-x-1">

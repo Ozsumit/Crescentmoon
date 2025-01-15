@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 
 const EpisodeListCard = ({ episode, seriesId, seasonNumber }) => {
-  const episodeLink = `/series/${seriesId}/season/${seasonNumber}/episode/${episode.episode_number}`;
+  const episodeLink = `/series/${seriesId}/season/${seasonNumber}/${episode.episode_number}`;
+  //   /series/${seriesId}/season/${season_number}/${episode_number}
   const imageUrl = episode.still_path
     ? `https://image.tmdb.org/t/p/w500${episode.still_path}`
     : "https://via.placeholder.com/500x300?text=No+Image";
@@ -25,7 +26,8 @@ const EpisodeListCard = ({ episode, seriesId, seasonNumber }) => {
           </div>
           <div className="flex-grow min-w-0">
             <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors truncate">
-              {episode.episode_number}. {episode.name || `Episode ${episode.episode_number}`}
+              {episode.episode_number}.{" "}
+              {episode.name || `Episode ${episode.episode_number}`}
             </h3>
             {episode.runtime && (
               <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
