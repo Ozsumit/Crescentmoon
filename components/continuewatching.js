@@ -398,7 +398,7 @@ const ContinueWatching = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-evenly  items-center mb-6">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold text-white">Continue Watching</h2>
           <span className="bg-blue-500/20 text-blue-400 px-3 min-w-12 py-1 rounded-full text-sm">
@@ -408,7 +408,7 @@ const ContinueWatching = () => {
         {mediaItems.length > 0 && (
           <button
             onClick={clearAllMedia}
-            className="text-sm text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2"
+            className="text-sm text-slate-400 hover:text-red-400 transition-colors flex  flex-row justify-center items-center gap-2"
           >
             <Trash2 size={16} />
             Clear All
