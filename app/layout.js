@@ -17,6 +17,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <Header />
+        <Analytics />
         <div className="mt-0">{children}</div>
         {/* <WelcomeModal onClose={() => {}} /> */}
         {/* <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger>// Auto-show on first visit or version update
