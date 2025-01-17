@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en"><meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
       <body className={inter.className}>
         <Header />
         <Analytics />
