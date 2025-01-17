@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -212,7 +212,6 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
             width={288}
             height={176}
             unoptimized
-            loading="lazy"
           />
           <div className="absolute bottom-0 left-0 right-0">
             <div className="relative h-1 bg-gray-800">
@@ -267,6 +266,23 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFavoriteToggle(media.id);
+              }}
+              className="bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+            >
+              <Heart
+                size={20}
+                fill={isFavorite ? "red" : "none"}
+                stroke={isFavorite ? "red" : "white"}
+              />
+            </button>
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -353,7 +369,7 @@ const ContinueWatching = () => {
     loadStoredData();
   }, []);
 
-  const handleRemoveMedia = useCallback((mediaId) => {
+  const handleRemoveMedia = (mediaId) => {
     try {
       const progressData = JSON.parse(
         localStorage.getItem("vidLinkProgress") || "{}"
@@ -364,19 +380,16 @@ const ContinueWatching = () => {
     } catch (error) {
       console.error("Error removing media:", error);
     }
-  }, []);
+  };
 
-  const handleFavoriteToggle = useCallback(
-    (mediaId) => {
-      const updatedFavorites = favorites.includes(mediaId)
-        ? favorites.filter((id) => id !== mediaId)
-        : [...favorites, mediaId];
+  const handleFavoriteToggle = (mediaId) => {
+    const updatedFavorites = favorites.includes(mediaId)
+      ? favorites.filter((id) => id !== mediaId)
+      : [...favorites, mediaId];
 
-      setFavorites(updatedFavorites);
-      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-    },
-    [favorites]
-  );
+    setFavorites(updatedFavorites);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  };
 
   const clearAllMedia = () => {
     localStorage.setItem("vidLinkProgress", "{}");
@@ -385,19 +398,17 @@ const ContinueWatching = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row justify-between items-center mb-6">
-        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
-            Continue Watching
-          </h2>
-          <span className="bg-blue-500/20 text-blue-400 px-3 min-w-12 py-1 rounded-full text-xs md:text-sm">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold text-white">Continue Watching</h2>
+          <span className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
             {mediaItems.length} {mediaItems.length === 1 ? "title" : "titles"}
           </span>
         </div>
         {mediaItems.length > 0 && (
           <button
             onClick={clearAllMedia}
-            className="text-xs md:text-sm text-slate-400 hover:text-red-400 transition-colors flex flex-row justify-center items-center gap-2 mt-2 md:mt-0"
+            className="text-sm text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2"
           >
             <Trash2 size={16} />
             Clear All
