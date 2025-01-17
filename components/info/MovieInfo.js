@@ -360,7 +360,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   >
                     <iframe
                       src={iframeSrc}
-                      allow="autoplay; fullscreen; picture-in-picture"
+                      allow="autoplay fullscreen picture-in-picture"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full"
                     />
@@ -426,56 +426,56 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   </div>
                 </div>
                 <div className="order-4 lg:order-3 space-y-4">
-                <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
-                  <div className="p-4 border-b border-slate-800/50">
-                    <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
-                      <Users className="w-5 h-5 text-indigo-400" />
-                      Reviews
-                      {reviews.length > 0 && (
-                        <span className="text-sm text-slate-400">
-                          ({reviews.length})
-                        </span>
-                      )}
-                    </h2>
-                  </div>
-                  <div className="p-4 max-h-[600px] overflow-y-auto">
-                    {isLoadingReviews ? (
-                      Array(3)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div
-                            key={i}
-                            className="animate-pulse bg-slate-800/50 rounded-lg p-6 mb-4"
-                          >
-                            <div className="flex items-start space-x-4">
-                              <div className="w-10 h-10 bg-slate-700 rounded-full" />
-                              <div className="flex-1 space-y-3">
-                                <div className="h-4 bg-slate-700 rounded w-1/4" />
-                                <div className="space-y-2">
-                                  <div className="h-3 bg-slate-700 rounded w-full" />
-                                  <div className="h-3 bg-slate-700 rounded w-full" />
-                                  <div className="h-3 bg-slate-700 rounded w-3/4" />
+                  <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
+                    <div className="p-4 border-b border-slate-800/50">
+                      <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-indigo-400" />
+                        Reviews
+                        {reviews.length > 0 && (
+                          <span className="text-sm text-slate-400">
+                            ({reviews.length})
+                          </span>
+                        )}
+                      </h2>
+                    </div>
+                    <div className="p-4 max-h-[600px] overflow-y-auto">
+                      {isLoadingReviews ? (
+                        Array(3)
+                          .fill(0)
+                          .map((_, i) => (
+                            <div
+                              key={i}
+                              className="animate-pulse bg-slate-800/50 rounded-lg p-6 mb-4"
+                            >
+                              <div className="flex items-start space-x-4">
+                                <div className="w-10 h-10 bg-slate-700 rounded-full" />
+                                <div className="flex-1 space-y-3">
+                                  <div className="h-4 bg-slate-700 rounded w-1/4" />
+                                  <div className="space-y-2">
+                                    <div className="h-3 bg-slate-700 rounded w-full" />
+                                    <div className="h-3 bg-slate-700 rounded w-full" />
+                                    <div className="h-3 bg-slate-700 rounded w-3/4" />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          ))
+                      ) : reviews.length > 0 ? (
+                        reviews.map((review) => (
+                          <Review key={review.id} review={review} />
                         ))
-                    ) : reviews.length > 0 ? (
-                      reviews.map((review) => (
-                        <Review key={review.id} review={review} />
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-slate-400">
-                        <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium">No reviews yet</p>
-                        <p className="text-sm">
-                          Be the first to review this movie!
-                        </p>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="text-center py-8 text-slate-400">
+                          <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg font-medium">No reviews yet</p>
+                          <p className="text-sm">
+                            Be the first to review this movie!
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
                 <div className="hidden lg:block space-y-4 mt-6">
                   <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                     <Film className="w-5 h-5 text-indigo-400" />
@@ -677,8 +677,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       ))}
                 </div>
               </div>
-
-             
             </div>
           </div>
         </div>
