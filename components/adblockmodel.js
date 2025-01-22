@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ShieldAlert, Info, ExternalLink } from "lucide-react";
 
-// Add common ad-related cffflass names and identifiers
+// Add common ad-related class names and identifiers
 const adClassNames = [
   'adsbox', 
   'ad-container', 

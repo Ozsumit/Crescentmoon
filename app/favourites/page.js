@@ -125,7 +125,7 @@ const Favorites = () => {
     } else {
       // Set default movies if no favorites are found
       setFavorites(defaultMovies);
-      setLocalStorageItem("favorites", defaultMovies);
+      localStorage.setItem("favorites", JSON.stringify(defaultMovies));
     }
   }, []);
 
@@ -144,14 +144,6 @@ const Favorites = () => {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
-
-  // Function to update favorites and sync with local storage and database
-  const updateFavorites = (newFavorites) => {
-    setFavorites(newFavorites);
-    setLocalStorageItem("favorites", newFavorites);
-    // Sync with database (replace with your actual API call)
-    syncFavoritesWithDatabase(newFavorites);
-  };
 
   // Filter favorites based on active tab
   const filteredFavorites = favorites.filter((item) => {
@@ -177,24 +169,6 @@ const Favorites = () => {
       </div>
     </div>
   );
-};
-
-// Function to sync favorites with the database
-const syncFavoritesWithDatabase = async (favorites) => {
-  try {
-    const response = await fetch("/api/syncFavorites", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ favorites }),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to sync favorites with the database");
-    }
-  } catch (error) {
-    console.error("Error syncing favorites with the database:", error);
-  }
 };
 
 export default Favorites;
