@@ -21,11 +21,11 @@ export default async function RootLayout({ children }) {
       <body className={inter.className}>
         <SessionProvider session={session}>
           <Header />
-          <LoginIndicator />
           <Analytics />
           <SpeedInsights />
           <div className="mt-0">{children}</div>
           <AdBlocker />
+          <LoginIndicator />
           <Footer />
         </SessionProvider>
       </body>
