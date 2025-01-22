@@ -10,6 +10,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import SessionProvider from "@/app/components/SessionProvider";
 import LoginIndicator from "@/app/components/LoginIndicator";
 import { getServerSession } from "next-auth";
+import { RegisterForm } from "./components/AuthForms";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }) {
           <LoginIndicator />
           <Footer />
         </SessionProvider>
+        <RegisterForm />
       </body>
     </html>
   );

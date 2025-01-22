@@ -1,74 +1,85 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { registerUser } from "@/app/actions/auth"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { registerUser } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 export default function RegisterForm() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
-  const router = useRouter()
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const router = useRouter();
 
   const calculatePasswordStrength = (password) => {
-    let strength = 0
-    if (password.length >= 8) strength += 25
-    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 25
-    if (password.match(/\d/)) strength += 25
-    if (password.match(/[^a-zA-Z\d]/)) strength += 25
-    return strength
-  }
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 25;
+    if (password.match(/\d/)) strength += 25;
+    if (password.match(/[^a-zA-Z\d]/)) strength += 25;
+    return strength;
+  };
 
   const handlePasswordChange = (e) => {
-    const newPassword = e.target.value
-    setPassword(newPassword)
-    setPasswordStrength(calculatePasswordStrength(newPassword))
-  }
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    setPasswordStrength(calculatePasswordStrength(newPassword));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     if (passwordStrength < 75) {
-      setError("Please choose a stronger password")
-      setIsLoading(false)
-      return
+      setError("Please choose a stronger password");
+      setIsLoading(false);
+      return;
     }
+
+    // Get localStorage data
+    const favorites = localStorage.getItem("favorites");
+    const vidLinkProgress = localStorage.getItem("vidLinkProgress");
 
     try {
-      const result = await registerUser(new FormData(e.target))
+      const formData = new FormData(e.target);
+      formData.append("favorites", favorites || "");
+      formData.append("vidLinkProgress", vidLinkProgress || "");
+
+      const result = await registerUser(formData);
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else {
-        router.push("/login")
+        // Clear localStorage after successful registration
+        localStorage.removeItem("favorites");
+        localStorage.removeItem("vidLinkProgress");
+        router.push("/login");
       }
     } catch (error) {
-      setError("An unexpected error occurred. Please try again.")
+      setError("An unexpected error occurred. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    (<form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -77,7 +88,8 @@ export default function RegisterForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full" />
+          className="w-full"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -88,7 +100,8 @@ export default function RegisterForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full" />
+          className="w-full"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
@@ -100,11 +113,13 @@ export default function RegisterForm() {
             value={password}
             onChange={handlePasswordChange}
             required
-            className="w-full pr-10" />
+            className="w-full pr-10"
+          />
           <button
             type="button"
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={() => setShowPassword(!showPassword)}>
+            onClick={() => setShowPassword(!showPassword)}
+          >
             {showPassword ? (
               <EyeOffIcon className="h-5 w-5 text-gray-400" />
             ) : (
@@ -115,7 +130,13 @@ export default function RegisterForm() {
         <Progress value={passwordStrength} className="w-full" />
         <p className="text-sm text-gray-500">
           Password strength:{" "}
-          {passwordStrength < 25 ? "Weak" : passwordStrength < 50 ? "Fair" : passwordStrength < 75 ? "Good" : "Strong"}
+          {passwordStrength < 25
+            ? "Weak"
+            : passwordStrength < 50
+            ? "Fair"
+            : passwordStrength < 75
+            ? "Good"
+            : "Strong"}
         </p>
       </div>
       <div className="space-y-2">
@@ -126,7 +147,8 @@ export default function RegisterForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          className="w-full" />
+          className="w-full"
+        />
       </div>
       {error && (
         <Alert variant="destructive">
@@ -136,7 +158,6 @@ export default function RegisterForm() {
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Registering..." : "Register"}
       </Button>
-    </form>)
+    </form>
   );
 }
-
