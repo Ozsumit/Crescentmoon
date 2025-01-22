@@ -23,8 +23,8 @@ export async function GET(req) {
 
   return new Response(JSON.stringify({
     id: user._id.toString(),
-    favorites: user.favorites || null,
-    vidLinkProgress: user.vidLinkProgress || null,
+    favorites: user.favorites || [],
+    vidLinkProgress: user.vidLinkProgress || {},
   }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
