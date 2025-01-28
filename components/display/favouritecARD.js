@@ -13,6 +13,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch additional data for TV series
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -37,6 +38,13 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     }
   }, [favoriteItem.id, favoriteItem.media_type]);
 
+  // Check if the item is in favorites
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    setIsFavorite(favorites.some((item) => item.id === favoriteItem.id));
+  }, [favoriteItem.id]);
+
+  // Remove item from favorites
   const handleRemoveFavorite = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -47,10 +55,14 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     );
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
 
+    // Update state
+    setIsFavorite(false);
+
     // Dispatch storage event to update other tabs
     window.dispatchEvent(new Event("storage"));
   };
 
+  // Get the image path for the card
   const getImagePath = () => {
     if (movieData.poster_path)
       return `https://image.tmdb.org/t/p/w342/${movieData.poster_path}`;
@@ -59,6 +71,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     return "/placeholder.jpg"; // Use a placeholder image
   };
 
+  // Get the link for the card
   const getLink = () => {
     // Series link
     if (movieData.first_air_date) {
@@ -79,6 +92,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     return "#";
   };
 
+  // Render the title based on the type of item
   const renderTitle = () => {
     // Series
     if (movieData.first_air_date) {
@@ -103,6 +117,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     return "Favorite Item";
   };
 
+  // Format the date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -112,6 +127,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     });
   };
 
+  // Additional details for the card
   const additionalDetails = {
     rating: movieData.vote_average
       ? `${movieData.vote_average.toFixed(1)}/10`
@@ -121,11 +137,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
     overview: movieData.overview || "No overview available",
   };
 
-  useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    setIsFavorite(favorites.some((item) => item.id === movieData.id));
-  }, [movieData.id]);
-
+  // Render the card in grid view
   if (viewMode === "grid") {
     return (
       <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
@@ -207,6 +219,7 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
       </div>
     );
   } else {
+    // Render the card in horizontal view
     return <HorizontalfavCard favoriteItem={favoriteItem} />;
   }
 };

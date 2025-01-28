@@ -1,8 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import FavoriteCard from "@/components/display/favouritecARD";
-import FavTitle from "@/components/title/fav";
-import { FavoritesProvider } from "@/components/favourites";
 import FavoriteDisplay from "@/components/display/favouriteDisplay";
 
 const defaultMovies = [
@@ -113,44 +110,61 @@ const defaultMovies = [
     overview: "A team ventures into space to ensure humanity's survival.",
   },
 ];
-
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
 
+  // Load favorites from localStorage on mount
   useEffect(() => {
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites"));
-    if (storedFavorites && storedFavorites.length > 0) {
-      setFavorites(storedFavorites);
+    const storedFavorites = localStorage.getItem("favorites");
+    if (storedFavorites !== null) {
+      // Load existing favorites (even if empty array)
+      setFavorites(JSON.parse(storedFavorites));
     } else {
-      // Set default movies if no favorites are found
+      // Show defaults only if no 'favorites' key exists
       setFavorites(defaultMovies);
-      localStorage.setItem("favorites", JSON.stringify(defaultMovies));
     }
   }, []);
 
-  // Update favorites when localStorage changes (e.g., in another tab)
+  // Sync between tabs
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedFavorites = JSON.parse(localStorage.getItem("favorites"));
-      if (storedFavorites && storedFavorites.length > 0) {
-        setFavorites(storedFavorites);
+      const storedFavorites = localStorage.getItem("favorites");
+      if (storedFavorites !== null) {
+        setFavorites(JSON.parse(storedFavorites));
       } else {
+        // Only show defaults if key is completely removed
         setFavorites(defaultMovies);
       }
     };
+
     window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Filter favorites based on active tab
+  // Add or remove favorites
+  const toggleFavorite = (item) => {
+    const isAlreadyFavorite = favorites.some((fav) => fav.id === item.id);
+
+    let updatedFavorites;
+    if (isAlreadyFavorite) {
+      // Remove the item
+      updatedFavorites = favorites.filter((fav) => fav.id !== item.id);
+    } else {
+      // Add the item
+      updatedFavorites = [...favorites, item];
+    }
+
+    // Update state and localStorage
+    setFavorites(updatedFavorites);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  };
+
+  // Filter logic
   const filteredFavorites = favorites.filter((item) => {
     if (activeTab === "all") return true;
     if (activeTab === "series") return item.first_air_date;
     if (activeTab === "movies") return item.release_date;
-    if (activeTab === "episodes") return item.episode_number;
     return true;
   });
 
@@ -158,13 +172,12 @@ const Favorites = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-br justify-center items-center from-indigo-950 via-slate-900 to-black text-white">
       <div className="container mx-auto mt-4 px-4 py-8 flex-grow">
         <div className="mt-8">
-          {filteredFavorites.length > 0 ? (
-            <FavoriteDisplay />
-          ) : (
-            <div className="text-center text-slate-400 py-12">
-              <p>Something went wrong loading favorites.</p>
-            </div>
-          )}
+          <FavoriteDisplay
+            filteredFavorites={filteredFavorites}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            toggleFavorite={toggleFavorite}
+          />
         </div>
       </div>
     </div>

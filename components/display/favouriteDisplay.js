@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Download,
   Star,
@@ -52,56 +52,30 @@ const FloatingElement = ({ icon, size = 40, animationDuration = "6s" }) => {
 };
 
 // FavoriteDisplay Component
-const FavoriteDisplay = () => {
-  const [favorites, setFavorites] = useState([]);
-  const [activeTab, setActiveTab] = useState("all");
+const FavoriteDisplay = ({
+  filteredFavorites,
+  activeTab,
+  onTabChange,
+  toggleFavorite,
+}) => {
   const [viewMode, setViewMode] = useState("grid");
   const [isSaving, setIsSaving] = useState(false);
   const favoriteContainerRef = useRef(null);
 
-  // Load favorites from localStorage on component mount
-  useEffect(() => {
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(storedFavorites);
-  }, []);
-
-  // Update favorites when localStorage changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const storedFavorites =
-        JSON.parse(localStorage.getItem("favorites")) || [];
-      setFavorites(storedFavorites);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  // Filter favorites based on active tab
-  const filteredFavorites = favorites.filter((item) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "series") return item.first_air_date;
-    if (activeTab === "movies") return item.release_date;
-    return true;
-  });
-
-  // Save the current screen using html2canvas with enhanced options
+  // Save the current screen using html2canvas
   const handleSaveAsPicture = async () => {
     if (favoriteContainerRef.current) {
       setIsSaving(true);
       try {
         const canvas = await html2canvas(favoriteContainerRef.current, {
-          scale: 3, // Higher resolution
+          scale: 3,
           useCORS: true,
-          logging: false, // Disable logging
-          allowTaint: true, // Allow cross-origin images
-          backgroundColor: null, // Transparent background
-          imageTimeout: 0, // No timeout for image loading
+          logging: false,
+          allowTaint: true,
+          backgroundColor: null,
+          imageTimeout: 0,
         });
 
-        // Create a temporary link and trigger download
         const link = document.createElement("a");
         link.download = `favorites_${
           new Date().toISOString().split("T")[0]
@@ -167,7 +141,7 @@ const FavoriteDisplay = () => {
             onClick={handleSaveAsPicture}
             disabled={isSaving}
             className={`bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-full transition-all duration-300 flex items-center space-x-2 
-              ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
+              ${isSaving ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}
             `}
           >
             {isSaving ? (
@@ -192,7 +166,7 @@ const FavoriteDisplay = () => {
           ].map(({ name, icon: Icon }) => (
             <button
               key={name}
-              onClick={() => setActiveTab(name)}
+              onClick={() => onTabChange(name)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center space-x-2 
                 ${
                   activeTab === name
@@ -217,11 +191,12 @@ const FavoriteDisplay = () => {
                 : "space-y-4"
             } animate-fade-in`}
           >
-            {filteredFavorites.map((favorite, index) => (
+            {filteredFavorites.map((favorite) => (
               <FavoriteCard
-                key={favorite.id || index}
+                key={favorite.id}
                 favoriteItem={favorite}
                 viewMode={viewMode}
+                toggleFavorite={() => toggleFavorite(favorite)}
               />
             ))}
           </div>
