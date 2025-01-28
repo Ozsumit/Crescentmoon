@@ -140,8 +140,8 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
   // Render the card in grid view
   if (viewMode === "grid") {
     return (
-      <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
-        <Link href={getLink()} title={renderTitle()} className="block relative">
+      <Link href={getLink()} title={renderTitle()} className="block relative">
+        <div className="bg-slate-800/80 rounded-xl h-[14rem] sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
           <div
             className={`relative ${
               !imageLoaded ? "opacity-0" : "opacity-100"
@@ -170,53 +170,53 @@ const FavoriteCard = ({ favoriteItem, viewMode }) => {
               </div>
             )}
           </div>
-        </Link>
 
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
-          <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
-            {additionalDetails.overview}
-          </p>
-          <Link
-            href={getLink()}
-            title={renderTitle()}
-            className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
-          >
-            <Info size={16} className="mr-2" />
-            More Details
-          </Link>
-        </div>
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
+            <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
+              {additionalDetails.overview}
+            </p>
+            <Link
+              href={getLink()}
+              title={renderTitle()}
+              className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors"
+            >
+              <Info size={16} className="mr-2" />
+              More Details
+            </Link>
+          </div>
 
-        <div className="p-4">
-          <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
-            {renderTitle()}
-          </h3>
+          <div className="p-4">
+            <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
+              {renderTitle()}
+            </h3>
 
-          <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
-            <div className="flex items-center">
-              <Star size={14} className="mr-1 text-yellow-500" />
-              <span>{additionalDetails.rating}</span>
-            </div>
+            <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
+              <div className="flex items-center">
+                <Star size={14} className="mr-1 text-yellow-500" />
+                <span>{additionalDetails.rating}</span>
+              </div>
 
-            <div className="flex items-center">
-              <Calendar size={14} className="mr-1" />
-              <span>{additionalDetails.date}</span>
+              <div className="flex items-center">
+                <Calendar size={14} className="mr-1" />
+                <span>{additionalDetails.date}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <button
-          onClick={handleRemoveFavorite}
-          className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
-          aria-label="Remove from favorites"
-        >
-          <Heart
-            size={20}
-            fill={isFavorite ? "red" : "none"}
-            stroke={isFavorite ? "red" : "white"}
-            className="transition-colors"
-          />
-        </button>
-      </div>
+          <button
+            onClick={handleRemoveFavorite}
+            className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+            aria-label="Remove from favorites"
+          >
+            <Heart
+              size={20}
+              fill={isFavorite ? "red" : "none"}
+              stroke={isFavorite ? "red" : "white"}
+              className="transition-colors"
+            />
+          </button>
+        </div>
+      </Link>
     );
   } else {
     // Render the card in horizontal view
