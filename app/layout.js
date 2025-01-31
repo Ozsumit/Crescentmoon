@@ -6,7 +6,7 @@ import AdBlocker from "@/components/filters";
 import WelcomeModal, { WelcomeModalTrigger } from "@/components/welcome";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { CSPostHogProvider } from "./providers";
+import { PostHogProvider } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,8 +19,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />{" "}
-      <CSPostHogProvider>
-        <body className={inter.className}>
+      <body className={inter.className}>
+        <PostHogProvider>
           <Header />
           <Analytics />
           <SpeedInsights />
@@ -32,8 +32,8 @@ export default function RootLayout({ children }) {
 <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger> */}
           <AdBlocker />
           <Footer />
-        </body>{" "}
-      </CSPostHogProvider>
+        </PostHogProvider>
+      </body>{" "}
     </html>
   );
 }
