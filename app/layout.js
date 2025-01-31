@@ -7,7 +7,18 @@ import WelcomeModal, { WelcomeModalTrigger } from "@/components/welcome";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PostHogProvider } from "./providers";
-
+import posthog from "posthog-js";
+posthog.init("phc_b1sOYJSoCDWzjkxPxND3RNJoG7527n2WfVIkJHTpL9W", {
+  api_host: "https://us.i.posthog.com",
+});
+if (
+  !window.location.host.includes("127.0.0.1") &&
+  !window.location.host.includes("localhost")
+) {
+  posthog.init("phc_b1sOYJSoCDWzjkxPxND3RNJoG7527n2WfVIkJHTpL9W", {
+    api_host: "https://us.i.posthog.com",
+  });
+}
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -18,7 +29,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />{" "}
+      <head>
+        <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
+      </head>
       <body className={inter.className}>
         <PostHogProvider>
           <Header />
