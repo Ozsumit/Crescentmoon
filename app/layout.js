@@ -6,6 +6,8 @@ import AdBlocker from "@/components/filters";
 import WelcomeModal, { WelcomeModalTrigger } from "@/components/welcome";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CSPostHogProvider } from "./providers";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -16,20 +18,22 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
-      <body className={inter.className}>
-        <Header />
-        <Analytics />
-        <SpeedInsights />
-        <div className="mt-0">{children}</div>
-        {/* <WelcomeModal onClose={() => {}} /> */}
-        {/* <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger>// Auto-show on first visit or version update
+      <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />{" "}
+      <CSPostHogProvider>
+        <body className={inter.className}>
+          <Header />
+          <Analytics />
+          <SpeedInsights />
+          <div className="mt-0">{children}</div>
+          {/* <WelcomeModal onClose={() => {}} /> */}
+          {/* <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger>// Auto-show on first visit or version update
 <SpeedInsights/>
 // Or use the trigger button
 <WelcomeModalTrigger>Open Welcome Guide</WelcomeModalTrigger> */}
-        <AdBlocker />
-        <Footer />
-      </body>
+          <AdBlocker />
+          <Footer />
+        </body>{" "}
+      </CSPostHogProvider>
     </html>
   );
 }
