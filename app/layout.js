@@ -20,6 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"></script>
       </head>
       <body className={inter.className}>
         <PostHogProvider>
