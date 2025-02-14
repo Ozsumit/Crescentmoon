@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 import SearchDisplay from "@/components/display/SearchDisplay";
 import SearchBar from "@/components/searchbar/SearchBar";
 import SearchTitle from "@/components/title/SearchTitle";
