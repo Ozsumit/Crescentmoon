@@ -9,7 +9,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import HomeCards from "./HomeCard";
-import HomeCards2 from "./generalcards";
 import HorizontalHomeCard from "./HorHomeCards";
 
 const SearchDisplay = ({ media }) => {
@@ -22,16 +21,13 @@ const SearchDisplay = ({ media }) => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const itemsPerPage = 12;
 
-  // Process and filter media items
   const processedMedia = useMemo(() => {
     if (!media || !Array.isArray(media)) return [];
 
     let filtered = media.filter((item) => item.poster_path !== null);
 
-    // Apply rating filter
     filtered = filtered.filter((item) => (item.vote_average || 0) >= minRating);
 
-    // Apply year filter
     if (yearFilter !== "all") {
       filtered = filtered.filter((item) => {
         const releaseDate = item.release_date || item.first_air_date;
@@ -41,12 +37,10 @@ const SearchDisplay = ({ media }) => {
       });
     }
 
-    // Apply media type filter
     if (typeFilter !== "all") {
       filtered = filtered.filter((item) => item.media_type === typeFilter);
     }
 
-    // Sort media
     return filtered.sort((a, b) => {
       if (sortField === "releaseDate") {
         const aDate = a.release_date || a.first_air_date || "0000-00-00";
@@ -62,7 +56,6 @@ const SearchDisplay = ({ media }) => {
     });
   }, [media, sortField, sortDirection, minRating, yearFilter, typeFilter]);
 
-  // Calculate pagination
   const totalPages = Math.ceil(processedMedia.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedMedia = processedMedia.slice(
@@ -70,7 +63,6 @@ const SearchDisplay = ({ media }) => {
     startIndex + itemsPerPage
   );
 
-  // Get unique years for filter
   const years = useMemo(() => {
     if (!media || !Array.isArray(media)) return [];
 
@@ -87,7 +79,6 @@ const SearchDisplay = ({ media }) => {
     return Array.from(uniqueYears).sort((a, b) => b - a);
   }, [media]);
 
-  // Normalize item for HomeCards components
   const normalizeItem = (item) => {
     return {
       ...item,
@@ -97,7 +88,6 @@ const SearchDisplay = ({ media }) => {
     };
   };
 
-  // Active filters count for mobile badge
   const activeFiltersCount = () => {
     let count = 0;
     if (minRating > 0) count++;
@@ -106,7 +96,6 @@ const SearchDisplay = ({ media }) => {
     return count;
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setMinRating(0);
     setYearFilter("all");
@@ -118,16 +107,12 @@ const SearchDisplay = ({ media }) => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Desktop Filters Section */}
       <div className="hidden md:block mb-6 p-4 bg-slate-800 rounded-lg shadow-md">
         <div className="flex flex-wrap gap-4 items-center justify-between">
-          {/* Filter Title */}
           <div className="flex items-center space-x-2">
             <Filter className="w-5 h-5 text-indigo-400" />
             <h3 className="text-lg font-medium text-white">Filters</h3>
           </div>
-
-          {/* Filter Controls */}
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-slate-300 text-sm">Min Rating:</label>
@@ -169,8 +154,6 @@ const SearchDisplay = ({ media }) => {
               </select>
             </div>
           </div>
-
-          {/* Sort Controls */}
           <div className="flex items-center gap-2">
             <label className="text-slate-300 text-sm">Sort By:</label>
             <select
@@ -197,8 +180,6 @@ const SearchDisplay = ({ media }) => {
               )}
             </button>
           </div>
-
-          {/* Reset Button */}
           <button
             onClick={resetFilters}
             className="px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded border border-slate-600 transition duration-200 text-slate-300 hover:text-white flex items-center gap-1"
@@ -208,8 +189,6 @@ const SearchDisplay = ({ media }) => {
           </button>
         </div>
       </div>
-
-      {/* Mobile Filter Button */}
       <div className="md:hidden mb-4 flex justify-between items-center">
         <h3 className="text-lg font-medium text-white"></h3>
         <button
@@ -225,8 +204,6 @@ const SearchDisplay = ({ media }) => {
           )}
         </button>
       </div>
-
-      {/* Mobile Filters (Collapsible) */}
       {showMobileFilters && (
         <div className="md:hidden mb-6 p-4 bg-slate-800 rounded-lg shadow-md animate-slideDown">
           <div className="flex justify-between items-center mb-4">
@@ -238,9 +215,7 @@ const SearchDisplay = ({ media }) => {
               <X className="w-5 h-5" />
             </button>
           </div>
-
           <div className="space-y-4">
-            {/* Rating Filter */}
             <div className="flex flex-col gap-1">
               <label className="text-slate-300 text-sm">Minimum Rating:</label>
               <div className="flex items-center gap-2">
@@ -258,8 +233,6 @@ const SearchDisplay = ({ media }) => {
                 </span>
               </div>
             </div>
-
-            {/* Year Filter */}
             <div className="flex flex-col gap-1">
               <label className="text-slate-300 text-sm">Year:</label>
               <select
@@ -275,8 +248,6 @@ const SearchDisplay = ({ media }) => {
                 ))}
               </select>
             </div>
-
-            {/* Type Filter */}
             <div className="flex flex-col gap-1">
               <label className="text-slate-300 text-sm">Content Type:</label>
               <select
@@ -289,8 +260,6 @@ const SearchDisplay = ({ media }) => {
                 <option value="tv">TV Shows Only</option>
               </select>
             </div>
-
-            {/* Sort Controls */}
             <div className="flex flex-col gap-1">
               <label className="text-slate-300 text-sm">Sort By:</label>
               <div className="flex gap-2">
@@ -316,8 +285,6 @@ const SearchDisplay = ({ media }) => {
                 </button>
               </div>
             </div>
-
-            {/* Action Buttons */}
             <div className="flex justify-between pt-2">
               <button
                 onClick={resetFilters}
@@ -335,14 +302,11 @@ const SearchDisplay = ({ media }) => {
           </div>
         </div>
       )}
-
-      {/* Title Section */}
       <div className="text-center pt-8 pb-4">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
           Search Results
         </h2>
       </div>
-
       {paginatedMedia.length === 0 ? (
         <div className="bg-slate-800/50 rounded-xl p-8 max-w-md mx-auto">
           <p className="text-lg sm:text-xl text-gray-300 mb-2">
@@ -354,7 +318,6 @@ const SearchDisplay = ({ media }) => {
         </div>
       ) : (
         <>
-          {/* Primary Grid View - Desktop Only */}
           <div className="hidden md:block mb-8">
             <div
               id="search-results"
@@ -369,8 +332,6 @@ const SearchDisplay = ({ media }) => {
               ))}
             </div>
           </div>
-
-          {/* Alternative View - Mobile Only */}
           <div className="md:hidden mb-4">
             <div className="grid grid-cols-1 gap-4">
               {paginatedMedia.map((item) => (
@@ -381,8 +342,6 @@ const SearchDisplay = ({ media }) => {
               ))}
             </div>
           </div>
-
-          {/* Pagination Controls - Updated Design */}
           <div className="flex items-center justify-center gap-2 mt-4 mb-8 bg-slate-800 rounded-full px-2 py-1 shadow-md w-fit mx-auto">
             <button
               className="p-2 rounded-full hover:bg-slate-700 disabled:opacity-50 disabled:hover:bg-transparent transition duration-200"
@@ -404,23 +363,8 @@ const SearchDisplay = ({ media }) => {
           </div>
         </>
       )}
-
-      {/* Alternative View - Completely removed from desktop */}
     </div>
   );
 };
-
-// Add required CSS for animations
-const styleTag = document.createElement("style");
-styleTag.textContent = `
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-slideDown {
-    animation: slideDown 0.2s ease-out forwards;
-  }
-`;
-document.head.appendChild(styleTag);
 
 export default SearchDisplay;
