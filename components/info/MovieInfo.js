@@ -41,14 +41,6 @@ const VIDEO_SOURCES = [
     downloadSupport: false,
   },
   {
-    name: "VidSrc",
-    params: "?multiLang=true",
-    url: `https://v2.vidsrc.me/embed/movie/`,
-    icon: <Award className="w-4 h-4" />,
-    downloadSupport: true,
-    getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
-  },
-  {
     name: "2Embed",
     url: `https://2embed.cc/embed/movie/`,
     icon: <Film className="w-4 h-4" />,
@@ -60,6 +52,14 @@ const VIDEO_SOURCES = [
     icon: <Eye className="w-4 h-4" />,
     downloadSupport: false,
     parseUrl: true,
+  },
+  {
+    name: "VidSrc",
+    params: "?multiLang=true",
+    url: `https://v2.vidsrc.me/embed/movie/`,
+    icon: <Award className="w-4 h-4" />,
+    downloadSupport: true,
+    getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
   {
     name: "EmbedSu",
@@ -76,15 +76,6 @@ const VIDEO_SOURCES = [
     downloadSupport: false,
   },
 ];
-
-window.addEventListener("message", (event) => {
-  if (event.origin !== "https://vidlink.pro") return;
-
-  if (event.data?.type === "MEDIA_DATA") {
-    const mediaData = event.data.data;
-    localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
-  }
-});
 
 const Review = ({ review }) => {
   const [expanded, setExpanded] = useState(false);
@@ -165,9 +156,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [showMoreCast, setShowMoreCast] = useState(false);
   const videoContainerRef = useRef(null);
 
-  const SERVER_ISSUE_TOAST =
-    "Not the movie you are looking for? It may be the server's fault that are out of my controls. Changing the server may fix it. Use VidSrc or VidBinge for reliable server experience.";
-
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
     : "https://via.placeholder.com/500x750.png?text=Movie+Poster";
@@ -234,11 +222,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         serverUrl = `${serverUrl}${id}${serverParams}`;
       }
       setIframeSrc(serverUrl);
-      toast(`Switched to ${server.name} server`);
-      showNotification(SERVER_ISSUE_TOAST); // Show the toast notification here
+      showNotification(`Switched to ${server.name} server`);
     } catch (error) {
       showNotification("Failed to load server. Please try another one.");
-      showNotification(SERVER_ISSUE_TOAST); // Show the toast notification here
     }
   };
 
@@ -420,6 +406,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         </div>
                       </SheetContent>
                     </Sheet>
+
                     <div className="flex items-center gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -430,21 +417,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                             <Share2 className="w-4 h-4" />
                           </button>
                         </TooltipTrigger>
-
                         <TooltipContent>
                           <p>Share movie</p>
                         </TooltipContent>
                       </Tooltip>
-                    </div>{" "}
+                    </div>
                   </div>
-                  {/* <TooltipContent> */}
-                  <h6 className="text-sm flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur-sm font-sans w-8/12 text-[#ab77f4]">
-                    Not the movie you are looking for? It may be the server's
-                    fault that are out of my controls. Changing the server may
-                    fix it. Use VidSrc or VidBinge for reliable server
-                    experience.
-                  </h6>
-                  {/* </TooltipContent> */}
                 </div>
                 <div className="order-4 lg:order-3 space-y-4">
                   <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
