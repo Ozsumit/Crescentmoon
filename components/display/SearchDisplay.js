@@ -1,16 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import HomeCards from "./HomeCard";
 import HomeCards2 from "./generalcards";
 
 const SearchDisplay = ({ movies }) => {
-  // More lenient filtering that checks for the existence of movies and basic properties
+  const [sortOption, setSortOption] = useState("title");
+  const [filterOption, setFilterOption] = useState("all");
+  const [countryOption, setCountryOption] = useState("all");
+
+  // Filter movies with no rating or poster
   const filteredMovies =
     movies && Array.isArray(movies)
       ? movies.filter(
-          (movie) =>
-            
+          (movie) => movie.rating !== undefined && movie.poster !== undefined
         )
       : [];
+
+  // Sort movies based on the selected option
+  const sortedMovies = [...filteredMovies].sort((a, b) => {
+    if (sortOption === "title") {
+      return a.title.localeCompare(b.title);
+    } else if (sortOption === "rating") {
+      return b.rating - a.rating;
+    } else if (sortOption === "releaseDate") {
+      return new Date(b.releaseDate) - new Date(a.releaseDate);
+    }
+    return 0;
+  });
+
+  // Filter movies based on the selected genre and country options
+  const displayedMovies = sortedMovies.filter((movie) => {
+    const genreMatch = filterOption === "all" || movie.genre === filterOption;
+    const countryMatch = countryOption === "all" || movie.country === countryOption;
+    return genreMatch && countryMatch;
+  });
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,12 +42,47 @@ const SearchDisplay = ({ movies }) => {
           Search Results
         </h2>
 
-        {filteredMovies.length > 0 ? (
+        {/* Sort and Filter Controls */}
+        <div className="flex justify-center space-x-4 mb-6">
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="px-4 py-2 border rounded"
+          >
+            <option value="title">Sort by Title</option>
+            <option value="rating">Sort by Rating</option>
+            <option value="releaseDate">Sort by Release Date</option>
+          </select>
+          <select
+            value={filterOption}
+            onChange={(e) => setFilterOption(e.target.value)}
+            className="px-4 py-2 border rounded"
+          >
+            <option value="all">All Genres</option>
+            <option value="action">Action</option>
+            <option value="comedy">Comedy</option>
+            <option value="drama">Drama</option>
+            {/* Add more genres as needed */}
+          </select>
+          <select
+            value={countryOption}
+            onChange={(e) => setCountryOption(e.target.value)}
+            className="px-4 py-2 border rounded"
+          >
+            <option value="all">All Countries</option>
+            <option value="USA">USA</option>
+            <option value="UK">UK</option>
+            <option value="France">France</option>
+            {/* Add more countries as needed */}
+          </select>
+        </div>
+
+        {displayedMovies.length > 0 ? (
           <div
             id="search-results"
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full"
           >
-            {filteredMovies.map((movie) => (
+            {displayedMovies.map((movie) => (
               <HomeCards key={movie.id} MovieCard={movie} className="w-full" />
             ))}
           </div>
@@ -54,9 +111,9 @@ const SearchDisplay = ({ movies }) => {
         </div>
 
         {/* Filtered Movies Grid */}
-        {filteredMovies.length > 0 ? (
+        {displayedMovies.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {filteredMovies.map((movie) => (
+            {displayedMovies.map((movie) => (
               <HomeCards2 key={movie.id} MovieCard={movie} />
             ))}
           </div>
@@ -71,3 +128,4 @@ const SearchDisplay = ({ movies }) => {
 };
 
 export default SearchDisplay;
+              
