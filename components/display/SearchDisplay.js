@@ -18,7 +18,7 @@ const SearchDisplay = ({ movies }) => {
     let filtered = movies.filter(
       (movie) =>
         movie &&
-      (movie.releaseDate || movie.release_date!== undefined) 
+      (movie.releaseDate || movie.release_date) 
 
     
     );
