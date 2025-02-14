@@ -404,7 +404,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                                   
                             </Tooltip>
                           ))}
-                            <p className=" text-sm font-sans text-white w-full" > Not the movie you were hoping for? It might be server's fault which i currently dont have direct access to. But worry not, it might be on other servers. Switch the servers by clicking the button above until it works for you</p> 
+                             
                         </div>
                       </SheetContent>
                     </Sheet>
@@ -424,7 +424,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                  </div>
+                  </div><p className=" text-sm font-sans text-white w-full" > Not the movie you were hoping for? It might be server's fault which i currently dont have direct access to. But worry not, it might be on other servers. Switch the servers by clicking the button above until it works for you</p> 
                 </div>
                 <div className="order-4 lg:order-3 space-y-4">
                   <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
