@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HomeCards from "./HomeCard";
 import HomeCards2 from "./generalcards";
 
@@ -7,6 +7,12 @@ const SearchDisplay = ({ movies }) => {
   const [filterOption, setFilterOption] = useState("all");
   const [countryOption, setCountryOption] = useState("all");
 
+  useEffect(() => {
+    console.log("Sort Option:", sortOption);
+    console.log("Filter Option:", filterOption);
+    console.log("Country Option:", countryOption);
+  }, [sortOption, filterOption, countryOption]);
+
   // Filter movies with no rating or poster
   const filteredMovies =
     movies && Array.isArray(movies)
@@ -14,6 +20,8 @@ const SearchDisplay = ({ movies }) => {
           (movie) => movie.rating !== undefined && movie.poster !== undefined
         )
       : [];
+
+  console.log("Filtered Movies:", filteredMovies);
 
   // Sort movies based on the selected option
   const sortedMovies = [...filteredMovies].sort((a, b) => {
@@ -27,12 +35,16 @@ const SearchDisplay = ({ movies }) => {
     return 0;
   });
 
+  console.log("Sorted Movies:", sortedMovies);
+
   // Filter movies based on the selected genre and country options
   const displayedMovies = sortedMovies.filter((movie) => {
     const genreMatch = filterOption === "all" || movie.genre === filterOption;
     const countryMatch = countryOption === "all" || movie.country === countryOption;
     return genreMatch && countryMatch;
   });
+
+  console.log("Displayed Movies:", displayedMovies);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
