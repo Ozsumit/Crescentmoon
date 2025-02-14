@@ -18,8 +18,9 @@ const SearchDisplay = ({ movies }) => {
     let filtered = movies.filter(
       (movie) =>
         movie &&
-      
-        ( movie.vote_average!== undefined)
+      (movie.releaseDate || movie.release_date!== undefined) 
+
+    
     );
 
     // Apply rating filter
