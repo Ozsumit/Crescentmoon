@@ -438,7 +438,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     </div>{" "}
                   </div>
                   {/* <TooltipContent> */}
-                  <h6 className="text-sm flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur-sm font-sans  text-[#ab77f4]">
+                  <h6 className="text-sm flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur-sm font-sans w-8/12 text-[#ab77f4]">
                     Not the movie you are looking for? It may be the server's
                     fault that are out of my controls. Changing the server may
                     fix it. Use VidSrc or VidBinge for reliable server
