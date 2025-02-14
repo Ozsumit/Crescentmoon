@@ -10,7 +10,7 @@ const SearchDisplay = ({ movies }) => {
           (movie) =>
             movie &&
             (movie.releaseDate || movie.release_date) &&
-            (movie.ratings || movie.vote_average !== undefined)
+            (movie.ratings)
         )
       : [];
 
