@@ -8,9 +8,7 @@ const SearchDisplay = ({ movies }) => {
     movies && Array.isArray(movies)
       ? movies.filter(
           (movie) =>
-            movie &&
-          
-            (movie.vote_average !==undefined)
+            
         )
       : [];
 
