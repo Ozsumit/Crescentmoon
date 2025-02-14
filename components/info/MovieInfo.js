@@ -401,8 +401,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                                   {server.name}
                                 </button>
                               </TooltipTrigger>
+                                  
                             </Tooltip>
                           ))}
+                            <p className=" text-sm font-sans text-white w-full" > Not the movie you were hoping for? It might be server's fault which i currently dont have direct access to. But worry not, it might be on other servers. Switch the servers by clicking the button above until it works for you</p> 
                         </div>
                       </SheetContent>
                     </Sheet>
