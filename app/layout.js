@@ -7,6 +7,10 @@ import WelcomeModal, { WelcomeModalTrigger } from "@/components/welcome";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PostHogProvider } from "./providers";
+import posthog from "posthog-js";
+posthog.init("phc_b1sOYJSoCDWzjkxPxND3RNJoG7527n2WfVIkJHTpL9W", {
+  api_host: "https://us.i.posthog.com",
+});
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +24,26 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
-        <script defer src="https://cloud.umami.is/script.js" data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"></script>
-   <script data-goatcounter="https://sumit.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "de022bcad822493286b101c58245c2b9"}'></script>
-    <script defer data-domain="cmoon.sumit.info.np" src="https://plausible.io/js/script.tagged-events.js"></script>
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"
+        ></script>
+        <script
+          data-goatcounter="https://sumit.goatcounter.com/count"
+          async
+          src="//gc.zgo.at/count.js"
+        ></script>
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "de022bcad822493286b101c58245c2b9"}'
+        ></script>
+        <script
+          defer
+          data-domain="cmoon.sumit.info.np"
+          src="https://plausible.io/js/script.tagged-events.js"
+        ></script>
       </head>
       <body className={inter.className}>
         <PostHogProvider>
