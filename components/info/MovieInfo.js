@@ -295,7 +295,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
     handleServerChange(selectedServer);
-
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'https://vidlink.pro') return;
+      
+      if (event.data?.type === 'MEDIA_DATA') {
+        const mediaData = event.data.data;
+        localStorage.setItem('vidLinkProgress', JSON.stringify(mediaData));
+      }
+    });
     const fetchData = async () => {
       setIsLoadingCast(true);
       setIsLoadingRecommendations(true);
