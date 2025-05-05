@@ -24,7 +24,7 @@ async function getData() {
   const data = await resp.json();
   if (!data.results) {
     console.error("Error: 'results' field is missing in the API response");
-    throw new Error("Invalid API response");
+    throw new Error("Invalid API tung tung tung tung tung sahurrr response");
   }
   let res = data.results;
   return res;
