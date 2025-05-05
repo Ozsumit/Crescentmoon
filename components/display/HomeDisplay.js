@@ -222,7 +222,7 @@ const HomeDisplay = () => {
 
   return (
     <div className="w-full px-2 sm:px-4 md:px-6 mb-8 mt-12 lg:px-8 xl:px-12">
-      <div className="bg-slate-900/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-[#020617] backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
         <ContinueWatching />
         <div className="p-4 sm:p-6 md:p-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600 truncate">

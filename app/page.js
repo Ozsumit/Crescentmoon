@@ -14,13 +14,18 @@ async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
     // `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
-    `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&page=1`
+    `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`
   );
 
   if (!resp.ok) {
-    throw new Error("Failed to fetch data");
+    console.error(`Error: ${resp.status} ${resp.statusText}`);
+    throw new Error("Pussycat API error");
   }
   const data = await resp.json();
+  if (!data.results) {
+    console.error("Error: 'results' field is missing in the API response");
+    throw new Error("Invalid API response");
+  }
   let res = data.results;
   return res;
 }
@@ -28,8 +33,8 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" m-0 bg-[#0e1320] h-auto">
-      {/* <Title /> */}
+    <div className=" m-0 bg-[rgb(7,8,9)] h-auto">
+    {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */}
