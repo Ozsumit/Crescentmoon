@@ -48,6 +48,14 @@ const VIDEO_SOURCES = [
     getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
   {
+    name: "VidSrc 2",
+    params: "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
+    url: `https://player.vidsrc.co/embed/movie/`,
+    icon: <Share2 className="w-4 h-4" />,
+    // downloadSupport: true,
+    // getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
+  },
+    {
     name: "2Embed",
     url: `https://2embed.cc/embed/movie/`,
     icon: <Film className="w-4 h-4" />,
@@ -369,6 +377,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       allow="autoplay fullscreen picture-in-picture"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full"
+                      referrerPolicy="no-referrer"
                     />
                     {!iframeSrc && (
                       <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90">

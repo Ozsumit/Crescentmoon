@@ -18,6 +18,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <meta name="apple-mobile-web-app-title" content="Cmoon" />
+
         <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
         <script
           defer
