@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Star,
   Clock,
@@ -36,10 +36,11 @@ const VIDEO_SOURCES = [
     name: "VidLink",
     url: `https://vidlink.pro/movie/`,
     params:
-      "?primaryColor=63b8bc&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=true&mute=false",
+      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
     icon: <Play className="w-4 h-4" />,
     downloadSupport: false,
-  },{
+  },
+  {
     name: "VidSrc",
     params: "?multiLang=true",
     url: `https://v2.vidsrc.me/embed/movie/`,
@@ -49,13 +50,14 @@ const VIDEO_SOURCES = [
   },
   {
     name: "VidSrc 2",
-    params: "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
+    params:
+      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
     url: `https://player.vidsrc.co/embed/movie/`,
     icon: <Share2 className="w-4 h-4" />,
     // downloadSupport: true,
     // getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
   },
-    {
+  {
     name: "2Embed",
     url: `https://2embed.cc/embed/movie/`,
     icon: <Film className="w-4 h-4" />,
@@ -68,7 +70,6 @@ const VIDEO_SOURCES = [
     downloadSupport: false,
     parseUrl: true,
   },
-  
   {
     name: "EmbedSu",
     url: `https://embed.su/embed/movie/`,
@@ -148,8 +149,23 @@ const Review = ({ review }) => {
 };
 
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
+  const getInitialServer = () => {
+    if (typeof window !== "undefined") {
+      const storedServerName = localStorage.getItem("selectedMovieServer");
+      if (storedServerName) {
+        const foundServer = VIDEO_SOURCES.find(
+          (server) => server.name === storedServerName
+        );
+        if (foundServer) {
+          return foundServer;
+        }
+      }
+    }
+    return VIDEO_SOURCES[0];
+  };
+
+  const [selectedServer, setSelectedServer] = useState(getInitialServer);
   const [iframeSrc, setIframeSrc] = useState("");
-  const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[0]);
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -189,24 +205,21 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       cancelable: true,
     });
 
+    // Dispatch the event on the parent document.
+    // IMPORTANT NOTE: Due to browser security (Same-Origin Policy),
+    // this event will NOT propagate into the iframe if the iframe content
+    // is from a different domain (e.g., vidlink.pro). This means it's
+    // highly unlikely to directly unmute the player inside the iframe.
+    // Users will typically still need to manually unmute the player.
     document.dispatchEvent(keyEvent);
-    console.log("M key press simulated");
+    console.log("M key press simulated on parent document.");
   };
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const timer = setTimeout(() => {
-        simulateKeyPress();
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
+  // Keep this useEffect for general key logging/debugging (unrelated to the automatic unmute logic)
   useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.key === "M" || event.key === "m") {
-        console.log("M key was pressed!");
+        console.log("M key was pressed on the PARENT document!");
       }
     };
 
@@ -216,31 +229,95 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     };
   }, []);
 
-  const handleServerChange = async (server) => {
-    setSelectedServer(server);
-    let serverUrl = server.url;
-    let serverParams = server.params || "";
+  // NEW useEffect to conditionally simulate 'm' key press for VidLink
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Check if the currently selected server is 'VidLink'
+      if (selectedServer.name === "VidLink") {
+        console.log(
+          "VidLink server selected. Scheduling 'm' key press attempt..."
+        );
+        const timer = setTimeout(() => {
+          simulateKeyPress(); // Attempt to simulate 'm' key press
+        }, 3000); // Delay to allow the iframe to load
 
-    try {
-      if (server.parseUrl) {
-        const response = await fetch(`${serverUrl}${id}`);
-        const data = await response.json();
-        serverUrl = data.url;
+        return () => {
+          console.log("Clearing 'm' key press timer for VidLink.");
+          clearTimeout(timer);
+        };
       } else {
-        serverUrl = `${serverUrl}${id}${serverParams}`;
+        console.log(
+          `Server is ${selectedServer.name}. Not simulating 'm' key press.`
+        );
       }
-      setIframeSrc(serverUrl);
-      showNotification(`Switched to ${server.name} server`);
-    } catch (error) {
-      showNotification("Failed to load server. Please try another one.");
     }
-  };
+  }, [selectedServer]); // Re-run this effect whenever selectedServer changes
 
-  const showNotification = (message) => {
+  const showNotification = useCallback((message) => {
     setAlertMessage(message);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-  };
+    const timer = setTimeout(() => setShowAlert(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const generateIframeSrc = async () => {
+      if (!selectedServer || !id) {
+        setIframeSrc("");
+        return;
+      }
+
+      let urlToUse = selectedServer.url;
+      let paramsToUse = selectedServer.params || "";
+
+      try {
+        if (selectedServer.parseUrl) {
+          const response = await fetch(`${urlToUse}${id}`);
+          const data = await response.json();
+          urlToUse = data.url;
+        } else {
+          urlToUse = `${urlToUse}${id}${paramsToUse}`;
+        }
+        setIframeSrc(urlToUse);
+        // Optional: for debugging to see the generated URL
+        // console.log(`Generated iframe src for ${selectedServer.name}: ${urlToUse}`);
+      } catch (error) {
+        console.error("Error generating iframe source:", error);
+        setIframeSrc("");
+        showNotification(
+          `Failed to load ${selectedServer.name} content. Please try another server.`
+        );
+      }
+    };
+
+    generateIframeSrc();
+
+    if (typeof window !== "undefined") {
+      const handleVidLinkMessage = (event) => {
+        if (event.origin !== "https://vidlink.pro") return;
+
+        if (event.data?.type === "MEDIA_DATA") {
+          const mediaData = event.data.data;
+          localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
+        }
+      };
+      window.addEventListener("message", handleVidLinkMessage);
+      return () => {
+        window.removeEventListener("message", handleVidLinkMessage);
+      };
+    }
+  }, [selectedServer, id, showNotification]);
+
+  const handleServerChange = useCallback(
+    (server) => {
+      setSelectedServer(server);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("selectedMovieServer", server.name);
+      }
+      showNotification(`Switched to ${server.name} server`);
+    },
+    [showNotification]
+  );
 
   const handleFavoriteToggle = () => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -300,17 +377,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   );
 
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
-    handleServerChange(selectedServer);
-    window.addEventListener('message', (event) => {
-      if (event.origin !== 'https://vidlink.pro') return;
-      
-      if (event.data?.type === 'MEDIA_DATA') {
-        const mediaData = event.data.data;
-        localStorage.setItem('vidLinkProgress', JSON.stringify(mediaData));
-      }
-    });
+    if (typeof window !== "undefined") {
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
+    }
+
     const fetchData = async () => {
       setIsLoadingCast(true);
       setIsLoadingRecommendations(true);
@@ -337,6 +408,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         setRecommendations(recommendationsData.results.slice(0, 6));
         setReviews(reviewsData.results.slice(0, 5));
       } catch (error) {
+        console.error("Failed to load movie supplementary content:", error);
         showNotification("Failed to load some content");
       } finally {
         setIsLoadingCast(false);
@@ -346,7 +418,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     };
 
     fetchData();
-  }, [MovieDetail.id, id]);
+  }, [MovieDetail.id, id, showNotification]);
 
   return (
     <TooltipProvider>
@@ -394,7 +466,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           <span className="text-sm font-medium">
                             {selectedServer.name}
                           </span>
-                          <ChevronUp className="w-4 h-4" />
+                          <ChevronDown className="w-4 h-4" />
                         </button>
                       </SheetTrigger>
                       <SheetContent
@@ -417,10 +489,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                                   {server.name}
                                 </button>
                               </TooltipTrigger>
-                                  
+                              <TooltipContent>
+                                <p>{`Switch to ${server.name}`}</p>
+                              </TooltipContent>
                             </Tooltip>
                           ))}
-                             
                         </div>
                       </SheetContent>
                     </Sheet>
@@ -440,7 +513,22 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         </TooltipContent>
                       </Tooltip>
                     </div>
-                  </div><p className=" text-sm font-sans text-white w-full p-2 bg-slate-900/90 backdrop-blur-sm" > Not the movie you were hoping for? It might be server's fault which i currently dont have direct access to. But worry not, it might be on other servers. Switch the servers by clicking the button above until it works for you</p> 
+                  </div>
+                  <p className=" text-sm font-sans text-orange-300 w-full p-2 bg-slate-900/90 backdrop-blur-sm">
+                    Not the movie you were hoping for? It might be server's
+                    fault which i currently dont have direct access to. But
+                    worry not, it might be on other servers. Switch the servers
+                    by clicking the button above until it works for you
+                  </p>
+                  {/* NEW ADDITION: User notification for VidLink muted playback */}
+                  {/* {selectedServer.name === "VidLink" && (
+                    <p className="text-xs font-sans text-white w-full p-2 bg-yellow-900/50 backdrop-blur-sm border-t border-yellow-800">
+                      <Info className="w-3 h-3 inline-block mr-1" />
+                      VidLink videos might start muted due to browser autoplay
+                      policies. You'll need to unmute it manually in the player
+                      controls.
+                    </p>
+                  )} */}
                 </div>
                 <div className="order-4 lg:order-3 space-y-4">
                   <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">

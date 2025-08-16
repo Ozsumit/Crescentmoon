@@ -3,7 +3,14 @@ import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import {
+  ChevronRight,
+  Pause,
+  Play,
+  Star,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
 const SpotlightCarousel = () => {
   const [spotlights, setSpotlights] = useState([]);
@@ -306,7 +313,7 @@ const SpotlightCarousel = () => {
               </span>
               {rating !== "N/A" && (
                 <div className="flex items-center text-xs md:text-sm text-gray-300">
-                  <span className="mr-1">⭐</span>
+                  <Star className="mr-1 w-4 h-4 text-yellow-400" />
                   {rating}
                 </div>
               )}

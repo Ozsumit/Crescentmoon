@@ -1,7 +1,4 @@
 "use client";
-
-import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import {
   Home,
   Film,
@@ -11,12 +8,16 @@ import {
   JapaneseYen,
   Menu,
   X,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
 import SearchBar from "../searchbar";
 import PopoverSearchBar from "../searchbar";
 import QuickSearch from "../searchbar";
+import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -71,11 +72,24 @@ const Header = () => {
     { href: "/", label: "Home", icon: Home },
     { href: "/movie", label: "Movies", icon: Film },
     { href: "/series", label: "TV", icon: Tv },
-    { href: "https://omega-v1.vercel.app/", label: "Anime(α)", icon: JapaneseYen },
+    {
+      href: "https://omega-v1.vercel.app/",
+      label: "Anime(α)",
+      icon: JapaneseYen,
+    },
   ];
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    resetInteractionTimer();
+  };
+
+  const handleDownload = () => {
+    // Add your download logic here
+    // For example: trigger a download, open download page, etc.
+    window.location.href =
+      "https://github.com/Ozsumit/Crescentmoon/releases/download/release-1/CrescentMoon.0.1.0.exe";
+    console.log("Download button clicked");
     resetInteractionTimer();
   };
 
@@ -144,6 +158,17 @@ const Header = () => {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              {/* <button
+                onClick={handleDownload}
+                className="text-white/80 flex-row flex  gap-2 hover:text-white hover:text-green-400 transition-colors w-autox"
+                title="Download"
+              >
+                <Download size={22} />
+                Download
+              </button> */}
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Link
                 href="/favourites"
                 className="text-white/80 hover:text-white transition-colors"
@@ -196,6 +221,27 @@ const Header = () => {
                   </Link>
                 </motion.div>
               ))}
+
+              {/* Download button in mobile menu */}
+              <motion.div
+                whileHover={{ x: 10 }}
+                whileTap={{ scale: 0.95 }}
+                className="group"
+              >
+                <button
+                  onClick={() => {
+                    handleDownload();
+                    toggleMobileMenu();
+                  }}
+                  className="flex items-center space-x-4 text-white/80 hover:text-white text-base sm:text-lg border-b border-white/10 pb-3 sm:pb-4 last:border-b-0 transition-colors w-full text-left"
+                >
+                  <Download
+                    size={20}
+                    className="text-green-400 group-hover:text-green-400"
+                  />
+                  <span className="font-medium">Download</span>
+                </button>
+              </motion.div>
             </div>
           </motion.div>
         )}
