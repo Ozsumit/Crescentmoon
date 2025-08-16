@@ -7,7 +7,6 @@ import {
   Server,
   Download,
   Heart,
-  Fullscreen,
   Share2,
   Info,
   ChevronUp,
@@ -19,10 +18,20 @@ import {
   Film,
   Award,
   Loader2,
+  // New icons for the redesigned UI
+  Languages,
+  Zap,
+  ShieldAlert,
+  Clapperboard,
+  Check,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -31,62 +40,114 @@ import {
 } from "@/components/ui/tooltip";
 import HomeCards from "@/components/display/HomeCard";
 
+// --- REDESIGNED & ENHANCED VIDEO_SOURCES ---
 const VIDEO_SOURCES = [
   {
     name: "VidLink",
-    url: `https://vidlink.pro/movie/`,
+    url: "https://vidlink.pro/movie/",
     params:
       "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
-    icon: <Play className="w-4 h-4" />,
-    downloadSupport: false,
+    icon: <Play className="w-5 h-5 text-pink-400" />,
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
   },
   {
     name: "VidSrc",
+    url: "https://v2.vidsrc.me/embed/movie/",
     params: "?multiLang=true",
-    url: `https://v2.vidsrc.me/embed/movie/`,
-    icon: <Award className="w-4 h-4" />,
-    downloadSupport: true,
-    getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
+    icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language"],
+    description: "Good source for non-English audio.",
   },
   {
     name: "VidSrc 2",
+    url: "https://vidsrc.icu/embed/movie/",
+    params: "?multiLang=true",
+    icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language", "Backup"],
+    description: "Alternative source for subtitles.",
+  },
+  {
+    name: "VidSrc 3",
+    url: "https://player.vidsrc.co/embed/movie/",
     params:
       "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
-    url: `https://player.vidsrc.co/embed/movie/`,
-    icon: <Share2 className="w-4 h-4" />,
-    // downloadSupport: true,
-    // getDownloadLink: (id) => `https://v2.vidsrc.me/download/${id}`,
+    icon: <Clapperboard className="w-5 h-5 text-slate-400" />,
+    features: [],
+    description: "A reliable classic player.",
+  },
+  {
+    name: "VidSrc 4",
+    url: "https://vidsrc.cc/v2/embed/movie/",
+    params:
+      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
+    icon: <Clapperboard className="w-5 h-5 text-slate-400" />,
+    features: ["Backup"],
+    description: "Another backup server option.",
   },
   {
     name: "2Embed",
-    url: `https://2embed.cc/embed/movie/`,
-    icon: <Film className="w-4 h-4" />,
-    downloadSupport: false,
+    url: "https://2embed.cc/embed/movie/",
+    icon: <Film className="w-5 h-5 text-teal-400" />,
+    features: ["Ads"],
+    description: "May have more pop-up ads.",
   },
   {
     name: "Binge",
-    url: `https://vidbinge.dev/embed/movie/`,
-    icon: <Eye className="w-4 h-4" />,
-    downloadSupport: false,
+    url: "https://vidbinge.dev/embed/movie/",
+    icon: <Zap className="w-5 h-5 text-yellow-400" />,
+    features: ["Fast"],
     parseUrl: true,
+    description: "Quick-loading, lightweight player.",
   },
   {
     name: "EmbedSu",
-    url: `https://embed.su/embed/movie/`,
+    url: "https://embed.su/embed/movie/",
     params: "?multiLang=true",
-    icon: <Server className="w-4 h-4" />,
-    downloadSupport: false,
+    icon: <Server className="w-5 h-5 text-indigo-400" />,
+    features: ["Multi-Language"],
+    description: "Stable embed with language options.",
   },
   {
     name: "MultiEmbed",
-    url: `https://multiembed.mov/directstream.php?video_id=`,
+    url: "https://multiembed.mov/directstream.php?video_id=",
     params: "&tmdb=1",
-    icon: <Film className="w-4 h-4" />,
-    downloadSupport: false,
+    icon: <ShieldAlert className="w-5 h-5 text-red-400" />,
+    features: ["Unstable"],
+    description: "Might not work for all content.",
   },
 ];
 
+// --- NEW HELPER COMPONENT FOR FEATURE TAGS ---
+const FeatureBadge = ({ feature }) => {
+  const baseClasses = "text-xs px-1.5 py-0.5 rounded-full font-semibold";
+  let colorClasses = "";
+
+  switch (feature.toLowerCase()) {
+    case "recommended":
+      colorClasses = "bg-green-500/20 text-green-300";
+      break;
+    case "multi-language":
+      colorClasses = "bg-blue-500/20 text-blue-300";
+      break;
+    case "fast":
+      colorClasses = "bg-yellow-500/20 text-yellow-300";
+      break;
+    case "ads":
+      colorClasses = "bg-orange-500/20 text-orange-300";
+      break;
+    case "unstable":
+      colorClasses = "bg-red-500/20 text-red-300";
+      break;
+    default:
+      colorClasses = "bg-slate-700/50 text-slate-300";
+  }
+
+  return <span className={`${baseClasses} ${colorClasses}`}>{feature}</span>;
+};
+
 const Review = ({ review }) => {
+  // ... (Review component remains unchanged)
   const [expanded, setExpanded] = useState(false);
   const isLongContent = review.content.length > 300;
   const displayContent = expanded
@@ -161,7 +222,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         }
       }
     }
-    return VIDEO_SOURCES[0];
+    // Default to the first server marked as "Recommended" or the very first one
+    return (
+      VIDEO_SOURCES.find((s) => s.features.includes("Recommended")) ||
+      VIDEO_SOURCES[0]
+    );
   };
 
   const [selectedServer, setSelectedServer] = useState(getInitialServer);
@@ -180,6 +245,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [showMoreCast, setShowMoreCast] = useState(false);
   const videoContainerRef = useRef(null);
 
+  // Popover state for manual control if needed
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   const posterPath = MovieDetail.poster_path
     ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
     : "https://via.placeholder.com/500x750.png?text=Movie+Poster";
@@ -194,64 +262,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
   };
-
-  const simulateKeyPress = () => {
-    const keyEvent = new KeyboardEvent("keydown", {
-      key: "M",
-      code: "KeyM",
-      keyCode: 77,
-      which: 77,
-      bubbles: true,
-      cancelable: true,
-    });
-
-    // Dispatch the event on the parent document.
-    // IMPORTANT NOTE: Due to browser security (Same-Origin Policy),
-    // this event will NOT propagate into the iframe if the iframe content
-    // is from a different domain (e.g., vidlink.pro). This means it's
-    // highly unlikely to directly unmute the player inside the iframe.
-    // Users will typically still need to manually unmute the player.
-    document.dispatchEvent(keyEvent);
-    console.log("M key press simulated on parent document.");
-  };
-
-  // Keep this useEffect for general key logging/debugging (unrelated to the automatic unmute logic)
-  useEffect(() => {
-    const handleKeyPress = (event) => {
-      if (event.key === "M" || event.key === "m") {
-        console.log("M key was pressed on the PARENT document!");
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, []);
-
-  // NEW useEffect to conditionally simulate 'm' key press for VidLink
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Check if the currently selected server is 'VidLink'
-      if (selectedServer.name === "VidLink") {
-        console.log(
-          "VidLink server selected. Scheduling 'm' key press attempt..."
-        );
-        const timer = setTimeout(() => {
-          simulateKeyPress(); // Attempt to simulate 'm' key press
-        }, 3000); // Delay to allow the iframe to load
-
-        return () => {
-          console.log("Clearing 'm' key press timer for VidLink.");
-          clearTimeout(timer);
-        };
-      } else {
-        console.log(
-          `Server is ${selectedServer.name}. Not simulating 'm' key press.`
-        );
-      }
-    }
-  }, [selectedServer]); // Re-run this effect whenever selectedServer changes
 
   const showNotification = useCallback((message) => {
     setAlertMessage(message);
@@ -279,8 +289,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           urlToUse = `${urlToUse}${id}${paramsToUse}`;
         }
         setIframeSrc(urlToUse);
-        // Optional: for debugging to see the generated URL
-        // console.log(`Generated iframe src for ${selectedServer.name}: ${urlToUse}`);
       } catch (error) {
         console.error("Error generating iframe source:", error);
         setIframeSrc("");
@@ -289,23 +297,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         );
       }
     };
-
     generateIframeSrc();
-
-    if (typeof window !== "undefined") {
-      const handleVidLinkMessage = (event) => {
-        if (event.origin !== "https://vidlink.pro") return;
-
-        if (event.data?.type === "MEDIA_DATA") {
-          const mediaData = event.data.data;
-          localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
-        }
-      };
-      window.addEventListener("message", handleVidLinkMessage);
-      return () => {
-        window.removeEventListener("message", handleVidLinkMessage);
-      };
-    }
   }, [selectedServer, id, showNotification]);
 
   const handleServerChange = useCallback(
@@ -315,10 +307,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         localStorage.setItem("selectedMovieServer", server.name);
       }
       showNotification(`Switched to ${server.name} server`);
+      setIsPopoverOpen(false); // Close popover on selection
     },
     [showNotification]
   );
 
+  // ... other hooks and functions (handleFavoriteToggle, handleShare, etc.) remain the same
   const handleFavoriteToggle = () => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     if (isFavorite) {
@@ -343,16 +337,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       showNotification("Link copied to clipboard!");
     } catch (err) {
       showNotification("Failed to copy link");
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      videoContainerRef.current.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
     }
   };
 
@@ -416,7 +400,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         setIsLoadingReviews(false);
       }
     };
-
     fetchData();
   }, [MovieDetail.id, id, showNotification]);
 
@@ -446,7 +429,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   >
                     <iframe
                       src={iframeSrc}
-                      allow="autoplay fullscreen picture-in-picture"
+                      allow="autoplay; fullscreen; picture-in-picture"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full"
                       referrerPolicy="no-referrer"
@@ -458,45 +441,75 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     )}
                   </div>
 
-                  <div className="flex justify-between items-center p-4 bg-slate-900/90 backdrop-blur-sm">
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <button className="px-3 py-1.5 text-white bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-sm transition-colors flex items-center gap-2">
-                          {selectedServer.icon}
-                          <span className="text-sm font-medium">
+                  <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900/90 backdrop-blur-sm">
+                    {/* --- START: REDESIGNED SERVER SELECTOR --- */}
+                    <Popover
+                      open={isPopoverOpen}
+                      onOpenChange={setIsPopoverOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button className="px-3 py-2 md:px-4 text-white bg-slate-800/60 hover:bg-slate-800/90 rounded-lg backdrop-blur-sm transition-colors flex items-center gap-2 text-sm">
+                          <Server className="w-4 h-4 text-indigo-400" />
+                          <span className="text-slate-400 hidden sm:inline">
+                            Source:
+                          </span>
+                          <span className="font-medium text-slate-100">
                             {selectedServer.name}
                           </span>
-                          <ChevronDown className="w-4 h-4" />
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
                         </button>
-                      </SheetTrigger>
-                      <SheetContent
-                        side="bottom"
-                        className="bg-slate-900/95 backdrop-blur-xl border-slate-700"
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        className="w-80 md:w-96 p-2 bg-slate-900/80 backdrop-blur-xl border-slate-700 text-white shadow-2xl"
                       >
-                        <div className="grid grid-cols-3 gap-2 pt-4">
-                          {VIDEO_SOURCES.map((server) => (
-                            <Tooltip key={server.name}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => handleServerChange(server)}
-                                  className={`p-3 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                                    selectedServer.name === server.name
-                                      ? "bg-indigo-600 text-white"
-                                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                                  }`}
-                                >
-                                  {server.icon}
-                                  {server.name}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{`Switch to ${server.name}`}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
+                        <div className="flex flex-col gap-1">
+                          <div className="p-2">
+                            <h4 className="font-semibold text-slate-100">
+                              Select a Server
+                            </h4>
+                            <p className="text-xs text-slate-400">
+                              If the video doesn't work, try another source.
+                            </p>
+                          </div>
+                          <div className="max-h-[40vh] overflow-y-auto pr-1">
+                            {VIDEO_SOURCES.map((server) => (
+                              <button
+                                key={server.name}
+                                onClick={() => handleServerChange(server)}
+                                className="flex justify-between items-center w-full p-3 rounded-lg text-left transition-colors hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                                    {server.icon}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-sm font-medium text-slate-100">
+                                        {server.name}
+                                      </p>
+                                      {server.features.map((feature) => (
+                                        <FeatureBadge
+                                          key={feature}
+                                          feature={feature}
+                                        />
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                      {server.description}
+                                    </p>
+                                  </div>
+                                </div>
+                                {selectedServer.name === server.name && (
+                                  <Check className="w-5 h-5 text-indigo-400 flex-shrink-0 ml-2" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </SheetContent>
-                    </Sheet>
+                      </PopoverContent>
+                    </Popover>
+                    {/* --- END: REDESIGNED SERVER SELECTOR --- */}
 
                     <div className="flex items-center gap-2">
                       <Tooltip>
@@ -514,22 +527,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </Tooltip>
                     </div>
                   </div>
-                  <p className=" text-sm font-sans text-orange-300 w-full p-2 bg-slate-900/90 backdrop-blur-sm">
-                    Not the movie you were hoping for? It might be server's
-                    fault which i currently dont have direct access to. But
-                    worry not, it might be on other servers. Switch the servers
-                    by clicking the button above until it works for you
-                  </p>
-                  {/* NEW ADDITION: User notification for VidLink muted playback */}
-                  {/* {selectedServer.name === "VidLink" && (
-                    <p className="text-xs font-sans text-white w-full p-2 bg-yellow-900/50 backdrop-blur-sm border-t border-yellow-800">
-                      <Info className="w-3 h-3 inline-block mr-1" />
-                      VidLink videos might start muted due to browser autoplay
-                      policies. You'll need to unmute it manually in the player
-                      controls.
-                    </p>
-                  )} */}
+                  <div className=" text-sm font-sans text-orange-300 w-full p-2 bg-slate-900/90 backdrop-blur-sm border-t border-slate-800">
+                    <Info className="w-4 h-4 inline-block mr-1.5 align-middle" />
+                    Not the right movie? Try another server. Content is provided
+                    by external sources.
+                  </div>
                 </div>
+
+                {/* The rest of the page layout remains the same */}
                 <div className="order-4 lg:order-3 space-y-4">
                   <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
                     <div className="p-4 border-b border-slate-800/50">
@@ -659,9 +664,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={handleFavoriteToggle}
-                        className={`flex-1 flex items-center justify-center px-4 py-2.5 rounded-lg transition-all ${
+                        className={`w-full flex items-center justify-center px-4 py-2.5 rounded-lg transition-all ${
                           isFavorite
-                            ? "bg-red-500/20 text-red-700 hover:bg-red-700/30"
+                            ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
                             : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
                         }`}
                       >
@@ -734,26 +739,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {selectedServer.downloadSupport && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={selectedServer.getDownloadLink(id)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center px-4 py-2.5 bg-emerald-500/20 text-emerald-300 rounded-lg hover:bg-emerald-500/30 transition-colors"
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Download movie</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
                   </div>
                 </div>
               </div>

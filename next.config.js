@@ -20,28 +20,17 @@ const nextConfig = {
               img-src 'self' data: https:;
               connect-src *;
               frame-src
-                https://vidlink.to
-                https://vidlink.pro
-                https://v2.vidsrc.me
-                https://player.vidsrc.co
-                https://2embed.cc
-                https://vidbinge.dev
-                https://embed.su
-                https://multiembed.mov;
+              *
+                
               child-src
-                https://vidlink.to
-                https://vidlink.pro
-                https://v2.vidsrc.me
-                https://player.vidsrc.co
-                https://2embed.cc
-                https://vidbinge.dev
-                https://embed.su
-                https://multiembed.mov;
+                *
               media-src *;
               font-src 'self' https:;
               base-uri 'self';
               form-action 'self';
-            `.replace(/\s+/g, " ").trim(),
+            `
+              .replace(/\s+/g, " ")
+              .trim(),
           },
         ],
       },
@@ -49,4 +38,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
