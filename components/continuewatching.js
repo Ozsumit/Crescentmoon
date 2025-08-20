@@ -1,16 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Heart, Star, Calendar, Clock, Trash2, Tv, Film, Play, Info, BarChart, Eye } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import Slider from "react-slick"
-import "slick-carousel/slick/slick.css"
-import "slick-carousel/slick/slick-theme.css"
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Heart,
+  Star,
+  Calendar,
+  Clock,
+  Trash2,
+  Tv,
+  Film,
+  Play,
+  Info,
+  BarChart,
+  Eye,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 // Custom arrow components for better control
-import { CustomNextArrow, CustomPrevArrow } from "/components/ui/custom-slider-buttons"
+import {
+  CustomNextArrow,
+  CustomPrevArrow,
+} from "/components/ui/custom-slider-buttons";
 
 // Genre color mapping object
 const GENRE_COLORS = {
@@ -32,96 +47,105 @@ const GENRE_COLORS = {
   Family: "bg-emerald-600/20 text-emerald-400 border-emerald-500/30",
   Music: "bg-rose-600/20 text-rose-400 border-rose-500/30",
   History: "bg-amber-600/20 text-amber-400 border-amber-500/30",
-}
+};
 
 // Utility Functions
 const getImagePath = (posterPath) => {
   if (posterPath) {
     if (posterPath.startsWith("/")) {
-      return `https://image.tmdb.org/t/p/w500${posterPath}`
+      return `https://image.tmdb.org/t/p/w500${posterPath}`;
     }
-    return posterPath
+    return posterPath;
   }
-  return "/placeholder.svg?height=750&width=500"
-}
+  return "/placeholder.svg?height=750&width=500";
+};
 
 // Replace the formatWatchTime function with this improved version:
 const formatWatchTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return "0m"
+  if (!seconds || isNaN(seconds)) return "0m";
 
   // Ensure seconds is a positive number
-  seconds = Math.max(0, seconds)
+  seconds = Math.max(0, seconds);
 
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
 
   if (hours === 0) {
-    return `${minutes}m`
+    return `${minutes}m`;
   }
-  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
-}
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+};
 
 // Replace the formatRemainingTime function with this improved version:
 const formatRemainingTime = (watched, duration) => {
-  if (!watched || !duration || isNaN(watched) || isNaN(duration)) return 0
+  if (!watched || !duration || isNaN(watched) || isNaN(duration)) return 0;
 
   // Convert milliseconds to seconds if needed
-  const watchedSecs = watched > 1000000000 ? Math.floor(watched / 1000) : watched
-  const durationSecs = duration > 1000000000 ? Math.floor(duration / 1000) : duration
+  const watchedSecs =
+    watched > 1000000000 ? Math.floor(watched / 1000) : watched;
+  const durationSecs =
+    duration > 1000000000 ? Math.floor(duration / 1000) : duration;
 
-  return Math.max(0, durationSecs - watchedSecs)
-}
+  return Math.max(0, durationSecs - watchedSecs);
+};
 
 const formatDate = (dateString) => {
-  if (!dateString) return "N/A"
+  if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  })
-}
+  });
+};
 
 const fetchMediaDetails = async (mediaId, mediaType) => {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const response = await fetch(
-      `https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}&language=en-US`,
-    )
+      `https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}&language=en-US`
+    );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${mediaType} details`)
+      throw new Error(`Failed to fetch ${mediaType} details`);
     }
 
-    return await response.json()
+    return await response.json();
   } catch (error) {
-    console.error(`Error fetching ${mediaType} details:`, error)
-    return null
+    console.error(`Error fetching ${mediaType} details:`, error);
+    return null;
   }
-}
+};
 
 const calculateProgress = (watched, duration) => {
-  if (!watched || !duration) return 0
-  return Math.min((watched / duration) * 100, 100)
-}
+  if (!watched || !duration) return 0;
+  return Math.min((watched / duration) * 100, 100);
+};
 
 // Function to get the media link
 const getMediaLink = (media) => {
   if (media.type === "tv") {
-    return `/series/${media.id}/season/${media.last_season_watched}/${media.last_episode_watched}`
+    return `/series/${media.id}/season/${media.last_season_watched}/${media.last_episode_watched}`;
   }
-  return `/${media.type}/${media.id}`
-}
+  return `/${media.type}/${media.id}`;
+};
 
 // Progress Circle Component
 const ProgressCircle = ({ progress }) => {
-  const circumference = 2 * Math.PI * 18
-  const strokeDashoffset = circumference - (progress / 100) * circumference
+  const circumference = 2 * Math.PI * 18;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div className="relative w-12 h-12 flex items-center justify-center">
       <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 40 40">
         {/* Background circle */}
-        <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="3" />
+        <circle
+          cx="20"
+          cy="20"
+          r="18"
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.1)"
+          strokeWidth="3"
+        />
         {/* Progress circle */}
         <circle
           cx="20"
@@ -132,8 +156,8 @@ const ProgressCircle = ({ progress }) => {
             progress > 75
               ? "#10B981" // green-500
               : progress > 25
-                ? "#3B82F6" // blue-500
-                : "#8B5CF6" // purple-500
+              ? "#3B82F6" // blue-500
+              : "#8B5CF6" // purple-500
           }
           strokeWidth="3"
           strokeDasharray={circumference}
@@ -146,17 +170,19 @@ const ProgressCircle = ({ progress }) => {
         {Math.round(progress)}%
       </div>
     </div>
-  )
-}
+  );
+};
 
 // Genre Chips Component
 const GenreChips = ({ genres }) => {
-  const displayGenres = genres?.slice(0, 3) || []
+  const displayGenres = genres?.slice(0, 3) || [];
 
   return (
     <div className="flex flex-wrap gap-1.5">
       {displayGenres.map((genre, index) => {
-        const colorClass = GENRE_COLORS[genre.name] || "bg-slate-600/20 text-slate-400 border-slate-500/30"
+        const colorClass =
+          GENRE_COLORS[genre.name] ||
+          "bg-slate-600/20 text-slate-400 border-slate-500/30";
 
         return (
           <motion.span
@@ -176,42 +202,50 @@ const GenreChips = ({ genres }) => {
           >
             {genre.name}
           </motion.span>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};
 
 // Media Card Component
 const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
-  const [fullDetails, setFullDetails] = useState(null)
-  const [isHovered, setIsHovered] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [showDetails, setShowDetails] = useState(false)
-  const [isRemoving, setIsRemoving] = useState(false)
-  const cardRef = useRef(null)
+  const [fullDetails, setFullDetails] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const cardRef = useRef(null);
 
   useEffect(() => {
     const loadMediaDetails = async () => {
-      const details = await fetchMediaDetails(media.id, media.type)
-      setFullDetails(details)
-    }
+      const details = await fetchMediaDetails(media.id, media.type);
+      setFullDetails(details);
+    };
 
-    loadMediaDetails()
-  }, [media.id, media.type])
+    loadMediaDetails();
+  }, [media.id, media.type]);
 
-  const progress = calculateProgress(media.progress?.watched, media.progress?.duration)
-  const remainingTime = formatRemainingTime(media.progress?.watched, media.progress?.duration)
+  const progress = calculateProgress(
+    media.progress?.watched,
+    media.progress?.duration
+  );
+  const remainingTime = formatRemainingTime(
+    media.progress?.watched,
+    media.progress?.duration
+  );
 
   const additionalDetails = {
-    rating: fullDetails?.vote_average ? `${fullDetails.vote_average.toFixed(1)}/10` : "N/A",
+    rating: fullDetails?.vote_average
+      ? `${fullDetails.vote_average.toFixed(1)}/10`
+      : "N/A",
     date: fullDetails?.first_air_date || fullDetails?.release_date,
     genres: fullDetails?.genres || [],
     overview: fullDetails?.overview || "No overview available",
     runtime: fullDetails?.runtime || fullDetails?.episode_run_time?.[0] || 0,
     language: fullDetails?.original_language?.toUpperCase() || "EN",
     popularity: fullDetails?.popularity?.toFixed(0) || "N/A",
-  }
+  };
 
   const mediaTypeInfo =
     media.type === "tv" ? (
@@ -226,27 +260,27 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
         <Film size={14} className="text-purple-400" />
         <span>Movie</span>
       </div>
-    )
+    );
 
-  const mediaLink = getMediaLink(media)
+  const mediaLink = getMediaLink(media);
 
   const handleRemove = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
 
-    setIsRemoving(true)
+    setIsRemoving(true);
 
     // Add a small delay before actually removing to allow animation to play
     setTimeout(() => {
-      onRemove(media.id)
-    }, 300)
-  }
+      onRemove(media.id);
+    }, 300);
+  };
 
   const toggleDetails = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setShowDetails(!showDetails)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDetails(!showDetails);
+  };
 
   return (
     <motion.div
@@ -268,7 +302,8 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
         `}
         whileHover={{
           scale: 1.02,
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
+          boxShadow:
+            "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         onHoverStart={() => setIsHovered(true)}
@@ -288,25 +323,37 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
               <div className="flex flex-col h-full">
                 {/* Header with back button */}
                 <div className="flex justify-between items-center mb-4">
-                  <button onClick={toggleDetails} className="text-slate-400 hover:text-white transition-colors">
+                  <button
+                    onClick={toggleDetails}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
                     ← Back
                   </button>
                   <div className="flex gap-2">
                     <button
                       onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleFavoriteToggle(media.id)
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleFavoriteToggle(media.id);
                       }}
                       className="bg-slate-800 rounded-full p-2 hover:bg-slate-700 transition-colors"
                     >
-                      <Heart size={16} className={isFavorite ? "fill-red-500 stroke-red-500" : "stroke-white"} />
+                      <Heart
+                        size={16}
+                        className={
+                          isFavorite
+                            ? "fill-red-500 stroke-red-500"
+                            : "stroke-white"
+                        }
+                      />
                     </button>
                   </div>
                 </div>
 
                 {/* Title and basic info */}
-                <h3 className="text-white font-bold text-lg mb-2">{media.title}</h3>
+                <h3 className="text-white font-bold text-lg mb-2">
+                  {media.title}
+                </h3>
 
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md text-xs">
@@ -319,7 +366,9 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                   </div>
                   <div className="flex items-center gap-1 bg-purple-500/20 text-purple-400 px-2 py-1 rounded-md text-xs">
                     <Clock size={14} />
-                    <span>{formatWatchTime(additionalDetails.runtime * 60)}</span>
+                    <span>
+                      {formatWatchTime(additionalDetails.runtime * 60)}
+                    </span>
                   </div>
                 </div>
 
@@ -332,7 +381,9 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                 {/* Overview */}
                 <div className="mb-4">
                   <h4 className="text-slate-400 text-xs mb-2">Overview</h4>
-                  <p className="text-slate-300 text-sm">{additionalDetails.overview}</p>
+                  <p className="text-slate-300 text-sm">
+                    {additionalDetails.overview}
+                  </p>
                 </div>
 
                 {/* Additional stats */}
@@ -360,10 +411,14 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                       Popularity
                     </h4>
                     <div className="flex items-center gap-2">
-                      <div className="text-2xl font-bold text-white">{additionalDetails.popularity}</div>
+                      <div className="text-2xl font-bold text-white">
+                        {additionalDetails.popularity}
+                      </div>
                       <div className="text-xs text-slate-400">
                         <div>Popularity Score</div>
-                        <div className="text-slate-500 text-[10px]">TMDB Rating</div>
+                        <div className="text-slate-500 text-[10px]">
+                          TMDB Rating
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -413,7 +468,11 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                   alt={media.title}
                   className={`
                     w-full h-full object-cover transition-all duration-500
-                    ${isHovered ? "scale-105 brightness-75" : "scale-100 brightness-90"}
+                    ${
+                      isHovered
+                        ? "scale-105 brightness-75"
+                        : "scale-100 brightness-90"
+                    }
                     ${imageLoaded ? "opacity-100" : "opacity-0"}
                   `}
                   width={288}
@@ -431,7 +490,13 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                     <motion.div
                       className={`
                         absolute left-0 h-full
-                        ${progress > 75 ? "bg-green-500" : progress > 25 ? "bg-blue-500" : "bg-purple-500"}
+                        ${
+                          progress > 75
+                            ? "bg-green-500"
+                            : progress > 25
+                            ? "bg-blue-500"
+                            : "bg-purple-500"
+                        }
                       `}
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
@@ -451,7 +516,11 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                     absolute bottom-3 right-3 bg-black/70 text-white/90
                     px-2 py-1 rounded-md text-xs font-medium backdrop-blur-sm
                     border border-white/10 flex items-center gap-1 transition-all duration-300
-                    ${isHovered ? "opacity-100 translate-y-0" : "opacity-80 translate-y-1"}
+                    ${
+                      isHovered
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-80 translate-y-1"
+                    }
                   `}
                 >
                   <Clock size={12} className="text-blue-400" />
@@ -480,20 +549,30 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                 <motion.div
                   className="absolute top-3 right-3 flex gap-2"
                   initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : -10 }}
+                  animate={{
+                    opacity: isHovered ? 1 : 0,
+                    y: isHovered ? 0 : -10,
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <motion.button
                     onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleFavoriteToggle(media.id)
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleFavoriteToggle(media.id);
                     }}
                     className="bg-black/70 rounded-full p-2 backdrop-blur-sm border border-white/10"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Heart size={16} className={isFavorite ? "fill-red-500 stroke-red-500" : "stroke-white"} />
+                    <Heart
+                      size={16}
+                      className={
+                        isFavorite
+                          ? "fill-red-500 stroke-red-500"
+                          : "stroke-white"
+                      }
+                    />
                   </motion.button>
                   <motion.button
                     onClick={handleRemove}
@@ -508,7 +587,9 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
 
               {/* Card Content */}
               <div className="p-4 flex-1 flex flex-col">
-                <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">{media.title}</h3>
+                <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">
+                  {media.title}
+                </h3>
 
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center gap-1 text-yellow-400 text-xs">
@@ -517,7 +598,9 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                   </div>
                   <div className="flex items-center gap-1 text-slate-400 text-xs">
                     <Calendar size={14} />
-                    <span>{formatDate(additionalDetails.date)?.split(", ")[0]}</span>
+                    <span>
+                      {formatDate(additionalDetails.date)?.split(", ")[0]}
+                    </span>
                   </div>
                 </div>
 
@@ -525,17 +608,27 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
                   <GenreChips genres={additionalDetails.genres} />
                 </div>
 
-                <p className="text-slate-400 text-xs line-clamp-2 mb-3">{additionalDetails.overview}</p>
+                <p className="text-slate-400 text-xs line-clamp-2 mb-3">
+                  {additionalDetails.overview}
+                </p>
 
                 <div className="mt-auto flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <div
                       className={`
                         w-2 h-2 rounded-full animate-pulse
-                        ${progress > 75 ? "bg-green-500" : progress > 25 ? "bg-blue-500" : "bg-purple-500"}
+                        ${
+                          progress > 75
+                            ? "bg-green-500"
+                            : progress > 25
+                            ? "bg-blue-500"
+                            : "bg-purple-500"
+                        }
                       `}
                     />
-                    <span className="text-xs text-slate-400">{progress.toFixed(0)}% completed</span>
+                    <span className="text-xs text-slate-400">
+                      {progress.toFixed(0)}% completed
+                    </span>
                   </div>
 
                   <motion.button
@@ -554,15 +647,15 @@ const MediaCard = ({ media, isFavorite, handleFavoriteToggle, onRemove }) => {
         </AnimatePresence>
       </motion.div>
     </motion.div>
-  )
-}
+  );
+};
 
 // Main Continue Watching Component
 const ContinueWatching = () => {
-  const [mediaItems, setMediaItems] = useState([])
-  const [favorites, setFavorites] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const sliderRef = useRef(null)
+  const [mediaItems, setMediaItems] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const sliderRef = useRef(null);
 
   const sliderSettings = {
     dots: true,
@@ -608,57 +701,67 @@ const ContinueWatching = () => {
     ],
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
-  }
+  };
 
   useEffect(() => {
     const loadStoredData = () => {
       try {
-        const progressData = JSON.parse(localStorage.getItem("vidLinkProgress") || "{}")
-        const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]")
+        const progressData = JSON.parse(
+          localStorage.getItem("vidLinkProgress") || "{}"
+        );
+        const storedFavorites = JSON.parse(
+          localStorage.getItem("favorites") || "[]"
+        );
 
         // Convert the object to an array and sort by last_updated
-        const mediaArray = Object.values(progressData).sort((a, b) => (b.last_updated || 0) - (a.last_updated || 0))
+        const mediaArray = Object.values(progressData).sort(
+          (a, b) => (b.last_updated || 0) - (a.last_updated || 0)
+        );
 
-        setMediaItems(mediaArray)
-        setFavorites(storedFavorites)
+        setMediaItems(mediaArray);
+        setFavorites(storedFavorites);
       } catch (error) {
-        console.error("Error loading stored data:", error)
-        setMediaItems([])
-        setFavorites([])
+        console.error("Error loading stored data:", error);
+        setMediaItems([]);
+        setFavorites([]);
       }
-      setIsLoading(false)
-    }
+      setIsLoading(false);
+    };
 
-    loadStoredData()
-  }, [])
+    loadStoredData();
+  }, []);
 
   const handleRemoveMedia = (mediaId) => {
     try {
-      const progressData = JSON.parse(localStorage.getItem("vidLinkProgress") || "{}")
-      delete progressData[mediaId]
-      localStorage.setItem("vidLinkProgress", JSON.stringify(progressData))
-      setMediaItems(Object.values(progressData))
+      const progressData = JSON.parse(
+        localStorage.getItem("vidLinkProgress") || "{}"
+      );
+      delete progressData[mediaId];
+      localStorage.setItem("vidLinkProgress", JSON.stringify(progressData));
+      setMediaItems(Object.values(progressData));
     } catch (error) {
-      console.error("Error removing media:", error)
+      console.error("Error removing media:", error);
     }
-  }
+  };
 
   const handleFavoriteToggle = (mediaId) => {
     const updatedFavorites = favorites.includes(mediaId)
       ? favorites.filter((id) => id !== mediaId)
-      : [...favorites, mediaId]
+      : [...favorites, mediaId];
 
-    setFavorites(updatedFavorites)
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites))
-  }
+    setFavorites(updatedFavorites);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  };
 
   const clearAllMedia = () => {
-    const confirmClear = window.confirm("Are you sure you want to clear all items?")
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear all items?"
+    );
     if (confirmClear) {
-      localStorage.setItem("vidLinkProgress", "{}")
-      setMediaItems([])
+      localStorage.setItem("vidLinkProgress", "{}");
+      setMediaItems([]);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -677,7 +780,12 @@ const ContinueWatching = () => {
             className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-medium border border-blue-500/20"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.2 }}
+            transition={{
+              type: "spring",
+              stiffness: 500,
+              damping: 15,
+              delay: 0.2,
+            }}
           >
             {mediaItems.length} {mediaItems.length === 1 ? "title" : "titles"}
           </motion.span>
@@ -698,7 +806,10 @@ const ContinueWatching = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-[400px] bg-slate-800 rounded-xl animate-pulse overflow-hidden">
+            <div
+              key={n}
+              className="h-[400px] bg-slate-800 rounded-xl animate-pulse overflow-hidden"
+            >
               <div className="h-[220px] bg-slate-700"></div>
               <div className="p-4 space-y-4">
                 <div className="h-5 bg-slate-700 rounded w-3/4"></div>
@@ -710,7 +821,11 @@ const ContinueWatching = () => {
           ))}
         </div>
       ) : mediaItems.length > 0 ? (
-        <div className={`${mediaItems.length === 1 ? "max-w-sm mx-auto" : "w-full"}`}>
+        <div
+          className={`${
+            mediaItems.length === 1 ? "max-w-sm mx-auto" : "w-full"
+          }`}
+        >
           <Slider ref={sliderRef} {...sliderSettings}>
             {mediaItems.map((media, index) => (
               <MediaCard
@@ -735,11 +850,18 @@ const ContinueWatching = () => {
               className="p-4 bg-slate-700/30 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+                delay: 0.2,
+              }}
             >
               <Tv size={40} className="text-slate-500" />
             </motion.div>
-            <p className="text-slate-400">No media to continue watching. Start watching something now!</p>
+            <p className="text-slate-400">
+              No media to continue watching. Start watching something now!
+            </p>
             <Link
               href="/browse"
               className="mt-4 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-all duration-300 hover:scale-105"
@@ -854,8 +976,13 @@ const ContinueWatching = () => {
 
         /* Style for the loading skeleton animation */
         @keyframes pulse {
-          0%, 100% { opacity: 0.1; }
-          50% { opacity: 1; }
+          0%,
+          100% {
+            opacity: 0.1;
+          }
+          50% {
+            opacity: 1;
+          }
         }
 
         .animate-pulse {
@@ -863,7 +990,7 @@ const ContinueWatching = () => {
         }
       `}</style>
     </div>
-  )
-}
+  );
+};
 
-export default ContinueWatching
+export default ContinueWatching;

@@ -33,6 +33,7 @@ export function PlaceholdersAndVanishInput({
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        ad;
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -178,6 +179,7 @@ export function PlaceholdersAndVanishInput({
       )}
       onSubmit={handleSubmit}
     >
+      hello
       <canvas
         className={cn(
           "absolute pointer-events-none  text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
