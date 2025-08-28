@@ -121,15 +121,6 @@ const defaultMovies = [
     overview:
       "A quest to uncover a legendary flying city while avoiding adversaries.",
   },
-  // {
-  //   id: 278,
-  //   title: "The Shawshank Redemption",
-  //   poster_path: "/zfbjgQE1uSd9wiPTX4VzsLi0rGG.jpg",
-  //   release_date: "1994-09-23",
-  //   vote_average: 8.708,
-  //   overview:
-  //     "The inspiring story of hope and friendship within the confines of a prison.",
-  // },
   {
     id: 14160,
     title: "Up",
@@ -184,31 +175,46 @@ const defaultMovies = [
     overview: "A team ventures into space to ensure humanity's survival.",
   },
 ];
+
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Load favorites from localStorage on mount
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites");
-    if (storedFavorites !== null) {
-      // Load existing favorites (even if empty array)
-      setFavorites(JSON.parse(storedFavorites));
-    } else {
-      // Show defaults only if no 'favorites' key exists
+    try {
+      setIsLoading(true);
+      const storedFavorites = localStorage.getItem("favorites");
+      if (storedFavorites !== null) {
+        // Load existing favorites (even if empty array)
+        setFavorites(JSON.parse(storedFavorites));
+      } else {
+        // Show defaults only if no 'favorites' key exists
+        setFavorites(defaultMovies);
+      }
+    } catch (err) {
+      setError("Failed to load favorites");
       setFavorites(defaultMovies);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   // Sync between tabs
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedFavorites = localStorage.getItem("favorites");
-      if (storedFavorites !== null) {
-        setFavorites(JSON.parse(storedFavorites));
-      } else {
-        // Only show defaults if key is completely removed
-        setFavorites(defaultMovies);
+      try {
+        const storedFavorites = localStorage.getItem("favorites");
+        if (storedFavorites !== null) {
+          setFavorites(JSON.parse(storedFavorites));
+        } else {
+          // Only show defaults if key is completely removed
+          setFavorites(defaultMovies);
+        }
+      } catch (err) {
+        setError("Failed to sync favorites");
       }
     };
 
@@ -218,34 +224,73 @@ const Favorites = () => {
 
   // Add or remove favorites
   const toggleFavorite = (item) => {
-    const isAlreadyFavorite = favorites.some((fav) => fav.id === item.id);
+    try {
+      const isAlreadyFavorite = favorites.some((fav) => fav.id === item.id);
 
-    let updatedFavorites;
-    if (isAlreadyFavorite) {
-      // Remove the item
-      updatedFavorites = favorites.filter((fav) => fav.id !== item.id);
-    } else {
-      // Add the item
-      updatedFavorites = [...favorites, item];
+      let updatedFavorites;
+      if (isAlreadyFavorite) {
+        // Remove the item
+        updatedFavorites = favorites.filter((fav) => fav.id !== item.id);
+      } else {
+        // Add the item
+        updatedFavorites = [...favorites, item];
+      }
+
+      // Update state and localStorage
+      setFavorites(updatedFavorites);
+      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+      setError(null); // Clear any previous errors
+    } catch (err) {
+      setError("Failed to update favorites");
     }
-
-    // Update state and localStorage
-    setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
   };
 
   // Filter logic
   const filteredFavorites = favorites.filter((item) => {
     if (activeTab === "all") return true;
-    if (activeTab === "series") return item.first_air_date;
-    if (activeTab === "movies") return item.release_date;
+    if (activeTab === "series") return item.first_air_date; // Assuming item.first_air_date exists for series
+    if (activeTab === "movies") return item.release_date; // Assuming item.release_date exists for movies
     return true;
   });
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex  min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-black text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-lg">Loading your favorites...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br justify-center items-center from-indigo-950 via-slate-900 to-black text-white">
-      <div className="container mx-auto mt-4 px-4 py-8 flex-grow">
-        <div className="mt-8">
+    <div className="min-h-screen pt-16 bg-gradient-to-br from-indigo-950 via-slate-900 to-black text-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Header Section */}
+        <header className="mb-8 sm:mb-12">
+          <div className="text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              My Favorites
+            </h1>
+            <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto">
+            Discover and manage your favorite movies and TV series
+            </p>
+          </div>
+        </header>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-900/50 border border-red-500/50 rounded-lg p-4 text-center">
+            <p className="text-red-200">{error}</p>
+          </div>
+        )}
+
+        {/* Always render FavoriteDisplay, it will handle its own empty state. */}
+        <div className="space-y-6">
           <FavoriteDisplay
             filteredFavorites={filteredFavorites}
             activeTab={activeTab}
@@ -253,6 +298,32 @@ const Favorites = () => {
             toggleFavorite={toggleFavorite}
           />
         </div>
+
+        {/* Stats Section - Conditionally rendered only if there are any favorites at all */}
+        {favorites.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-gray-700/50">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-1">
+                  {favorites.length}
+                </div>
+                <div className="text-sm text-gray-300">Total Favorites</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-1">
+                  {favorites.filter((item) => item.release_date).length}
+                </div>
+                <div className="text-sm text-gray-300">Movies</div>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
+                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-1">
+                  {favorites.filter((item) => item.first_air_date).length}
+                </div>
+                <div className="text-sm text-gray-300">TV Series</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
