@@ -1,516 +1,709 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
-  Play,
+  Star,
   Clock,
   CalendarDays,
   Server,
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  Star,
-  Loader2,
-  User,
-  ChevronLeft,
-  List,
-  Grid,
-  Menu,
-  X,
+  Download,
+  Heart,
+  Share2,
+  Info,
   ChevronUp,
   ChevronDown,
-  Info,
-  Share2,
-  Heart,
+  Eye,
+  ThumbsUp,
+  Users,
+  Play,
   Film,
+  Award,
+  Loader2,
+  Languages,
+  Zap,
+  ShieldAlert,
+  Clapperboard,
+  Check,
+  List,
+  Image as ImageIcon,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import HomeCards from "@/components/display/HomeCard";
 
-const VIDEO_SOURCES = [
+// --- UNIFIED VIDEO_SOURCES FOR TV SHOWS ---
+const TV_SOURCES = [
   {
     name: "VidLink",
-    url: `https://vidlink.pro/tv/`,
-    params: "?multiLang=true",
-    icon: <Server className="w-4 h-4" />,
-    default: true,
-  },
-  {
-    name: "2Embed",
-    url: `https://2embed.cc/embed/tv/`,
-    icon: <Server className="w-4 h-4" />,
-  },
-  {
-    name: "Binge",
-    url: `https://vidbinge.dev/embed/tv/`,
-    icon: <Server className="w-4 h-4" />,
+    url: "https://vidlink.pro/tv/",
+    paramStyle: "path-slash",
+    icon: <Play className="w-5 h-5 text-pink-400" />,
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
   },
   {
     name: "VidSrc",
-    url: `https://vidsrc.net/embed/tv/`,
-    icon: <Server className="w-4 h-4" />,
+    url: "https://v2.vidsrc.me/embed/tv/",
+    paramStyle: "path-hyphen",
+    icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language"],
+    description: "Good source for non-English audio.",
+  },
+  {
+    name: "VidSrc 2",
+    url: "https://vidsrc.to/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language", "Backup"],
+    description: "Alternative source for subtitles.",
+  },
+  {
+    name: "2Embed",
+    url: "https://2embed.cc/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Film className="w-5 h-5 text-teal-400" />,
+    features: ["Ads"],
+    description: "May have more pop-up ads.",
   },
   {
     name: "EmbedSu",
-    url: `https://embed.su/embed/tv/`,
-    params: "?multiLang=true",
-    icon: <Server className="w-4 h-4" />,
+    url: "https://embed.su/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Server className="w-5 h-5 text-indigo-400" />,
+    features: ["Multi-Language"],
+    description: "Stable embed with language options.",
   },
 ];
 
-const EpisodeInfo = ({
-  episodeDetails,
-  seriesId,
-  seasonData,
-  seriesData,
-  onEpisodeChange,
-}) => {
-  const defaultServer =
-    VIDEO_SOURCES.find((source) => source.default) || VIDEO_SOURCES[0];
+// --- SHARED HELPER COMPONENTS ---
+const FeatureBadge = ({ feature }) => {
+  const baseClasses = "text-xs px-1.5 py-0.5 rounded-full font-semibold";
+  let colorClasses = "";
+  switch (feature.toLowerCase()) {
+    case "recommended":
+      colorClasses = "bg-green-500/20 text-green-300";
+      break;
+    case "multi-language":
+      colorClasses = "bg-blue-500/20 text-blue-300";
+      break;
+    case "fast":
+      colorClasses = "bg-yellow-500/20 text-yellow-300";
+      break;
+    case "ads":
+      colorClasses = "bg-orange-500/20 text-orange-300";
+      break;
+    default:
+      colorClasses = "bg-slate-700/50 text-slate-300";
+  }
+  return <span className={`${baseClasses} ${colorClasses}`}>{feature}</span>;
+};
 
-  const [iframeSrc, setIframeSrc] = useState("");
-  const [selectedServer, setSelectedServer] = useState(defaultServer);
-  const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
-  const [episodeExtraInfo, setEpisodeExtraInfo] = useState(null);
-  const [castInfo, setCastInfo] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [viewMode, setViewMode] = useState(() => {
-    return localStorage.getItem("viewMode") || "list";
+const CastMember = ({ cast }) => (
+  <div className="flex items-center space-x-3">
+    <img
+      src={
+        cast.profile_path
+          ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
+          : "https://via.placeholder.com/200x300?text=No+Image"
+      }
+      alt={cast.name}
+      className="w-12 h-12 rounded-full object-cover"
+    />
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-slate-200 truncate">{cast.name}</p>
+      <p className="text-xs text-slate-400 truncate">{cast.character}</p>
+    </div>
+  </div>
+);
+
+const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
+  const getInitialServer = () => {
+    if (typeof window !== "undefined") {
+      const storedServerName = localStorage.getItem("selectedTvServer");
+      const foundServer = TV_SOURCES.find(
+        (server) => server.name === storedServerName
+      );
+      if (foundServer) return foundServer;
+    }
+    return (
+      TV_SOURCES.find((s) => s.features.includes("Recommended")) ||
+      TV_SOURCES[0]
+    );
+  };
+  window.addEventListener("message", (event) => {
+    if (event.origin !== "https://vidlink.pro") return;
+
+    if (event.data?.type === "MEDIA_DATA") {
+      const mediaData = event.data.data;
+      localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
+    }
   });
-  const [isServersMenuOpen, setIsServersMenuOpen] = useState(false);
-  const [isMobileNavVisible, setIsMobileNavVisible] = useState(true);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
+
+  const [selectedServer, setSelectedServer] = useState(getInitialServer);
+  const [selectedSeason, setSelectedSeason] = useState(seasonData);
+  const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
+  const [iframeSrc, setIframeSrc] = useState("");
+  const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showMoreCast, setShowMoreCast] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const totalEpisodes = seasonData.episodes.length;
-  const totalSeasons = seriesData.number_of_seasons;
+  const posterPath = seriesData.poster_path
+    ? `https://image.tmdb.org/t/p/w500${seriesData.poster_path}`
+    : "https://via.placeholder.com/500x750.png?text=Series+Poster";
+  const backgroundPath = seriesData.backdrop_path
+    ? `https://image.tmdb.org/t/p/w1280${seriesData.backdrop_path}`
+    : posterPath;
 
-  const currentEpisodeIndex = seasonData.episodes.findIndex(
-    (ep) => ep.episode_number === selectedEpisode.episode_number
-  );
-
-  const handleEpisodeChange = (episode) => {
-    setIsVideoPlaying(false);
-    setSelectedEpisode(episode);
-    const serverUrl = selectedServer.url;
-    const serverParams = selectedServer.params || "";
-    setIframeSrc(
-      `${serverUrl}${seriesId}/${episode.season_number}/${episode.episode_number}${serverParams}`
-    );
-    fetchEpisodeInfo(episode.season_number, episode.episode_number);
-    if (onEpisodeChange) {
-      onEpisodeChange(episode);
-    }
-  };
-
-  const handleServerChange = (server) => {
-    setSelectedServer(server);
-    const serverUrl = server.url;
-    const serverParams = server.params || "";
-    setIframeSrc(
-      `${serverUrl}${seriesId}/${selectedEpisode.season_number}/${selectedEpisode.episode_number}${serverParams}`
-    );
-  };
-
-  const fetchEpisodeInfo = async (seasonNumber, episodeNumber) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${TMDB_API_KEY}&append_to_response=credits`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch episode details");
-      }
-
-      const data = await response.json();
-      setEpisodeExtraInfo(data);
-      if (data.credits) {
-        setCastInfo(data.credits.cast.slice(0, 10));
-      }
-    } catch (error) {
-      console.error("Error fetching episode info:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const showNotification = (message) => {
+  const showNotification = useCallback((message) => {
     setAlertMessage(message);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
-  };
-
-  useEffect(() => {
-    const serverUrl = defaultServer.url;
-    const serverParams = defaultServer.params || "";
-    setIframeSrc(
-      `${serverUrl}${seriesId}/${selectedEpisode.season_number}/${selectedEpisode.episode_number}${serverParams}`
-    );
-    fetchEpisodeInfo(
-      selectedEpisode.season_number,
-      selectedEpisode.episode_number
-    );
-
-    let lastScrollTop = 0;
-    const handleScroll = () => {
-      const currentScrollTop = window.pageYOffset;
-      setIsMobileNavVisible(currentScrollTop <= lastScrollTop);
-      lastScrollTop = currentScrollTop;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const timer = setTimeout(() => setShowAlert(false), 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("viewMode", viewMode);
-  }, [viewMode]);
+    const generateIframeSrc = () => {
+      if (!selectedServer || !seriesId || !selectedEpisode) {
+        setIframeSrc("");
+        return;
+      }
+      const { url, paramStyle } = selectedServer;
+      const { season_number, episode_number } = selectedEpisode;
+      let finalUrl = "";
+      switch (paramStyle) {
+        case "query":
+          finalUrl = `${url}${seriesId}?s=${season_number}&e=${episode_number}`;
+          break;
+        case "path-hyphen":
+          finalUrl = `${url}${seriesId}/${season_number}-${episode_number}`;
+          break;
+        case "path-slash":
+        default:
+          finalUrl = `${url}${seriesId}/${season_number}/${episode_number}`;
+          break;
+      }
+      setIframeSrc(finalUrl);
+    };
+    generateIframeSrc();
+  }, [selectedServer, seriesId, selectedEpisode]);
+
+  const handleServerChange = useCallback(
+    (server) => {
+      setSelectedServer(server);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("selectedTvServer", server.name);
+      }
+      showNotification(`Switched to ${server.name} server`);
+      setIsPopoverOpen(false);
+    },
+    [showNotification]
+  );
+
+  const handleFavoriteToggle = () => {
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    if (isFavorite) {
+      const updatedFavorites = favorites.filter(
+        (item) => item.id !== seriesData.id
+      );
+      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+      showNotification("Removed from favorites");
+    } else {
+      if (!favorites.some((item) => item.id === seriesData.id)) {
+        favorites.push(seriesData);
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+        showNotification("Added to favorites");
+      }
+    }
+    setIsFavorite(!isFavorite);
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showNotification("Link copied to clipboard!");
+    } catch (err) {
+      showNotification("Failed to copy link");
+    }
+  };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      setIsFavorite(favorites.some((item) => item.id === seriesData.id));
+    }
+
+    const fetchEpisodeData = async () => {
+      if (!selectedEpisode) return;
+      setIsLoadingCast(true);
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+        );
+        const data = await response.json();
+        setCastInfo(data.cast);
+      } catch (error) {
+        console.error("Failed to load episode cast:", error);
+      } finally {
+        setIsLoadingCast(false);
+      }
+    };
+
     const fetchRecommendations = async () => {
       setIsLoadingRecommendations(true);
       try {
         const response = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${TMDB_API_KEY}`
+          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
         );
         const data = await response.json();
         setRecommendations(data.results.slice(0, 6));
       } catch (error) {
-        showNotification("Failed to load recommendations");
+        console.error("Failed to load recommendations:", error);
       } finally {
         setIsLoadingRecommendations(false);
       }
     };
 
+    fetchEpisodeData();
     fetchRecommendations();
-  }, [seriesId]);
+  }, [seriesId, selectedEpisode, seriesData.id]);
+
+  const handleSeasonChange = async (seasonNumber) => {
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+      );
+      const data = await response.json();
+      setSelectedSeason(data);
+      if (data.episodes && data.episodes.length > 0) {
+        setSelectedEpisode(data.episodes[0]);
+      }
+    } catch (error) {
+      console.error(`Failed to load season ${seasonNumber}:`, error);
+      showNotification(`Failed to load Season ${seasonNumber}`);
+    }
+  };
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen pt-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="container mx-auto px-4 max-w-6xl pt-4">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-            </div>
-          ) : (
-            <>
-              {/* Episode Title Section */}
-              <div className="text-center mb-6">
-                <h1 className="text-2xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600 mb-3 px-2">
-                  {selectedEpisode.name}
-                </h1>
-                <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-slate-300">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-indigo-400" />
-                    <span>
-                      {selectedEpisode.runtime
-                        ? `${Math.floor(selectedEpisode.runtime / 60)}h ${
-                            selectedEpisode.runtime % 60
-                          }m`
-                        : "N/A"}
-                    </span>
+      <div className="min-h-screen pt-16 md:pt-20 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+        <div className="relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 to-slate-950/70" />
+            <img
+              src={backgroundPath}
+              alt="background"
+              className="w-full h-full object-cover object-center opacity-30"
+            />
+          </div>
+
+          <div className="max-w-8xl mx-auto px-3 py-4 lg:px-8 lg:py-6">
+            <div className="grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
+              {/* Left Column */}
+              <div className="order-1 lg:order-1 space-y-4">
+                {/* Video Player */}
+                <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-800/50">
+                  <div
+                    className="relative w-full"
+                    style={{ paddingBottom: "56.25%" }}
+                  >
+                    {iframeSrc ? (
+                      <iframe
+                        key={iframeSrc}
+                        src={iframeSrc}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                        className="absolute inset-0 w-full h-full"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90">
+                        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+                      </div>
+                    )}
                   </div>
-                  {episodeExtraInfo?.vote_average && (
-                    <div className="flex items-center space-x-2">
-                      <Star className="w-4 h-4 text-yellow-400" />
-                      <span>{episodeExtraInfo.vote_average.toFixed(1)}/10</span>
+
+                  <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900/90 backdrop-blur-sm">
+                    <Popover
+                      open={isPopoverOpen}
+                      onOpenChange={setIsPopoverOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button className="px-3 py-2 md:px-4 text-white bg-slate-800/60 hover:bg-slate-800/90 rounded-lg backdrop-blur-sm transition-colors flex items-center gap-2 text-sm">
+                          <Server className="w-4 h-4 text-indigo-400" />
+                          <span className="text-slate-400 hidden sm:inline">
+                            Source:
+                          </span>
+                          <span className="font-medium text-slate-100">
+                            {selectedServer.name}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="start"
+                        className="w-80 md:w-96 p-2 bg-slate-900/80 backdrop-blur-xl border-slate-700 text-white shadow-2xl"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="p-2">
+                            <h4 className="font-semibold text-slate-100">
+                              Select a Server
+                            </h4>
+                            <p className="text-xs text-slate-400">
+                              If the video doesn't work, try another source.
+                            </p>
+                          </div>
+                          <div className="max-h-[40vh] overflow-y-auto pr-1">
+                            {TV_SOURCES.map((server) => (
+                              <button
+                                key={server.name}
+                                onClick={() => handleServerChange(server)}
+                                className="flex justify-between items-center w-full p-3 rounded-lg text-left transition-colors hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                                    {server.icon}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-sm font-medium text-slate-100">
+                                        {server.name}
+                                      </p>
+                                      {server.features.map((feature) => (
+                                        <FeatureBadge
+                                          key={feature}
+                                          feature={feature}
+                                        />
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                      {server.description}
+                                    </p>
+                                  </div>
+                                </div>
+                                {selectedServer.name === server.name && (
+                                  <Check className="w-5 h-5 text-indigo-400 flex-shrink-0 ml-2" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
+                    <div className="flex items-center gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={handleShare}
+                            className="p-2 text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Share series</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                  )}
+                  </div>
+                  <div className="text-sm font-sans text-orange-300 w-full p-2 bg-slate-900/90 backdrop-blur-sm border-t border-slate-800">
+                    <Info className="w-4 h-4 inline-block mr-1.5 align-middle" />
+                    Content is provided by external sources. Try another server
+                    if it's not working.
+                  </div>
+                </div>
+
+                {/* Episode Details */}
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
+                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                    <Film className="w-5 h-5 text-indigo-400" />
+                    Currently Playing
+                  </h2>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-200">
+                      S{selectedEpisode.season_number} E
+                      {selectedEpisode.episode_number}: {selectedEpisode.name}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-slate-400">
+                      <div className="flex items-center space-x-1">
+                        <Star className="text-yellow-400 w-4 h-4" />
+                        <span>
+                          {selectedEpisode.vote_average?.toFixed(1) || "N/A"}
+                          /10
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <CalendarDays className="text-pink-400 w-4 h-4" />
+                        <span>{selectedEpisode.air_date || "No air date"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    {selectedEpisode.overview ||
+                      "No overview available for this episode."}
+                  </p>
+                </div>
+
+                {/* Similar Shows Section */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                    <Film className="w-5 h-5 text-indigo-400" />
+                    Similar Shows
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {isLoadingRecommendations
+                      ? Array(6)
+                          .fill(0)
+                          .map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
+                              <div className="h-4 bg-slate-800 rounded mt-2" />
+                            </div>
+                          ))
+                      : recommendations.map((show) => (
+                          <HomeCards
+                            key={show.id}
+                            MovieCard={show}
+                            media_type="tv"
+                            className="aspect-[2/3]"
+                          />
+                        ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Video Player Section */}
-              <div className="bg-slate-800/50 rounded-xl p-4 mb-6 shadow-xl">
-                {/* Mobile Server Selection */}
-                <div className="relative mb-4">
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <button
-                        onClick={() => setIsServersMenuOpen(!isServersMenuOpen)}
-                        className="w-full flex items-center justify-between bg-slate-900/50 p-3 rounded-lg text-slate-300"
+              {/* Right Column */}
+              <div className="order-2 lg:order-2 space-y-4">
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">
+                      {seriesData.name}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-400">
+                      <div className="flex items-center space-x-1">
+                        <Star className="text-yellow-400 w-4 h-4" />
+                        <span>
+                          {seriesData.vote_average?.toFixed(1) || "N/A"}/10
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <CalendarDays className="text-pink-400 w-4 h-4" />
+                        <span>
+                          {seriesData.first_air_date
+                            ? new Date(seriesData.first_air_date).getFullYear()
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {seriesData.genres?.map((genre) => (
+                      <span
+                        key={genre.id}
+                        className="bg-indigo-900/40 text-indigo-200 px-2.5 py-1 rounded-full text-xs"
                       >
-                        <div className="flex items-center space-x-2">
-                          <Server className="w-4 h-4" />
-                          <span>{selectedServer.name}</span>
+                        {genre.name}
+                      </span>
+                    ))}
+                  </div>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleFavoriteToggle}
+                        className={`w-full flex items-center justify-center px-4 py-2.5 rounded-lg transition-all ${
+                          isFavorite
+                            ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                            : "bg-slate-800/60 text-slate-300 hover:bg-slate-800"
+                        }`}
+                      >
+                        <Heart
+                          className={`w-4 h-4 mr-2 transition-transform ${
+                            isFavorite ? "fill-current scale-110" : "scale-100"
+                          }`}
+                        />
+                        <span className="text-sm font-medium">
+                          {isFavorite
+                            ? "Remove from Favorites"
+                            : "Add to Favorites"}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        {isFavorite
+                          ? "Remove series from favorites"
+                          : "Add series to favorites"}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    {seriesData.overview}
+                  </p>
+                </div>
+
+                {/* Season and Episode Selector */}
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+                      <List className="w-5 h-5 text-indigo-400" />
+                      Episodes
+                    </h2>
+                    <Select
+                      value={selectedSeason.season_number.toString()}
+                      onValueChange={(value) => handleSeasonChange(value)}
+                    >
+                      <SelectTrigger className="w-[150px] bg-slate-800 border-slate-700 focus:ring-indigo-500">
+                        <SelectValue placeholder="Select Season" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900/80 backdrop-blur-xl border-slate-700 text-white">
+                        {seriesData.seasons
+                          .filter((s) => s.episode_count > 0)
+                          .map((season) => (
+                            <SelectItem
+                              key={season.id}
+                              value={season.season_number.toString()}
+                            >
+                              {season.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* --- START: CLEANED EPISODE LIST --- */}
+                  <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2">
+                    {selectedSeason.episodes.map((ep) => (
+                      <button
+                        key={ep.id}
+                        onClick={() => setSelectedEpisode(ep)}
+                        className={`w-full text-left p-2.5 rounded-lg transition-all duration-200 flex gap-4 items-center ${
+                          selectedEpisode.id === ep.id
+                            ? "bg-indigo-600/30 ring-2 ring-indigo-500"
+                            : "bg-slate-800/50 hover:bg-slate-800/90"
+                        }`}
+                      >
+                        <div className="relative flex-shrink-0 w-32 aspect-video bg-slate-700 rounded-md overflow-hidden">
+                          {ep.still_path ? (
+                            <img
+                              src={`https://image.tmdb.org/t/p/w300${ep.still_path}`}
+                              alt={ep.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon
+                                className="w-8 h-8 text-slate-500"
+                                strokeWidth={1.5}
+                              />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 ring-1 ring-inset ring-black/10"></div>
                         </div>
-                        {isServersMenuOpen ? (
-                          <X className="w-4 h-4" />
-                        ) : (
-                          <Menu className="w-4 h-4" />
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-200 truncate">
+                            {ep.episode_number}. {ep.name}
+                          </p>
+                          {ep.runtime && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400">
+                              <Clock className="w-3 h-3" />
+                              <span>{ep.runtime} min</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {selectedEpisode.id === ep.id && (
+                          <div className="ml-auto pl-2">
+                            <Play className="w-5 h-5 text-indigo-400" />
+                          </div>
                         )}
                       </button>
-                    </SheetTrigger>
-                    <SheetContent
-                      side="bottom"
-                      className="bg-slate-900/95 backdrop-blur-xl border-slate-700"
-                    >
-                      <div className="grid grid-cols-3 gap-2 pt-4">
-                        {VIDEO_SOURCES.map((server) => (
-                          <Tooltip key={server.name}>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => {
-                                  handleServerChange(server);
-                                  setIsServersMenuOpen(false);
-                                }}
-                                className={`p-3 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                                  selectedServer.name === server.name
-                                    ? "bg-indigo-600 text-white"
-                                    : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-                                }`}
-                              >
-                                {server.icon}
-                                {server.name}
-                              </button>
-                            </TooltipTrigger>
-                          </Tooltip>
-                        ))}
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-
-                {/* Video Player */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-slate-900 shadow-xl">
-                  {iframeSrc ? (
-                    <iframe
-                      src={iframeSrc}
-                      title="Episode Player"
-                      frameBorder="0"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                      webkitallowfullscreen="true"
-                      mozallowfullscreen="true"
-                      className="w-full h-full"
-                      onLoad={() => setIsVideoPlaying(true)}
-                    ></iframe>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <p>Select a server to start watching</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Mobile Episode Navigation */}
-                <div className="flex justify-between items-center mt-4 px-2 py-2 bg-slate-900/50 rounded-lg">
-                  <button
-                    onClick={() =>
-                      handleEpisodeChange(
-                        seasonData.episodes[currentEpisodeIndex - 1]
-                      )
-                    }
-                    disabled={currentEpisodeIndex === 0}
-                    className={`p-2 rounded-full ${
-                      currentEpisodeIndex === 0
-                        ? "text-slate-500 cursor-not-allowed"
-                        : "text-slate-300 hover:bg-slate-700"
-                    }`}
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-white">
-                      Episode {selectedEpisode.episode_number}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      S{selectedEpisode.season_number} E
-                      {selectedEpisode.episode_number}
-                    </p>
+                    ))}
                   </div>
-                  <button
-                    onClick={() =>
-                      handleEpisodeChange(
-                        seasonData.episodes[currentEpisodeIndex + 1]
-                      )
-                    }
-                    disabled={currentEpisodeIndex === totalEpisodes - 1}
-                    className={`p-2 rounded-full ${
-                      currentEpisodeIndex === totalEpisodes - 1
-                        ? "text-slate-500 cursor-not-allowed"
-                        : "text-slate-300 hover:bg-slate-700"
-                    }`}
-                  >
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+                  {/* --- END: CLEANED EPISODE LIST --- */}
                 </div>
-              </div>
 
-              {/* Overview and Cast Section */}
-              {episodeExtraInfo && (
-                <div className="space-y-4 mb-8">
-                  <div className="bg-slate-800/50 p-4 rounded-xl">
-                    <h3 className="text-lg font-semibold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                      Overview
-                    </h3>
-                    <p className="text-sm text-slate-300 leading-relaxed">
-                      {episodeExtraInfo.overview || "No overview available."}
-                    </p>
-                  </div>
-
-                  {castInfo.length > 0 && (
-                    <div className="bg-slate-800/50 p-4 rounded-xl">
-                      <h3 className="text-lg font-semibold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                        Cast
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {castInfo.slice(0, 6).map((actor) => (
+                {/* Cast Section */}
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-3">
+                  <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-indigo-400" />
+                    Episode Cast
+                  </h2>
+                  <div className="space-y-3">
+                    {isLoadingCast ? (
+                      Array(3)
+                        .fill(0)
+                        .map((_, i) => (
                           <div
-                            key={actor.id}
-                            className="flex items-center space-x-3 bg-slate-900/50 p-2 rounded-lg"
+                            key={i}
+                            className="animate-pulse flex items-center space-x-3"
                           >
-                            {actor.profile_path ? (
-                              <img
-                                src={`https://image.tmdb.org/t/p/w92${actor.profile_path}`}
-                                alt={actor.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
-                                <User className="w-5 h-5 text-slate-400" />
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-sm font-medium text-white">
-                                {actor.name}
-                              </p>
-                              <p className="text-xs text-slate-400">
-                                {actor.character}
-                              </p>
+                            <div className="w-12 h-12 bg-slate-800 rounded-full" />
+                            <div className="flex-1">
+                              <div className="h-4 bg-slate-800 rounded w-24" />
+                              <div className="h-3 bg-slate-800 rounded w-20 mt-1" />
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Episodes List */}
-              <div className="mb-8">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                    All Episodes
-                  </h3>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded-lg ${
-                        viewMode === "grid"
-                          ? "bg-indigo-600 text-white"
-                          : "bg-slate-800 text-slate-300"
-                      }`}
-                    >
-                      <Grid className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`p-2 rounded-lg ${
-                        viewMode === "list"
-                          ? "bg-indigo-600 text-white"
-                          : "bg-slate-800 text-slate-300"
-                      }`}
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {viewMode === "grid" ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {seasonData.episodes.map((episode) => (
-                      <EpisodeCard
-                        key={episode.episode_number}
-                        episodeinfo={episode}
-                        seriesId={seriesId}
-                        selectedEpisode={selectedEpisode}
-                        handleEpisodeChange={handleEpisodeChange}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {seasonData.episodes.map((episode) => (
-                      <EpisodeListItem
-                        key={episode.episode_number}
-                        episodeinfo={episode}
-                        seriesId={seriesId}
-                        selectedEpisode={selectedEpisode}
-                        handleEpisodeChange={handleEpisodeChange}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Season Navigation */}
-              {totalSeasons > 1 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-semibold mb-4 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                    Seasons
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {Array.from({ length: totalSeasons }, (_, i) => i + 1).map(
-                      (seasonNum) => (
-                        <SeasonCard
-                          key={seasonNum}
-                          seasonNum={seasonNum}
-                          seriesId={seriesId}
-                          seriesData={seriesData}
-                          selectedSeason={selectedEpisode.season_number}
-                        />
-                      )
+                        ))
+                    ) : castInfo.length > 0 ? (
+                      <>
+                        {castInfo
+                          .slice(0, showMoreCast ? undefined : 4)
+                          .map((cast) => (
+                            <CastMember key={cast.id} cast={cast} />
+                          ))}
+                        {castInfo.length > 4 && (
+                          <button
+                            onClick={() => setShowMoreCast(!showMoreCast)}
+                            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                          >
+                            {showMoreCast ? "Show Less" : "Show More"}
+                            {showMoreCast ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-400">
+                        No cast information available for this episode.
+                      </p>
                     )}
                   </div>
                 </div>
-              )}
-
-              {/* Related and Recommended Sections */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                  Related
-                </h3>
-                {/* Add related content here */}
               </div>
-
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600">
-                  Recommended
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {isLoadingRecommendations
-                    ? Array(6)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="animate-pulse">
-                            <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
-                            <div className="h-4 bg-slate-800 rounded mt-2" />
-                          </div>
-                        ))
-                    : recommendations.map((movie) => (
-                        <HomeCards
-                          key={`${movie.media_type}-${movie.id}`}
-                          MovieCard={movie}
-                          className="aspect-[2/3]"
-                        />
-                      ))}
-                </div>
-              </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
 
         {/* Notification Alert */}
@@ -528,207 +721,6 @@ const EpisodeInfo = ({
         </div>
       </div>
     </TooltipProvider>
-  );
-};
-
-const EpisodeCard = ({
-  episodeinfo,
-  seriesId,
-  selectedEpisode,
-  handleEpisodeChange,
-}) => {
-  if (!episodeinfo || !seriesId) return null;
-
-  const { episode_number, name, overview, still_path, runtime, season_number } =
-    episodeinfo;
-
-  const imageUrl = still_path
-    ? `https://image.tmdb.org/t/p/w500${still_path}`
-    : "/placeholder-episode.jpg";
-
-  const episodeLink = `/series/${seriesId}/season/${season_number}/${episode_number}`;
-
-  return (
-    <Link href={episodeLink} legacyBehavior>
-      <a className="block group relative bg-slate-900/50 rounded-lg overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl">
-        <div className="relative aspect-video">
-          <img
-            src={imageUrl}
-            alt={name || `Episode ${episode_number}`}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Play className="w-12 h-12 text-white" />
-          </div>
-          <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-            S{season_number} E{episode_number}
-          </div>
-        </div>
-        <div className="p-3">
-          <h3 className="font-semibold text-sm text-white group-hover:text-indigo-400 transition-colors truncate">
-            {episode_number}. {name || `Episode ${episode_number}`}
-          </h3>
-          {runtime && (
-            <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-              <Clock className="w-3 h-3" />
-              <span>{runtime} min</span>
-            </div>
-          )}
-          {overview && (
-            <p className="text-xs text-gray-400 mt-2 line-clamp-2">
-              {overview}
-            </p>
-          )}
-        </div>
-      </a>
-    </Link>
-  );
-};
-
-const EpisodeListItem = ({
-  episodeinfo,
-  seriesId,
-  selectedEpisode,
-  handleEpisodeChange,
-}) => {
-  if (!episodeinfo || !seriesId) return null;
-
-  const { episode_number, name, overview, still_path, runtime, season_number } =
-    episodeinfo;
-
-  const imageUrl = still_path
-    ? `https://image.tmdb.org/t/p/w500${still_path}`
-    : "/placeholder-episode.jpg";
-
-  const episodeLink = `/series/${seriesId}/season/${season_number}/${episode_number}`;
-
-  return (
-    <div className="bg-slate-900/50 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-      <Link href={episodeLink} legacyBehavior>
-        <a className="flex flex-row items-center gap-4 p-3 w-full transition-colors hover:bg-slate-800/50">
-          <div className="relative w-32 aspect-square flex-shrink-0">
-            <img
-              src={imageUrl}
-              alt={name || `Episode ${episode_number}`}
-              className="w-full h-full object-cover rounded-lg"
-              loading="lazy"
-            />
-            <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-              S{season_number} E{episode_number}
-            </div>
-          </div>
-          <div className="flex-grow min-w-0">
-            <h3 className="font-semibold text-white hover:text-indigo-400 transition-colors truncate">
-              {episode_number}. {name || `Episode ${episode_number}`}
-            </h3>
-            {runtime && (
-              <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
-                <Clock className="w-3 h-3" />
-                <span>{runtime} min</span>
-              </div>
-            )}
-            {overview && (
-              <p className="text-sm text-gray-400 mt-2 line-clamp-2">
-                {overview}
-              </p>
-            )}
-          </div>
-        </a>
-      </Link>
-    </div>
-  );
-};
-
-const SeasonCard = ({ seasonNum, seriesId, seriesData, selectedSeason }) => {
-  const seasonLink = `/series/${seriesId}/season/${seasonNum}`;
-
-  // Fallback for missing poster
-  const posterPath = seriesData.seasons.find(
-    (season) => season.season_number === seasonNum
-  )?.poster_path
-    ? `https://image.tmdb.org/t/p/w500/${
-        seriesData.seasons.find((season) => season.season_number === seasonNum)
-          .poster_path
-      }`
-    : "https://i.imgur.com/a5SqB4h.jpeg";
-
-  const airYear = seriesData.seasons.find(
-    (season) => season.season_number === seasonNum
-  )?.air_date
-    ? seriesData.seasons
-        .find((season) => season.season_number === seasonNum)
-        .air_date.substr(0, 4)
-    : "N/A";
-
-  return (
-    <Link href={seasonLink} className="block">
-      <div className="group relative bg-slate-800/40 rounded-lg overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-slate-700/50">
-        <div className="relative aspect-[4/3]">
-          <Image
-            src={posterPath}
-            alt={`Season ${seasonNum}`}
-            width={400}
-            height={300}
-            className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all"
-            priority
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 border border-white/30">
-              <Play className="w-7 h-7 text-white" fill="white" />
-            </div>
-          </div>
-
-          <div className="absolute top-3 right-3 bg-black/50 backdrop-blur px-2.5 py-1 rounded-lg border border-white/10">
-            <span className="text-sm font-medium text-white tracking-wide">
-              S{seasonNum}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-gradient-to-b from-slate-800/0 to-slate-800/50">
-          <h3 className="font-semibold text-lg text-white/90 group-hover:text-white transition-colors mb-3">
-            Season {seasonNum}
-          </h3>
-
-          <div className="grid grid-cols-3 gap-3 text-sm text-slate-300">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-indigo-500/10">
-                <Calendar className="w-4 h-4 text-indigo-400" />
-              </div>
-              <span className="text-slate-300">{airYear}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-pink-500/10">
-                <Film className="w-4 h-4 text-pink-400" />
-              </div>
-              <span className="text-slate-300">
-                {
-                  seriesData.seasons.find(
-                    (season) => season.season_number === seasonNum
-                  ).episode_count
-                }{" "}
-                Eps
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-yellow-500/10">
-                <Star className="w-4 h-4 text-yellow-400" />
-              </div>
-              <span className="text-slate-300">
-                {seriesData.seasons
-                  .find((season) => season.season_number === seasonNum)
-                  .vote_average?.toFixed(1) || "N/A"}
-                /10
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 };
 

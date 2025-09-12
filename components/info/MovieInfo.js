@@ -228,7 +228,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       VIDEO_SOURCES[0]
     );
   };
+  window.addEventListener("message", (event) => {
+    if (event.origin !== "https://vidlink.pro") return;
 
+    if (event.data?.type === "MEDIA_DATA") {
+      const mediaData = event.data.data;
+      localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
+    }
+  });
   const [selectedServer, setSelectedServer] = useState(getInitialServer);
   const [iframeSrc, setIframeSrc] = useState("");
   const [castInfo, setCastInfo] = useState([]);
