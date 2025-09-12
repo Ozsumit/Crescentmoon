@@ -5,20 +5,16 @@ import {
   Clock,
   CalendarDays,
   Server,
-  Download,
   Heart,
   Share2,
   Info,
   ChevronUp,
   ChevronDown,
-  Eye,
   ThumbsUp,
   Users,
   Play,
   Film,
-  Award,
   Loader2,
-  // New icons for the redesigned UI
   Languages,
   Zap,
   ShieldAlert,
@@ -40,7 +36,7 @@ import {
 } from "@/components/ui/tooltip";
 import HomeCards from "@/components/display/HomeCard";
 
-// --- REDESIGNED & ENHANCED VIDEO_SOURCES ---
+// --- VIDEO_SOURCES DEFINITION ---
 const VIDEO_SOURCES = [
   {
     name: "VidLink",
@@ -77,15 +73,6 @@ const VIDEO_SOURCES = [
     description: "A reliable classic player.",
   },
   {
-    name: "VidSrc 4",
-    url: "https://vidsrc.cc/v2/embed/movie/",
-    params:
-      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
-    icon: <Clapperboard className="w-5 h-5 text-slate-400" />,
-    features: ["Backup"],
-    description: "Another backup server option.",
-  },
-  {
     name: "2Embed",
     url: "https://2embed.cc/embed/movie/",
     icon: <Film className="w-5 h-5 text-teal-400" />,
@@ -100,54 +87,29 @@ const VIDEO_SOURCES = [
     parseUrl: true,
     description: "Quick-loading, lightweight player.",
   },
-  {
-    name: "EmbedSu",
-    url: "https://embed.su/embed/movie/",
-    params: "?multiLang=true",
-    icon: <Server className="w-5 h-5 text-indigo-400" />,
-    features: ["Multi-Language"],
-    description: "Stable embed with language options.",
-  },
-  {
-    name: "MultiEmbed",
-    url: "https://multiembed.mov/directstream.php?video_id=",
-    params: "&tmdb=1",
-    icon: <ShieldAlert className="w-5 h-5 text-red-400" />,
-    features: ["Unstable"],
-    description: "Might not work for all content.",
-  },
 ];
 
-// --- NEW HELPER COMPONENT FOR FEATURE TAGS ---
+// --- HELPER COMPONENTS ---
 const FeatureBadge = ({ feature }) => {
-  const baseClasses = "text-xs px-1.5 py-0.5 rounded-full font-semibold";
-  let colorClasses = "";
-
-  switch (feature.toLowerCase()) {
-    case "recommended":
-      colorClasses = "bg-green-500/20 text-green-300";
-      break;
-    case "multi-language":
-      colorClasses = "bg-blue-500/20 text-blue-300";
-      break;
-    case "fast":
-      colorClasses = "bg-yellow-500/20 text-yellow-300";
-      break;
-    case "ads":
-      colorClasses = "bg-orange-500/20 text-orange-300";
-      break;
-    case "unstable":
-      colorClasses = "bg-red-500/20 text-red-300";
-      break;
-    default:
-      colorClasses = "bg-slate-700/50 text-slate-300";
-  }
-
-  return <span className={`${baseClasses} ${colorClasses}`}>{feature}</span>;
+  const styles = {
+    recommended: "bg-green-500/20 text-green-300",
+    "multi-language": "bg-blue-500/20 text-blue-300",
+    fast: "bg-yellow-500/20 text-yellow-300",
+    ads: "bg-orange-500/20 text-orange-300",
+    unstable: "bg-red-500/20 text-red-300",
+    backup: "bg-slate-700/50 text-slate-300",
+  };
+  const colorClass = styles[feature.toLowerCase()] || styles.backup;
+  return (
+    <span
+      className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${colorClass}`}
+    >
+      {feature}
+    </span>
+  );
 };
 
 const Review = ({ review }) => {
-  // ... (Review component remains unchanged)
   const [expanded, setExpanded] = useState(false);
   const isLongContent = review.content.length > 300;
   const displayContent = expanded
@@ -155,7 +117,7 @@ const Review = ({ review }) => {
     : review.content.slice(0, 300);
 
   return (
-    <div className="bg-slate-900/50 rounded-lg p-6 shadow-lg mb-4 border border-slate-800/50 hover:border-slate-700/50 transition-colors">
+    <div className="bg-slate-900/50 rounded-lg p-6 mb-4 border border-slate-800/50">
       <div className="flex items-start space-x-4">
         <Avatar className="w-10 h-10">
           <AvatarImage
@@ -210,65 +172,101 @@ const Review = ({ review }) => {
 };
 
 const MovieInfo = ({ MovieDetail, genreArr, id }) => {
-  const getInitialServer = () => {
+  const getInitialServer = useCallback(() => {
     if (typeof window !== "undefined") {
       const storedServerName = localStorage.getItem("selectedMovieServer");
-      if (storedServerName) {
-        const foundServer = VIDEO_SOURCES.find(
-          (server) => server.name === storedServerName
-        );
-        if (foundServer) {
-          return foundServer;
-        }
-      }
+      const foundServer = VIDEO_SOURCES.find(
+        (server) => server.name === storedServerName
+      );
+      if (foundServer) return foundServer;
     }
-    // Default to the first server marked as "Recommended" or the very first one
     return (
       VIDEO_SOURCES.find((s) => s.features.includes("Recommended")) ||
       VIDEO_SOURCES[0]
     );
-  };
-  window.addEventListener("message", (event) => {
-    if (event.origin !== "https://vidlink.pro") return;
+  }, []);
 
-    if (event.data?.type === "MEDIA_DATA") {
-      const mediaData = event.data.data;
-      localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
-    }
-  });
   const [selectedServer, setSelectedServer] = useState(getInitialServer);
   const [iframeSrc, setIframeSrc] = useState("");
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [isLoadingCast, setIsLoadingCast] = useState(false);
+  const [isLoadingCast, setIsLoadingCast] = useState(true);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
-    useState(false);
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    useState(true);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMoreCast, setShowMoreCast] = useState(false);
-  const videoContainerRef = useRef(null);
-
-  // Popover state for manual control if needed
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  const posterPath = MovieDetail.poster_path
-    ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
-    : "https://via.placeholder.com/500x750.png?text=Movie+Poster";
+  // --- START: UNIFIED PROGRESS TRACKING LOGIC ---
+  useEffect(() => {
+    if (!MovieDetail?.id || !MovieDetail.title) return;
 
-  const backgroundPath = MovieDetail.backdrop_path
-    ? `https://image.tmdb.org/t/p/w1280${MovieDetail.backdrop_path}`
-    : posterPath;
+    try {
+      const progressData = JSON.parse(
+        localStorage.getItem("mediaProgress") || "{}"
+      );
+      const existingEntry = progressData[MovieDetail.id] || {};
 
-  const formatRuntime = (minutes) => {
-    if (!minutes) return "N/A";
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  };
+      const progressPayload = existingEntry.progress
+        ? {}
+        : {
+            progress: {
+              watched: 1,
+              duration: MovieDetail.runtime * 60 || 1,
+            },
+          };
+
+      progressData[MovieDetail.id] = {
+        ...existingEntry,
+        id: MovieDetail.id,
+        type: "movie",
+        title: MovieDetail.title,
+        poster_path: MovieDetail.poster_path,
+        last_updated: Date.now(),
+        ...progressPayload,
+      };
+
+      localStorage.setItem("mediaProgress", JSON.stringify(progressData));
+    } catch (error) {
+      console.error("Failed to update media progress:", error);
+    }
+  }, [MovieDetail]);
+
+  useEffect(() => {
+    const handleVidLinkMessage = (event) => {
+      if (
+        event.origin !== "https://vidlink.pro" ||
+        event.data?.type !== "MEDIA_DATA"
+      )
+        return;
+
+      const vidLinkDataStore = event.data.data;
+      try {
+        const progressData = JSON.parse(
+          localStorage.getItem("mediaProgress") || "{}"
+        );
+        for (const mediaId in vidLinkDataStore) {
+          if (progressData[mediaId]) {
+            progressData[mediaId] = {
+              ...progressData[mediaId],
+              ...vidLinkDataStore[mediaId],
+              last_updated: Date.now(),
+            };
+          }
+        }
+        localStorage.setItem("mediaProgress", JSON.stringify(progressData));
+      } catch (error) {
+        console.error("Failed to merge VidLink progress:", error);
+      }
+    };
+    window.addEventListener("message", handleVidLinkMessage);
+    return () => window.removeEventListener("message", handleVidLinkMessage);
+  }, []);
+  // --- END: UNIFIED PROGRESS TRACKING LOGIC ---
 
   const showNotification = useCallback((message) => {
     setAlertMessage(message);
@@ -279,28 +277,22 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   useEffect(() => {
     const generateIframeSrc = async () => {
-      if (!selectedServer || !id) {
-        setIframeSrc("");
-        return;
-      }
-
+      if (!selectedServer || !id) return setIframeSrc("");
       let urlToUse = selectedServer.url;
-      let paramsToUse = selectedServer.params || "";
-
       try {
         if (selectedServer.parseUrl) {
           const response = await fetch(`${urlToUse}${id}`);
           const data = await response.json();
           urlToUse = data.url;
         } else {
-          urlToUse = `${urlToUse}${id}${paramsToUse}`;
+          urlToUse = `${urlToUse}${id}${selectedServer.params || ""}`;
         }
         setIframeSrc(urlToUse);
       } catch (error) {
         console.error("Error generating iframe source:", error);
         setIframeSrc("");
         showNotification(
-          `Failed to load ${selectedServer.name} content. Please try another server.`
+          `Failed to load ${selectedServer.name}. Please try another server.`
         );
       }
     };
@@ -310,97 +302,64 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const handleServerChange = useCallback(
     (server) => {
       setSelectedServer(server);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("selectedMovieServer", server.name);
-      }
-      showNotification(`Switched to ${server.name} server`);
-      setIsPopoverOpen(false); // Close popover on selection
+      localStorage.setItem("selectedMovieServer", server.name);
+      showNotification(`Switched to ${server.name}`);
+      setIsPopoverOpen(false);
     },
     [showNotification]
   );
 
-  // ... other hooks and functions (handleFavoriteToggle, handleShare, etc.) remain the same
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = useCallback(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    if (isFavorite) {
-      const updatedFavorites = favorites.filter(
-        (item) => item.id !== MovieDetail.id
-      );
-      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    const isCurrentlyFavorite = favorites.some(
+      (item) => item.id === MovieDetail.id
+    );
+    let updatedFavorites;
+    if (isCurrentlyFavorite) {
+      updatedFavorites = favorites.filter((item) => item.id !== MovieDetail.id);
       showNotification("Removed from favorites");
     } else {
-      if (!favorites.some((item) => item.id === MovieDetail.id)) {
-        favorites.push(MovieDetail);
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-        showNotification("Added to favorites");
-      }
+      updatedFavorites = [...favorites, MovieDetail];
+      showNotification("Added to favorites");
     }
-    setIsFavorite(!isFavorite);
-  };
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    setIsFavorite(!isCurrentlyFavorite);
+  }, [MovieDetail, showNotification]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       showNotification("Link copied to clipboard!");
     } catch (err) {
       showNotification("Failed to copy link");
     }
-  };
-
-  const CastMember = ({ cast }) => (
-    <div className="flex items-center space-x-3">
-      <img
-        src={
-          cast.profile_path
-            ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-            : "https://via.placeholder.com/200x300?text=No+Image"
-        }
-        alt={cast.name}
-        className="w-12 h-12 rounded-full object-cover"
-      />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-200 truncate">
-          {cast.name}
-        </p>
-        <p className="text-xs text-slate-400 truncate">{cast.character}</p>
-      </div>
-    </div>
-  );
+  }, [showNotification]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-      setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
-    }
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    setIsFavorite(favorites.some((item) => item.id === MovieDetail.id));
 
     const fetchData = async () => {
-      setIsLoadingCast(true);
-      setIsLoadingRecommendations(true);
-      setIsLoadingReviews(true);
       try {
-        const [castResponse, recommendationsResponse, reviewsResponse] =
-          await Promise.all([
-            fetch(
-              `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-            ),
-            fetch(
-              `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-            ),
-            fetch(
-              `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-            ),
-          ]);
-
-        const castData = await castResponse.json();
-        const recommendationsData = await recommendationsResponse.json();
-        const reviewsData = await reviewsResponse.json();
-
+        const [castRes, recsRes, reviewsRes] = await Promise.all([
+          fetch(
+            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+          ),
+        ]);
+        const castData = await castRes.json();
+        const recsData = await recsRes.json();
+        const reviewsData = await reviewsRes.json();
         setCastInfo(castData.cast.slice(0, 10));
-        setRecommendations(recommendationsData.results.slice(0, 6));
+        setRecommendations(recsData.results.slice(0, 6));
         setReviews(reviewsData.results.slice(0, 5));
       } catch (error) {
         console.error("Failed to load movie supplementary content:", error);
-        showNotification("Failed to load some content");
       } finally {
         setIsLoadingCast(false);
         setIsLoadingRecommendations(false);
@@ -408,7 +367,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       }
     };
     fetchData();
-  }, [MovieDetail.id, id, showNotification]);
+  }, [MovieDetail.id, id]);
+
+  const posterPath = MovieDetail.poster_path
+    ? `https://image.tmdb.org/t/p/w500${MovieDetail.poster_path}`
+    : "https://via.placeholder.com/500x750.png?text=No+Poster";
+  const backgroundPath = MovieDetail.backdrop_path
+    ? `https://image.tmdb.org/t/p/w1280${MovieDetail.backdrop_path}`
+    : posterPath;
+  const formatRuntime = (minutes) => {
+    if (!minutes) return "N/A";
+    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  };
 
   return (
     <TooltipProvider>
@@ -422,14 +392,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               className="w-full h-full object-cover object-center opacity-30"
             />
           </div>
-
           <div className="max-w-8xl mx-auto px-3 py-4 lg:px-8 lg:py-6">
             <div className="grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               <div className="order-1 lg:order-1">
-                <div
-                  ref={videoContainerRef}
-                  className="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-800/50"
-                >
+                <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-800/50">
                   <div
                     className="relative w-full"
                     style={{ paddingBottom: "56.25%" }}
@@ -447,9 +413,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </div>
                     )}
                   </div>
-
                   <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900/90 backdrop-blur-sm">
-                    {/* --- START: REDESIGNED SERVER SELECTOR --- */}
                     <Popover
                       open={isPopoverOpen}
                       onOpenChange={setIsPopoverOpen}
@@ -516,8 +480,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         </div>
                       </PopoverContent>
                     </Popover>
-                    {/* --- END: REDESIGNED SERVER SELECTOR --- */}
-
                     <div className="flex items-center gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -540,10 +502,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     by external sources.
                   </div>
                 </div>
-
-                {/* The rest of the page layout remains the same */}
-                <div className="order-4 lg:order-3 space-y-4">
-                  <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50 mt-4">
+                <div className="order-4 lg:order-3 space-y-4 mt-4">
+                  <div className="bg-slate-900/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-2xl border border-slate-800/50">
                     <div className="p-4 border-b border-slate-800/50">
                       <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                         <Users className="w-5 h-5 text-indigo-400" />
@@ -585,9 +545,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         <div className="text-center py-8 text-slate-400">
                           <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                           <p className="text-lg font-medium">No reviews yet</p>
-                          <p className="text-sm">
-                            Be the first to review this movie!
-                          </p>
                         </div>
                       )}
                     </div>
@@ -612,7 +569,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           <HomeCards
                             key={`${movie.media_type}-${movie.id}`}
                             MovieCard={movie}
-                            className="aspect-[2/3]"
                           />
                         ))}
                   </div>
@@ -627,13 +583,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     className="w-full"
                   />
                 </div>
-
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">
                       {MovieDetail.title}
                     </h1>
-
                     <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-400">
                       <div className="flex items-center space-x-1">
                         <Star className="text-yellow-400 w-4 h-4" />
@@ -655,7 +609,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {genreArr?.map((genre, index) => (
                       <span
@@ -666,7 +619,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </span>
                     ))}
                   </div>
-
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -682,7 +634,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                             isFavorite ? "fill-current scale-110" : "scale-100"
                           }`}
                         />
-                        <span className="text-sm font-medium">
+                        <span>
                           {isFavorite
                             ? "Remove from Favorites"
                             : "Add to Favorites"}
@@ -697,11 +649,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                       </p>
                     </TooltipContent>
                   </Tooltip>
-
                   <p className="text-slate-300 text-sm leading-relaxed">
                     {MovieDetail.overview}
                   </p>
-
                   <div className="space-y-3">
                     <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
                       <Users className="w-4 h-4 text-indigo-400" />
@@ -724,11 +674,32 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                             </div>
                           ))
                       ) : (
-                        <div className="space-y-3">
+                        <div>
                           {castInfo
                             .slice(0, showMoreCast ? undefined : 4)
                             .map((cast) => (
-                              <CastMember key={cast.id} cast={cast} />
+                              <div
+                                key={cast.id}
+                                className="flex items-center space-x-3 mb-3"
+                              >
+                                <img
+                                  src={
+                                    cast.profile_path
+                                      ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
+                                      : "https://via.placeholder.com/200x300?text=No+Image"
+                                  }
+                                  alt={cast.name}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-slate-200 truncate">
+                                    {cast.name}
+                                  </p>
+                                  <p className="text-xs text-slate-400 truncate">
+                                    {cast.character}
+                                  </p>
+                                </div>
+                              </div>
                             ))}
                           {castInfo.length > 4 && (
                             <button
@@ -749,7 +720,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                   </div>
                 </div>
               </div>
-
               <div className="order-3 lg:hidden space-y-4">
                 <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
                   <Film className="w-5 h-5 text-indigo-400" />
@@ -769,7 +739,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                         <HomeCards
                           key={`${movie.media_type}-${movie.id}`}
                           MovieCard={movie}
-                          className="aspect-[2/3]"
                         />
                       ))}
                 </div>
@@ -777,7 +746,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
           </div>
         </div>
-
         <div className="fixed bottom-4 right-4 z-50">
           <Alert
             className={`transition-opacity duration-300 ${

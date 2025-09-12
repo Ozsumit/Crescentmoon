@@ -6,18 +6,15 @@ import {
   Clock,
   CalendarDays,
   Server,
-  Download,
   Heart,
   Share2,
   Info,
   ChevronUp,
   ChevronDown,
-  Eye,
   ThumbsUp,
   Users,
   Play,
   Film,
-  Award,
   Loader2,
   Languages,
   Zap,
@@ -95,25 +92,21 @@ const TV_SOURCES = [
 
 // --- SHARED HELPER COMPONENTS ---
 const FeatureBadge = ({ feature }) => {
-  const baseClasses = "text-xs px-1.5 py-0.5 rounded-full font-semibold";
-  let colorClasses = "";
-  switch (feature.toLowerCase()) {
-    case "recommended":
-      colorClasses = "bg-green-500/20 text-green-300";
-      break;
-    case "multi-language":
-      colorClasses = "bg-blue-500/20 text-blue-300";
-      break;
-    case "fast":
-      colorClasses = "bg-yellow-500/20 text-yellow-300";
-      break;
-    case "ads":
-      colorClasses = "bg-orange-500/20 text-orange-300";
-      break;
-    default:
-      colorClasses = "bg-slate-700/50 text-slate-300";
-  }
-  return <span className={`${baseClasses} ${colorClasses}`}>{feature}</span>;
+  const styles = {
+    recommended: "bg-green-500/20 text-green-300",
+    "multi-language": "bg-blue-500/20 text-blue-300",
+    fast: "bg-yellow-500/20 text-yellow-300",
+    ads: "bg-orange-500/20 text-orange-300",
+    backup: "bg-slate-700/50 text-slate-300",
+  };
+  const colorClass = styles[feature.toLowerCase()] || styles.backup;
+  return (
+    <span
+      className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${colorClass}`}
+    >
+      {feature}
+    </span>
+  );
 };
 
 const CastMember = ({ cast }) => (
@@ -135,7 +128,7 @@ const CastMember = ({ cast }) => (
 );
 
 const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
-  const getInitialServer = () => {
+  const getInitialServer = useCallback(() => {
     if (typeof window !== "undefined") {
       const storedServerName = localStorage.getItem("selectedTvServer");
       const foundServer = TV_SOURCES.find(
@@ -147,15 +140,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       TV_SOURCES.find((s) => s.features.includes("Recommended")) ||
       TV_SOURCES[0]
     );
-  };
-  window.addEventListener("message", (event) => {
-    if (event.origin !== "https://vidlink.pro") return;
-
-    if (event.data?.type === "MEDIA_DATA") {
-      const mediaData = event.data.data;
-      localStorage.setItem("vidLinkProgress", JSON.stringify(mediaData));
-    }
-  });
+  }, []);
 
   const [selectedServer, setSelectedServer] = useState(getInitialServer);
   const [selectedSeason, setSelectedSeason] = useState(seasonData);
@@ -172,6 +157,84 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const [showMoreCast, setShowMoreCast] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
+  // --- START: UNIFIED PROGRESS TRACKING FOR SERIES ---
+
+  // Effect to add/update the series in 'Continue Watching' when an episode is viewed
+  useEffect(() => {
+    if (!seriesData?.id || !selectedEpisode?.episode_number) return;
+
+    try {
+      const progressData = JSON.parse(
+        localStorage.getItem("mediaProgress") || "{}"
+      );
+      const existingEntry = progressData[seriesData.id] || {};
+
+      // Only add minimal progress if no progress already exists.
+      // This prevents overwriting accurate progress from VidLink with a placeholder.
+      const progressPayload = existingEntry.progress
+        ? {}
+        : {
+            progress: {
+              watched: 1, // Minimal value to indicate the episode has been started
+              duration: (selectedEpisode.runtime || 25) * 60, // Use episode runtime or default (25 mins)
+            },
+          };
+
+      progressData[seriesData.id] = {
+        ...existingEntry,
+        id: seriesData.id,
+        type: "tv",
+        title: seriesData.name,
+        poster_path: seriesData.poster_path,
+        last_updated: Date.now(),
+        last_season_watched: selectedEpisode.season_number,
+        last_episode_watched: selectedEpisode.episode_number,
+        ...progressPayload,
+      };
+
+      localStorage.setItem("mediaProgress", JSON.stringify(progressData));
+    } catch (error) {
+      console.error("Failed to update media progress for TV show:", error);
+    }
+  }, [seriesData, selectedEpisode]);
+
+  // Effect to listen for ACCURATE progress from VidLink and merge it
+  useEffect(() => {
+    const handleVidLinkMessage = (event) => {
+      if (
+        event.origin !== "https://vidlink.pro" ||
+        event.data?.type !== "MEDIA_DATA"
+      )
+        return;
+
+      const vidLinkDataStore = event.data.data;
+      try {
+        const progressData = JSON.parse(
+          localStorage.getItem("mediaProgress") || "{}"
+        );
+
+        for (const mediaId in vidLinkDataStore) {
+          // Only merge if we already have an entry for this series
+          if (progressData[mediaId]) {
+            progressData[mediaId] = {
+              ...progressData[mediaId], // Keep our existing data (like last watched episode)
+              ...vidLinkDataStore[mediaId], // Overwrite with VidLink's more accurate progress
+              last_updated: Date.now(), // Update the timestamp
+            };
+          }
+        }
+        localStorage.setItem("mediaProgress", JSON.stringify(progressData));
+      } catch (error) {
+        console.error("Failed to merge VidLink progress for TV show:", error);
+      }
+    };
+
+    window.addEventListener("message", handleVidLinkMessage);
+    return () => window.removeEventListener("message", handleVidLinkMessage);
+  }, []); // Empty dependency array ensures this runs only once on mount.
+
+  // --- END: UNIFIED PROGRESS TRACKING FOR SERIES ---
+
   const posterPath = seriesData.poster_path
     ? `https://image.tmdb.org/t/p/w500${seriesData.poster_path}`
     : "https://via.placeholder.com/500x750.png?text=Series+Poster";
@@ -187,99 +250,70 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   }, []);
 
   useEffect(() => {
-    const generateIframeSrc = () => {
-      if (!selectedServer || !seriesId || !selectedEpisode) {
-        setIframeSrc("");
-        return;
-      }
-      const { url, paramStyle } = selectedServer;
-      const { season_number, episode_number } = selectedEpisode;
-      let finalUrl = "";
-      switch (paramStyle) {
-        case "query":
-          finalUrl = `${url}${seriesId}?s=${season_number}&e=${episode_number}`;
-          break;
-        case "path-hyphen":
-          finalUrl = `${url}${seriesId}/${season_number}-${episode_number}`;
-          break;
-        case "path-slash":
-        default:
-          finalUrl = `${url}${seriesId}/${season_number}/${episode_number}`;
-          break;
-      }
-      setIframeSrc(finalUrl);
-    };
-    generateIframeSrc();
+    if (!selectedServer || !seriesId || !selectedEpisode)
+      return setIframeSrc("");
+    const { url, paramStyle } = selectedServer;
+    const { season_number, episode_number } = selectedEpisode;
+    let finalUrl = "";
+    switch (paramStyle) {
+      case "query":
+        finalUrl = `${url}${seriesId}?s=${season_number}&e=${episode_number}`;
+        break;
+      case "path-hyphen":
+        finalUrl = `${url}${seriesId}/${season_number}-${episode_number}`;
+        break;
+      default:
+        finalUrl = `${url}${seriesId}/${season_number}/${episode_number}`;
+        break;
+    }
+    setIframeSrc(finalUrl);
   }, [selectedServer, seriesId, selectedEpisode]);
 
   const handleServerChange = useCallback(
     (server) => {
       setSelectedServer(server);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("selectedTvServer", server.name);
-      }
-      showNotification(`Switched to ${server.name} server`);
+      localStorage.setItem("selectedTvServer", server.name);
+      showNotification(`Switched to ${server.name}`);
       setIsPopoverOpen(false);
     },
     [showNotification]
   );
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = useCallback(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    if (isFavorite) {
-      const updatedFavorites = favorites.filter(
-        (item) => item.id !== seriesData.id
-      );
-      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-      showNotification("Removed from favorites");
-    } else {
-      if (!favorites.some((item) => item.id === seriesData.id)) {
-        favorites.push(seriesData);
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-        showNotification("Added to favorites");
-      }
-    }
-    setIsFavorite(!isFavorite);
-  };
+    const isCurrentlyFavorite = favorites.some(
+      (item) => item.id === seriesData.id
+    );
+    const updatedFavorites = isCurrentlyFavorite
+      ? favorites.filter((item) => item.id !== seriesData.id)
+      : [...favorites, seriesData];
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    setIsFavorite(!isCurrentlyFavorite);
+    showNotification(
+      isCurrentlyFavorite ? "Removed from favorites" : "Added to favorites"
+    );
+  }, [seriesData, showNotification]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       showNotification("Link copied to clipboard!");
     } catch (err) {
       showNotification("Failed to copy link");
     }
-  };
+  }, [showNotification]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-      setIsFavorite(favorites.some((item) => item.id === seriesData.id));
-    }
+    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+    setIsFavorite(favorites.some((item) => item.id === seriesData.id));
 
-    const fetchEpisodeData = async () => {
-      if (!selectedEpisode) return;
-      setIsLoadingCast(true);
-      try {
-        const response = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-        );
-        const data = await response.json();
-        setCastInfo(data.cast);
-      } catch (error) {
-        console.error("Failed to load episode cast:", error);
-      } finally {
-        setIsLoadingCast(false);
-      }
-    };
-
-    const fetchRecommendations = async () => {
+    const fetchSideData = async () => {
       setIsLoadingRecommendations(true);
       try {
-        const response = await fetch(
+        const res = await fetch(
           `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
         );
-        const data = await response.json();
+        const data = await res.json();
         setRecommendations(data.results.slice(0, 6));
       } catch (error) {
         console.error("Failed to load recommendations:", error);
@@ -287,10 +321,27 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         setIsLoadingRecommendations(false);
       }
     };
+    fetchSideData();
+  }, [seriesId, seriesData.id]);
 
-    fetchEpisodeData();
-    fetchRecommendations();
-  }, [seriesId, selectedEpisode, seriesData.id]);
+  useEffect(() => {
+    const fetchEpisodeCast = async () => {
+      if (!selectedEpisode) return;
+      setIsLoadingCast(true);
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+        );
+        const data = await res.json();
+        setCastInfo(data.cast);
+      } catch (error) {
+        console.error("Failed to load episode cast:", error);
+      } finally {
+        setIsLoadingCast(false);
+      }
+    };
+    fetchEpisodeCast();
+  }, [seriesId, selectedEpisode]);
 
   const handleSeasonChange = async (seasonNumber) => {
     try {
@@ -299,17 +350,17 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       );
       const data = await response.json();
       setSelectedSeason(data);
-      if (data.episodes && data.episodes.length > 0) {
-        setSelectedEpisode(data.episodes[0]);
-      }
+      if (data.episodes?.length > 0) setSelectedEpisode(data.episodes[0]);
     } catch (error) {
       console.error(`Failed to load season ${seasonNumber}:`, error);
       showNotification(`Failed to load Season ${seasonNumber}`);
     }
   };
 
+  // ... Render logic remains largely the same ...
   return (
     <TooltipProvider>
+      {/* The JSX for the component layout */}
       <div className="min-h-screen pt-16 md:pt-20 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
         <div className="relative">
           <div className="absolute inset-0 -z-10">
@@ -320,7 +371,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               className="w-full h-full object-cover object-center opacity-30"
             />
           </div>
-
           <div className="max-w-8xl mx-auto px-3 py-4 lg:px-8 lg:py-6">
             <div className="grid lg:grid-cols-[2fr_1fr] gap-4 lg:gap-6">
               {/* Left Column */}
@@ -346,7 +396,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </div>
                     )}
                   </div>
-
                   <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900/90 backdrop-blur-sm">
                     <Popover
                       open={isPopoverOpen}
@@ -368,53 +417,50 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                         align="start"
                         className="w-80 md:w-96 p-2 bg-slate-900/80 backdrop-blur-xl border-slate-700 text-white shadow-2xl"
                       >
-                        <div className="flex flex-col gap-1">
-                          <div className="p-2">
-                            <h4 className="font-semibold text-slate-100">
-                              Select a Server
-                            </h4>
-                            <p className="text-xs text-slate-400">
-                              If the video doesn't work, try another source.
-                            </p>
-                          </div>
-                          <div className="max-h-[40vh] overflow-y-auto pr-1">
-                            {TV_SOURCES.map((server) => (
-                              <button
-                                key={server.name}
-                                onClick={() => handleServerChange(server)}
-                                className="flex justify-between items-center w-full p-3 rounded-lg text-left transition-colors hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
-                                    {server.icon}
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <p className="text-sm font-medium text-slate-100">
-                                        {server.name}
-                                      </p>
-                                      {server.features.map((feature) => (
-                                        <FeatureBadge
-                                          key={feature}
-                                          feature={feature}
-                                        />
-                                      ))}
-                                    </div>
-                                    <p className="text-xs text-slate-400 mt-1">
-                                      {server.description}
-                                    </p>
-                                  </div>
+                        <div className="p-2">
+                          <h4 className="font-semibold text-slate-100">
+                            Select a Server
+                          </h4>
+                          <p className="text-xs text-slate-400">
+                            If the video doesn't work, try another source.
+                          </p>
+                        </div>
+                        <div className="max-h-[40vh] overflow-y-auto pr-1">
+                          {TV_SOURCES.map((server) => (
+                            <button
+                              key={server.name}
+                              onClick={() => handleServerChange(server)}
+                              className="flex justify-between items-center w-full p-3 rounded-lg text-left transition-colors hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                                  {server.icon}
                                 </div>
-                                {selectedServer.name === server.name && (
-                                  <Check className="w-5 h-5 text-indigo-400 flex-shrink-0 ml-2" />
-                                )}
-                              </button>
-                            ))}
-                          </div>
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-sm font-medium text-slate-100">
+                                      {server.name}
+                                    </p>
+                                    {server.features.map((feature) => (
+                                      <FeatureBadge
+                                        key={feature}
+                                        feature={feature}
+                                      />
+                                    ))}
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-1">
+                                    {server.description}
+                                  </p>
+                                </div>
+                              </div>
+                              {selectedServer.name === server.name && (
+                                <Check className="w-5 h-5 text-indigo-400 flex-shrink-0 ml-2" />
+                              )}
+                            </button>
+                          ))}
                         </div>
                       </PopoverContent>
                     </Popover>
-
                     <div className="flex items-center gap-2">
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -453,8 +499,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       <div className="flex items-center space-x-1">
                         <Star className="text-yellow-400 w-4 h-4" />
                         <span>
-                          {selectedEpisode.vote_average?.toFixed(1) || "N/A"}
-                          /10
+                          {selectedEpisode.vote_average?.toFixed(1) || "N/A"}/10
                         </span>
                       </div>
                       <div className="flex items-center space-x-1">
@@ -490,7 +535,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                             key={show.id}
                             MovieCard={show}
                             media_type="tv"
-                            className="aspect-[2/3]"
                           />
                         ))}
                   </div>
@@ -521,7 +565,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     {seriesData.genres?.map((genre) => (
                       <span
@@ -532,7 +575,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </span>
                     ))}
                   </div>
-
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -548,7 +590,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                             isFavorite ? "fill-current scale-110" : "scale-100"
                           }`}
                         />
-                        <span className="text-sm font-medium">
+                        <span>
                           {isFavorite
                             ? "Remove from Favorites"
                             : "Add to Favorites"}
@@ -563,7 +605,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </p>
                     </TooltipContent>
                   </Tooltip>
-
                   <p className="text-slate-300 text-sm leading-relaxed">
                     {seriesData.overview}
                   </p>
@@ -597,8 +638,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* --- START: CLEANED EPISODE LIST --- */}
                   <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2">
                     {selectedSeason.episodes.map((ep) => (
                       <button
@@ -627,7 +666,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                           )}
                           <div className="absolute inset-0 ring-1 ring-inset ring-black/10"></div>
                         </div>
-
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-slate-200 truncate">
                             {ep.episode_number}. {ep.name}
@@ -639,7 +677,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                             </div>
                           )}
                         </div>
-
                         {selectedEpisode.id === ep.id && (
                           <div className="ml-auto pl-2">
                             <Play className="w-5 h-5 text-indigo-400" />
@@ -648,7 +685,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       </button>
                     ))}
                   </div>
-                  {/* --- END: CLEANED EPISODE LIST --- */}
                 </div>
 
                 {/* Cast Section */}
@@ -705,8 +741,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             </div>
           </div>
         </div>
-
-        {/* Notification Alert */}
         <div className="fixed bottom-4 right-4 z-50">
           <Alert
             className={`transition-opacity duration-300 ${
