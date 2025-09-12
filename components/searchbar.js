@@ -1,4 +1,3 @@
-// QuickSearch.jsx
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -18,7 +17,7 @@ import { useRouter } from "next/navigation";
 const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 // SearchResultItem component (keeping original logic, fixing UI only)
-const SearchResultItem = React.memo(({ item, isSelected, href }) => {
+const SearchResultItem = React.memo(({ item, isSelected, href, onClick }) => {
   const mediaType = item.media_type === "movie" ? "Movie" : "TV Show";
   const year =
     item.release_date || item.first_air_date
@@ -32,6 +31,7 @@ const SearchResultItem = React.memo(({ item, isSelected, href }) => {
     <Link
       id={itemId}
       href={href}
+      onClick={onClick}
       role="option"
       aria-selected={isSelected}
       className={`flex items-center gap-4 px-3 py-2.5 rounded-lg outline-none transition-all duration-200 ${
@@ -290,6 +290,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
                 <SearchResultItem
                   key={`${item.media_type}-${item.id}`}
                   item={item}
+                  onClick={() => handleOpenChangeInternal(false)}
                   isSelected={index === selectedIndex}
                   href={
                     item.media_type === "tv"
