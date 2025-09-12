@@ -60,7 +60,7 @@ const AppInstallPopup = () => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-sm w-full transform transition-transform duration-300 ease-out animate-slide-up">
+      <div className="bg-[#f1f1f128]  backdrop-blur-md rounded-lg shadow-xl max-w-sm w-full transform transition-transform duration-300 ease-out animate-slide-up">
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-start mb-4">
@@ -69,7 +69,7 @@ const AppInstallPopup = () => {
                 <Smartphone className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-[#ffd22e]">
                   Get Our Mac App
                 </h3>
                 <p className="text-sm text-gray-500">Ad-free experience</p>
@@ -85,7 +85,7 @@ const AppInstallPopup = () => {
 
           {/* Content */}
           <div className="mb-6">
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-white text-sm leading-relaxed">
               Enjoy Crescent Moon without ads and get faster loading times with
               our dedicated Mac app.
             </p>
@@ -102,7 +102,7 @@ const AppInstallPopup = () => {
             </button>
             <button
               onClick={handleClose}
-              className="px-4 py-3 text-gray-500 hover:text-gray-700 font-medium transition-colors"
+              className="px-4 py-3 text-white hover:text-[#ffd22e] font-medium transition-colors"
             >
               Later
             </button>

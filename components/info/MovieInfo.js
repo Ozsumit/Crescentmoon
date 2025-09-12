@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   Clapperboard,
   Check,
+  Download,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -70,6 +71,7 @@ const VIDEO_SOURCES = [
       "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
     icon: <Clapperboard className="w-5 h-5 text-slate-400" />,
     features: [],
+    download: true,
     description: "A reliable classic player.",
   },
   {
