@@ -16,6 +16,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  LayoutGrid,
+  Rows,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -406,6 +408,7 @@ const ContinueWatching = () => {
   const [mediaItems, setMediaItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewAll, setViewAll] = useState(false);
   const detailCache = useRef({});
 
   const fetchDetails = useCallback(async (mediaId, mediaType) => {
@@ -499,16 +502,37 @@ const ContinueWatching = () => {
             {mediaItems.length} {mediaItems.length === 1 ? "title" : "titles"}
           </motion.span>
         </div>
-        {mediaItems.length > 0 && (
-          <motion.button
-            onClick={clearAllMedia}
-            whileHover={{ scale: 1.05 }}
-            className="text-sm text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
-          >
-            <Trash2 size={16} />
-            Clear All
-          </motion.button>
-        )}
+        <div className="flex items-center gap-2">
+          {mediaItems.length > 0 && (
+            <motion.button
+              onClick={() => setViewAll(!viewAll)}
+              whileHover={{ scale: 1.05 }}
+              className="text-sm text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20"
+            >
+              {viewAll ? (
+                <>
+                  <Rows size={16} />
+                  View Less
+                </>
+              ) : (
+                <>
+                  <LayoutGrid size={16} />
+                  View All
+                </>
+              )}
+            </motion.button>
+          )}
+          {mediaItems.length > 0 && (
+            <motion.button
+              onClick={clearAllMedia}
+              whileHover={{ scale: 1.05 }}
+              className="text-sm text-slate-400 hover:text-red-400 transition-colors flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+            >
+              <Trash2 size={16} />
+              Clear All
+            </motion.button>
+          )}
+        </div>
       </motion.div>
 
       {isLoading ? (
@@ -525,43 +549,71 @@ const ContinueWatching = () => {
           ))}
         </div>
       ) : mediaItems.length > 0 ? (
-        <div className="relative px-8 md:px-12">
-          <Swiper
-            modules={[Navigation, Pagination, A11y]}
-            spaceBetween={20}
-            slidesPerView={1}
-            loop={mediaItems.length > 4}
-            pagination={{ clickable: true, el: ".swiper-pagination-custom" }}
-            navigation={{
-              prevEl: ".custom-prev-arrow",
-              nextEl: ".custom-next-arrow",
-            }}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-              1280: { slidesPerView: 4 },
-            }}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={viewAll ? "grid" : "swiper"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            {mediaItems.map((media) => (
-              <SwiperSlide key={media.id} className="self-stretch h-auto">
-                <MediaCard
-                  media={media}
-                  isFavorite={favorites.includes(media.id)}
-                  handleFavoriteToggle={handleFavoriteToggle}
-                  onRemove={handleRemoveMedia}
-                  fetchDetails={fetchDetails}
-                />
-              </SwiperSlide>
-            ))}
-            <div className="custom-prev-arrow absolute top-1/2 -translate-y-1/2 z-20 -left-2 md:-left-5 cursor-pointer flex items-center justify-center">
-              <ChevronLeft size={30} />
-            </div>
-            <div className="custom-next-arrow absolute top-1/2 -translate-y-1/2 z-20 -right-2 md:-right-5 cursor-pointer flex items-center justify-center">
-              <ChevronRight size={30} />
-            </div>
-          </Swiper>
-          <div className="swiper-pagination-custom text-center mt-8"></div>
-        </div>
+            {viewAll ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {mediaItems.map((media) => (
+                  <MediaCard
+                    key={media.id}
+                    media={media}
+                    isFavorite={favorites.includes(media.id)}
+                    handleFavoriteToggle={handleFavoriteToggle}
+                    onRemove={handleRemoveMedia}
+                    fetchDetails={fetchDetails}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="relative px-8 md:px-12">
+                <Swiper
+                  modules={[Navigation, Pagination, A11y]}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  loop={mediaItems.length > 4}
+                  pagination={{
+                    clickable: true,
+                    el: ".swiper-pagination-custom",
+                  }}
+                  navigation={{
+                    prevEl: ".custom-prev-arrow",
+                    nextEl: ".custom-next-arrow",
+                  }}
+                  breakpoints={{
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 3 },
+                    1280: { slidesPerView: 4 },
+                  }}
+                >
+                  {mediaItems.map((media) => (
+                    <SwiperSlide key={media.id} className="self-stretch h-auto">
+                      <MediaCard
+                        media={media}
+                        isFavorite={favorites.includes(media.id)}
+                        handleFavoriteToggle={handleFavoriteToggle}
+                        onRemove={handleRemoveMedia}
+                        fetchDetails={fetchDetails}
+                      />
+                    </SwiperSlide>
+                  ))}
+                  <div className="custom-prev-arrow absolute top-1/2 -translate-y-1/2 z-20 -left-2 md:-left-5 cursor-pointer flex items-center justify-center">
+                    <ChevronLeft size={30} />
+                  </div>
+                  <div className="custom-next-arrow absolute top-1/2 -translate-y-1/2 z-20 -right-2 md:-right-5 cursor-pointer flex items-center justify-center">
+                    <ChevronRight size={30} />
+                  </div>
+                </Swiper>
+                <div className="swiper-pagination-custom text-center mt-8"></div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       ) : (
         <motion.div
           className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700/50"

@@ -148,9 +148,11 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const [iframeSrc, setIframeSrc] = useState("");
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [relatedShows, setRelatedShows] = useState([]); // State for related shows
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
+  const [isLoadingRelatedShows, setIsLoadingRelatedShows] = useState(false); // Loading state for related shows
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -307,7 +309,8 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === seriesData.id));
 
-    const fetchSideData = async () => {
+    const fetchExtraData = async () => {
+      // Fetch recommendations (for the left column)
       setIsLoadingRecommendations(true);
       try {
         const res = await fetch(
@@ -320,8 +323,22 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       } finally {
         setIsLoadingRecommendations(false);
       }
+
+      // Fetch related/similar shows (for the new right column section)
+      setIsLoadingRelatedShows(true);
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/tv/${seriesId}/similar?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+        );
+        const data = await res.json();
+        setRelatedShows(data.results.slice(0, 4)); // Fetch 4 for the sidebar
+      } catch (error) {
+        console.error("Failed to load related shows:", error);
+      } finally {
+        setIsLoadingRelatedShows(false);
+      }
     };
-    fetchSideData();
+    fetchExtraData();
   }, [seriesId, seriesData.id]);
 
   useEffect(() => {
@@ -486,64 +503,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
 
                 {/* Episode Details */}
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
-                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
-                    <Film className="w-5 h-5 text-indigo-400" />
-                    Currently Playing
-                  </h2>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-200">
-                      S{selectedEpisode.season_number} E
-                      {selectedEpisode.episode_number}: {selectedEpisode.name}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-slate-400">
-                      <div className="flex items-center space-x-1">
-                        <Star className="text-yellow-400 w-4 h-4" />
-                        <span>
-                          {selectedEpisode.vote_average?.toFixed(1) || "N/A"}/10
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <CalendarDays className="text-pink-400 w-4 h-4" />
-                        <span>{selectedEpisode.air_date || "No air date"}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    {selectedEpisode.overview ||
-                      "No overview available for this episode."}
-                  </p>
-                </div>
-
-                {/* Similar Shows Section */}
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
-                    <Film className="w-5 h-5 text-indigo-400" />
-                    Similar Shows
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {isLoadingRecommendations
-                      ? Array(6)
-                          .fill(0)
-                          .map((_, i) => (
-                            <div key={i} className="animate-pulse">
-                              <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
-                              <div className="h-4 bg-slate-800 rounded mt-2" />
-                            </div>
-                          ))
-                      : recommendations.map((show) => (
-                          <HomeCards
-                            key={show.id}
-                            MovieCard={show}
-                            media_type="tv"
-                          />
-                        ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="order-2 lg:order-2 space-y-4">
-                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">
                       {seriesData.name}
@@ -610,6 +569,64 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                   </p>
                 </div>
 
+                {/* Similar Shows Section */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                    <Film className="w-5 h-5 text-indigo-400" />
+                    Similar Shows
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {isLoadingRecommendations
+                      ? Array(6)
+                          .fill(0)
+                          .map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
+                              <div className="h-4 bg-slate-800 rounded mt-2" />
+                            </div>
+                          ))
+                      : recommendations.map((show) => (
+                          <HomeCards
+                            key={show.id}
+                            MovieCard={show}
+                            media_type="tv"
+                          />
+                        ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="order-2 lg:order-2 space-y-4">
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
+                  <h2 className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                    <Film className="w-5 h-5 text-indigo-400" />
+                    Currently Playing
+                  </h2>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-200">
+                      S{selectedEpisode.season_number} E
+                      {selectedEpisode.episode_number}: {selectedEpisode.name}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-slate-400">
+                      <div className="flex items-center space-x-1">
+                        <Star className="text-yellow-400 w-4 h-4" />
+                        <span>
+                          {selectedEpisode.vote_average?.toFixed(1) || "N/A"}/10
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <CalendarDays className="text-pink-400 w-4 h-4" />
+                        <span>{selectedEpisode.air_date || "No air date"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    {selectedEpisode.overview ||
+                      "No overview available for this episode."}
+                  </p>
+                </div>
+
                 {/* Season and Episode Selector */}
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
                   <div className="flex items-center justify-between">
@@ -621,7 +638,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                       value={selectedSeason.season_number.toString()}
                       onValueChange={(value) => handleSeasonChange(value)}
                     >
-                      <SelectTrigger className="w-[150px] bg-slate-800 border-slate-700 focus:ring-indigo-500">
+                      <SelectTrigger className="w-[150px] text-white bg-slate-800 border-slate-700 focus:ring-indigo-500">
                         <SelectValue placeholder="Select Season" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-900/80 backdrop-blur-xl border-slate-700 text-white">
@@ -737,6 +754,38 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                     )}
                   </div>
                 </div>
+
+                {/* Related Shows Section */}
+                {/* <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
+                  <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+                    <Clapperboard className="w-5 h-5 text-indigo-400" />
+                    Related Shows
+                  </h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {isLoadingRelatedShows ? (
+                      Array(4)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
+                            <div className="h-4 bg-slate-800 rounded mt-2 w-3/4" />
+                          </div>
+                        ))
+                    ) : relatedShows.length > 0 ? (
+                      relatedShows.map((show) => (
+                        <HomeCards
+                          key={show.id}
+                          MovieCard={show}
+                          media_type="tv"
+                        />
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-400 col-span-2">
+                        No related shows were found.
+                      </p>
+                    )}
+                  </div>
+                </div> */}
               </div>
             </div>
           </div>

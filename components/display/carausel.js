@@ -111,7 +111,7 @@ const SpotlightCarousel = () => {
       try {
         const response = await fetch(URL);
         const data = await response.json();
-        const results = data.results.slice(0, 6) || [];
+        const results = data.results.slice(0, 10) || [];
         setSpotlights(results);
 
         await Promise.all(
