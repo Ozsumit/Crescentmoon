@@ -157,13 +157,13 @@ const Header = () => {
                   aria-haspopup="dialog"
                   aria-label="Search (Ctrl+K)"
                   title="Search (Ctrl+K)"
-                  className="flex items-center justify-between gap-3 px-3 py-2 bg-slate-800/60 hover:bg-slate-700/80 transition-all duration-200 rounded-lg border border-slate-600/50 hover:border-slate-500 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="flex items-center justify-between gap-3 px-3 py-2  hover:bg-slate-700/80 transition-all duration-200 rounded-lg border border-slate-400 hover:border-slate-500 text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <div className="flex items-center gap-2">
                     <Search size={16} />
                     <span className="text-sm font-medium"> Quick Search</span>
                   </div>
-                  <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-slate-600 bg-slate-800 px-1.5 font-mono text-[10px] font-medium text-slate-400">
+                  <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-slate-600 px-1.5 font-mono text-[10px] font-medium text-slate-400">
                     ⌘+K
                   </kbd>
                 </button>

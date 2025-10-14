@@ -315,6 +315,21 @@ const MediaCard = ({
                     transition={{ duration: 1, ease: "easeOut" }}
                   />
                 </div>
+
+                {/* --- ADDED REMOVE BUTTON START --- */}
+                <motion.button
+                  onClick={handleRemove}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isHovered ? 1 : 0 }}
+                  className="absolute top-3 right-3 z-20 bg-black/70 p-2 rounded-full text-white/90 hover:bg-red-600/80 transition-all backdrop-blur-sm border border-white/10"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Remove from watch list"
+                >
+                  <Trash2 size={16} />
+                </motion.button>
+                {/* --- ADDED REMOVE BUTTON END --- */}
+
                 {/* --- MODIFICATION START: Badge for TV shows now shows S/E number --- */}
                 <div className="absolute top-3 left-3 bg-black/70 text-white/90 px-2 py-1 rounded-md text-xs font-medium backdrop-blur-sm border border-white/10">
                   {media.type === "tv" ? (
@@ -660,6 +675,7 @@ const ContinueWatching = () => {
         .custom-prev-arrow,
         .custom-next-arrow {
           width: 48px;
+          z-index: 100;
           height: 48px;
           background: rgba(15, 23, 42, 0.7);
           border-radius: 50%;

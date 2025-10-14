@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { React, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Star,
@@ -11,7 +11,6 @@ import {
   Info,
   ChevronUp,
   ChevronDown,
-  ThumbsUp,
   Users,
   Play,
   Film,
@@ -23,6 +22,7 @@ import {
   Check,
   List,
   Image as ImageIcon,
+  X, // Icon for the close button
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -45,40 +45,65 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import HomeCards from "@/components/display/HomeCard";
+import { useCallback } from "react";
 
-// --- UNIFIED VIDEO_SOURCES FOR TV SHOWS ---
+// --- (IMPROVED) UNIFIED VIDEO_SOURCES FOR TV SHOWS ---
 const TV_SOURCES = [
   {
     name: "VidLink",
     url: "https://vidlink.pro/tv/",
     paramStyle: "path-slash",
-    icon: <Play className="w-5 h-5 text-pink-400" />,
+    icon: <Zap className="w-5 h-5 text-yellow-400" />,
     features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
+    description: "Fast loading with a modern player and tracking.",
   },
   {
     name: "VidSrc",
     url: "https://v2.vidsrc.me/embed/tv/",
-    paramStyle: "path-hyphen",
-    icon: <Languages className="w-5 h-5 text-blue-400" />,
-    features: ["Multi-Language"],
-    description: "Good source for non-English audio.",
-  },
-  {
-    name: "VidSrc 2",
-    url: "https://vidsrc.to/embed/tv/",
     paramStyle: "path-slash",
     icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language"],
+    description: "Good source for non-English audio options.",
+  },
+  {
+    name: "MoviesAPI",
+    url: "https://moviesapi.club/tv/",
+    paramStyle: "path-hyphen-mapi",
+    icon: <List className="w-5 h-5 text-green-400" />,
+    features: ["Multi-Language", "Fast"],
+    description: "A reliable alternative with good subtitle support.",
+  },
+  {
+    name: "videasy",
+    url: "https://player.videasy.net/tv/",
+    paramStyle: "path-slash",
+    icon: <Clapperboard className="w-5 h-5 text-purple-400" />,
+    features: ["Multi-sub", "Clean UI"],
+    description: "Features a clean player with multiple subtitle choices.",
+  },
+  {
+    name: "Vidsrc 2",
+    url: "https://vidsrc.to/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Server className="w-5 h-5 text-slate-400" />,
     features: ["Multi-Language", "Backup"],
-    description: "Alternative source for subtitles.",
+    description: "A secondary backup source for language options.",
   },
   {
     name: "2Embed",
     url: "https://2embed.cc/embed/tv/",
     paramStyle: "path-slash",
-    icon: <Film className="w-5 h-5 text-teal-400" />,
+    icon: <ShieldAlert className="w-5 h-5 text-orange-400" />,
     features: ["Ads"],
-    description: "May have more pop-up ads.",
+    description: "Backup source. Adblocker is highly recommended.",
+  },
+  {
+    name: "VidSrc 3",
+    url: "https://vidsrc.net/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Languages className="w-5 h-5 text-blue-400" />,
+    features: ["Multi-Language", "Backup"],
+    description: "Alternative source for subtitles.",
   },
   {
     name: "EmbedSu",
@@ -148,40 +173,46 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const [iframeSrc, setIframeSrc] = useState("");
   const [castInfo, setCastInfo] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
-  const [relatedShows, setRelatedShows] = useState([]); // State for related shows
+  const [relatedShows, setRelatedShows] = useState([]);
   const [isLoadingCast, setIsLoadingCast] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] =
     useState(false);
-  const [isLoadingRelatedShows, setIsLoadingRelatedShows] = useState(false); // Loading state for related shows
+  const [isLoadingRelatedShows, setIsLoadingRelatedShows] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [showMoreCast, setShowMoreCast] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  // --- START: UNIFIED PROGRESS TRACKING FOR SERIES ---
+  // --- Adblocker notice state using sessionStorage ---
+  const [showAdPopup, setShowAdPopup] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return sessionStorage.getItem("adblockerNoticeDismissed") !== "true";
+  });
 
-  // Effect to add/update the series in 'Continue Watching' when an episode is viewed
+  const handleDismissAdPopup = () => {
+    sessionStorage.setItem("adblockerNoticeDismissed", "true");
+    setShowAdPopup(false);
+  };
+
+  // --- START: UNIFIED PROGRESS TRACKING FOR SERIES ---
   useEffect(() => {
     if (!seriesData?.id || !selectedEpisode?.episode_number) return;
-
     try {
       const progressData = JSON.parse(
         localStorage.getItem("mediaProgress") || "{}"
       );
       const existingEntry = progressData[seriesData.id] || {};
-
-      // Only add minimal progress if no progress already exists.
-      // This prevents overwriting accurate progress from VidLink with a placeholder.
       const progressPayload = existingEntry.progress
         ? {}
         : {
             progress: {
-              watched: 1, // Minimal value to indicate the episode has been started
-              duration: (selectedEpisode.runtime || 25) * 60, // Use episode runtime or default (25 mins)
+              watched: 1,
+              duration: (selectedEpisode.runtime || 25) * 60,
             },
           };
-
       progressData[seriesData.id] = {
         ...existingEntry,
         id: seriesData.id,
@@ -193,14 +224,12 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         last_episode_watched: selectedEpisode.episode_number,
         ...progressPayload,
       };
-
       localStorage.setItem("mediaProgress", JSON.stringify(progressData));
     } catch (error) {
       console.error("Failed to update media progress for TV show:", error);
     }
   }, [seriesData, selectedEpisode]);
 
-  // Effect to listen for ACCURATE progress from VidLink and merge it
   useEffect(() => {
     const handleVidLinkMessage = (event) => {
       if (
@@ -208,20 +237,17 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         event.data?.type !== "MEDIA_DATA"
       )
         return;
-
       const vidLinkDataStore = event.data.data;
       try {
         const progressData = JSON.parse(
           localStorage.getItem("mediaProgress") || "{}"
         );
-
         for (const mediaId in vidLinkDataStore) {
-          // Only merge if we already have an entry for this series
           if (progressData[mediaId]) {
             progressData[mediaId] = {
-              ...progressData[mediaId], // Keep our existing data (like last watched episode)
-              ...vidLinkDataStore[mediaId], // Overwrite with VidLink's more accurate progress
-              last_updated: Date.now(), // Update the timestamp
+              ...progressData[mediaId],
+              ...vidLinkDataStore[mediaId],
+              last_updated: Date.now(),
             };
           }
         }
@@ -230,10 +256,9 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         console.error("Failed to merge VidLink progress for TV show:", error);
       }
     };
-
     window.addEventListener("message", handleVidLinkMessage);
     return () => window.removeEventListener("message", handleVidLinkMessage);
-  }, []); // Empty dependency array ensures this runs only once on mount.
+  }, []);
 
   // --- END: UNIFIED PROGRESS TRACKING FOR SERIES ---
 
@@ -263,6 +288,9 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         break;
       case "path-hyphen":
         finalUrl = `${url}${seriesId}/${season_number}-${episode_number}`;
+        break;
+      case "path-hyphen-mapi":
+        finalUrl = `${url}${seriesId}-${season_number}-${episode_number}`;
         break;
       default:
         finalUrl = `${url}${seriesId}/${season_number}/${episode_number}`;
@@ -310,7 +338,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     setIsFavorite(favorites.some((item) => item.id === seriesData.id));
 
     const fetchExtraData = async () => {
-      // Fetch recommendations (for the left column)
       setIsLoadingRecommendations(true);
       try {
         const res = await fetch(
@@ -323,15 +350,13 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       } finally {
         setIsLoadingRecommendations(false);
       }
-
-      // Fetch related/similar shows (for the new right column section)
       setIsLoadingRelatedShows(true);
       try {
         const res = await fetch(
           `https://api.themoviedb.org/3/tv/${seriesId}/similar?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
         );
         const data = await res.json();
-        setRelatedShows(data.results.slice(0, 4)); // Fetch 4 for the sidebar
+        setRelatedShows(data.results.slice(0, 4));
       } catch (error) {
         console.error("Failed to load related shows:", error);
       } finally {
@@ -374,11 +399,10 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     }
   };
 
-  // ... Render logic remains largely the same ...
   return (
     <TooltipProvider>
-      {/* The JSX for the component layout */}
       <div className="min-h-screen pt-16 md:pt-20 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+        {/* The rest of the page layout */}
         <div className="relative">
           <div className="absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 to-slate-950/70" />
@@ -754,42 +778,59 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                     )}
                   </div>
                 </div>
-
-                {/* Related Shows Section */}
-                {/* <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
-                  <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
-                    <Clapperboard className="w-5 h-5 text-indigo-400" />
-                    Related Shows
-                  </h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    {isLoadingRelatedShows ? (
-                      Array(4)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="animate-pulse">
-                            <div className="aspect-[2/3] bg-slate-800 rounded-lg" />
-                            <div className="h-4 bg-slate-800 rounded mt-2 w-3/4" />
-                          </div>
-                        ))
-                    ) : relatedShows.length > 0 ? (
-                      relatedShows.map((show) => (
-                        <HomeCards
-                          key={show.id}
-                          MovieCard={show}
-                          media_type="tv"
-                        />
-                      ))
-                    ) : (
-                      <p className="text-sm text-slate-400 col-span-2">
-                        No related shows were found.
-                      </p>
-                    )}
-                  </div>
-                </div> */}
               </div>
             </div>
           </div>
         </div>
+
+        {/* --- NEW: Adblocker-friendly Banner --- */}
+        {showAdPopup && (
+          <div
+            className="ad-container fixed bottom-4 left-4 right-4 sm:left-auto max-w-lg z-50 animate-in slide-in-from-bottom-5 fade-in-0 duration-300"
+            aria-label="advertisement"
+          >
+            <div className="ad-banner bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-lg p-4 shadow-2xl flex items-start gap-4">
+              <div className="flex-shrink-0 pt-0.5">
+                <ShieldAlert className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div className="advertisement-text flex-grow">
+                <h3 className="font-semibold text-slate-100">
+                  Adblocker Recommended
+                </h3>
+                <p className="text-sm text-slate-300 mt-1">
+                  For a safer and ad-free experience, we recommend{" "}
+                  <a
+                    href="https://ublockorigin.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-400 hover:underline font-medium"
+                  >
+                    uBlock Origin
+                  </a>{" "}
+                  or the{" "}
+                  <a
+                    href="https://brave.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-400 hover:underline font-medium"
+                  >
+                    Brave browser
+                  </a>
+                  .
+                </p>
+              </div>
+              <button
+                onClick={handleDismissAdPopup}
+                className="-mt-2 -mr-2 p-2 rounded-full text-slate-400 hover:bg-slate-700/50 hover:text-white transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Existing Alert for other notifications */}
         <div className="fixed bottom-4 right-4 z-50">
           <Alert
             className={`transition-opacity duration-300 ${
@@ -806,5 +847,4 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     </TooltipProvider>
   );
 };
-
 export default EpisodeInfo;

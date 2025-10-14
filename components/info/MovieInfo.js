@@ -11,6 +11,7 @@ import {
   ChevronUp,
   ChevronDown,
   ThumbsUp,
+  List,
   Users,
   Play,
   Film,
@@ -57,7 +58,37 @@ const VIDEO_SOURCES = [
     description: "Good source for non-English audio.",
   },
   {
-    name: "VidSrc 2",
+    name: "MoviesAPI",
+    url: "https://moviesapi.club/movie/",
+    params: "?multiLang=true",
+
+    // paramStyle: "path-hyphen-mapi",
+    icon: <List className="w-5 h-5 text-green-400" />,
+    features: ["Multi-Language", "Fast"],
+    description: "A reliable alternative with good subtitle support.",
+  },
+  {
+    name: "videasy",
+    url: "https://player.videasy.net/movie/",
+    // paramStyle: "path-slash",
+    params: "?multiLang=true",
+
+    icon: <Clapperboard className="w-5 h-5 text-purple-400" />,
+    features: ["Multi-sub", "Clean UI"],
+    description: "Features a clean player with multiple subtitle choices.",
+  },
+  {
+    name: "Vidsrc 2",
+    url: "https://vidsrc.net/embed/movie/",
+    // paramStyle: "path-slash",\
+    params: "?multiLang=true",
+
+    icon: <Server className="w-5 h-5 text-slate-400" />,
+    features: ["Multi-Language", "Backup"],
+    description: "A secondary backup source for language options.",
+  },
+  {
+    name: "VidSrc 3",
     url: "https://vidsrc.icu/embed/movie/",
     params: "?multiLang=true",
     icon: <Languages className="w-5 h-5 text-blue-400" />,
@@ -65,7 +96,7 @@ const VIDEO_SOURCES = [
     description: "Alternative source for subtitles.",
   },
   {
-    name: "VidSrc 3",
+    name: "VidSrc 4",
     url: "https://player.vidsrc.co/embed/movie/",
     params:
       "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
@@ -202,7 +233,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [alertMessage, setAlertMessage] = useState("");
   const [showMoreCast, setShowMoreCast] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  // --- Adblocker notice state using sessionStorage ---
+  const [showAdPopup, setShowAdPopup] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return sessionStorage.getItem("adblockerNoticeDismissed") !== "true";
+  });
 
+  const handleDismissAdPopup = () => {
+    sessionStorage.setItem("adblockerNoticeDismissed", "true");
+    setShowAdPopup(false);
+  };
   // --- START: UNIFIED PROGRESS TRACKING LOGIC ---
   useEffect(() => {
     if (!MovieDetail?.id || !MovieDetail.title) return;
@@ -587,7 +629,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 </div>
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-slate-800/50 space-y-4">
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">
+                    <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-[#919bff] to-[#eb57fb]">
                       {MovieDetail.title}
                     </h1>
                     <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-400">
@@ -747,7 +789,52 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div>{" "}
+        {showAdPopup && (
+          <div
+            className="ad-container fixed bottom-4 left-4 right-4 sm:left-auto max-w-lg z-50 animate-in slide-in-from-bottom-5 fade-in-0 duration-300"
+            aria-label="advertisement"
+          >
+            <div className="ad-banner bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-lg p-4 shadow-2xl flex items-start gap-4">
+              <div className="flex-shrink-0 pt-0.5">
+                <ShieldAlert className="w-6 h-6 text-yellow-400" />
+              </div>
+              <div className="advertisement-text flex-grow">
+                <h3 className="font-semibold text-slate-100">
+                  Adblocker Recommended
+                </h3>
+                <p className="text-sm text-slate-300 mt-1">
+                  For a safer and ad-free experience, we recommend{" "}
+                  <a
+                    href="https://ublockorigin.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-400 hover:underline font-medium"
+                  >
+                    uBlock Origin
+                  </a>{" "}
+                  or the{" "}
+                  <a
+                    href="https://brave.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-400 hover:underline font-medium"
+                  >
+                    Brave browser
+                  </a>
+                  .
+                </p>
+              </div>
+              <button
+                onClick={handleDismissAdPopup}
+                className="-mt-2 -mr-2 p-2 rounded-full text-slate-400 hover:bg-slate-700/50 hover:text-white transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
         <div className="fixed bottom-4 right-4 z-50">
           <Alert
             className={`transition-opacity duration-300 ${
