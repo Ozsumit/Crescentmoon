@@ -60,7 +60,7 @@ const Header = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       const currentTime = Date.now();
-      if (currentTime - lastInteractionTime > 5000) {
+      if (currentTime - lastInteractionTime > 15000) {
         setIsNavbarVisible(false);
       }
     }, 1000);
