@@ -13,6 +13,7 @@ import {
   ThumbsUp,
   List,
   Users,
+  X,
   Play,
   Film,
   Loader2,
