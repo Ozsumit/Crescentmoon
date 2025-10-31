@@ -57,6 +57,6 @@ Crescent Moon isn't just a website — it's a **journey through stories** from g
 Wanna run Crescent Moon on your own planet? Here’s how:
 
 ```bash
-git clone https://github.com/yourusername/crescent-moon.git
+git clone https://github.com/ozsumit/crescent-moon.git
 cd crescent-moon
 # Open index.html in your browser
