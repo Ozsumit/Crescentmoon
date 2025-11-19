@@ -129,3 +129,28 @@ body {
 html {
   background: rgb(2 6 23); /* Very dark background */
 }
+.jingle-letter::after,
+.bells-letter::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  background-image: radial-gradient(circle at 30% 30%, #f1c40f, #e74c3c);
+}
+
+.jingle-letter::before,
+.bells-letter::before {
+  content: "";
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 20px; /* Adjust to make the string longer or shorter */
+  background-color: #f1c40f;
+}
