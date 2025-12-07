@@ -26,7 +26,7 @@ const Movies = async () => {
 
   return (
     <div className="  pt-16 h-auto">
-      <MoviesTitle />
+      {/* <MoviesTitle /> */}
       {/* <SearchBar />
       <HomeFilter /> */}
       <MovieDisplay movies={moviedata} />

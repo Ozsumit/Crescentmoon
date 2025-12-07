@@ -23,7 +23,7 @@ const Series = async () => {
   return (
     <>
       <div className=" h-auto pt-16">
-        <TvTitle />
+        {/* <TvTitle /> */}
         {/* <SearchBar />
         <HomeFilter /> */}
         <TvDisplay series={data} />

@@ -2,120 +2,154 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Loader2,
-  Search as SearchIcon,
+  Search,
   Film,
-  Tv2,
-  ChevronRight,
+  Tv,
+  ArrowRight,
+  Command,
   CornerDownLeft,
+  Calendar,
+  Star,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/dialog";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-// SearchResultItem component (keeping original logic, fixing UI only)
-const SearchResultItem = React.memo(({ item, isSelected, href, onClick }) => {
-  const mediaType = item.media_type === "movie" ? "Movie" : "TV Show";
+// --- 1. RESULT ITEM (Swiss Layout + Material Motion) ---
+const SearchResultItem = ({ item, isSelected, onClick }) => {
+  const mediaType = item.media_type === "movie" ? "MOVIE" : "SERIES";
   const year =
     item.release_date || item.first_air_date
       ? new Date(item.release_date || item.first_air_date).getFullYear()
       : "N/A";
-  const Icon = item.media_type === "movie" ? Film : Tv2;
 
-  const itemId = `search-result-${item.media_type}-${item.id}`;
+  // Icon mapping
+  const Icon = item.media_type === "movie" ? Film : Tv;
 
   return (
-    <Link
-      id={itemId}
-      href={href}
+    <motion.div
+      layout
       onClick={onClick}
-      role="option"
-      aria-selected={isSelected}
-      className={`flex items-center gap-4 px-3 py-2.5 rounded-lg outline-none transition-all duration-200 ${
-        isSelected
-          ? "bg-indigo-600/20 ring-1 ring-indigo-500/30"
-          : "hover:bg-slate-800/60"
-      } focus-visible:ring-2 focus-visible:ring-indigo-500`}
+      className={`group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors duration-200 z-10 ${
+        isSelected ? "text-white" : "text-neutral-400 hover:text-white"
+      }`}
     >
-      {item.poster_path ? (
-        <Image
-          src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-          alt={`Poster for ${item.title || item.name}`}
-          width={40}
-          height={56}
-          className="object-cover rounded-md flex-shrink-0 shadow-sm"
-          priority={isSelected}
+      {/* --- MATERIAL 3: GLIDING CURSOR BACKGROUND --- */}
+      {isSelected && (
+        <motion.div
+          layoutId="activeSearchItem"
+          className="absolute inset-0 bg-neutral-800 rounded-2xl -z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
-      ) : (
-        <div className="w-10 h-14 bg-slate-800 rounded-md flex items-center justify-center flex-shrink-0">
-          <Icon className="w-5 h-5 text-slate-500" />
-        </div>
       )}
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-white truncate">
-          {item.title || item.name}
+
+      {/* Poster / Thumbnail */}
+      <div className="relative flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-neutral-900 shadow-sm ring-1 ring-white/10">
+        {item.poster_path ? (
+          <Image
+            src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+            alt={item.title || item.name}
+            fill
+            className="object-cover"
+            sizes="48px"
+          />
+        ) : (
+          <div className="flex items-center justify-center w-full h-full text-neutral-700">
+            <Icon size={20} />
+          </div>
+        )}
+      </div>
+
+      {/* Text Content (Swiss Grid Alignment) */}
+      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+        <div className="flex items-center justify-between">
+          <h4
+            className={`text-base font-medium truncate ${
+              isSelected ? "text-white" : "text-neutral-200"
+            }`}
+          >
+            {item.title || item.name}
+          </h4>
+
+          {/* Rating Badge */}
+          {item.vote_average > 0 && (
+            <div className="flex items-center gap-1 text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-yellow-500">
+              <Star size={8} fill="currentColor" />
+              <span>{item.vote_average.toFixed(1)}</span>
+            </div>
+          )}
         </div>
-        <div className="text-xs text-slate-400 flex items-center gap-2 mt-1">
-          <span>{mediaType}</span>
-          <span className="w-1 h-1 bg-slate-600 rounded-full" />
-          <span>{year}</span>
+
+        <div className="flex items-center gap-3 text-xs font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="flex items-center gap-1.5">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                item.media_type === "movie" ? "bg-indigo-500" : "bg-rose-500"
+              }`}
+            />
+            {mediaType}
+          </span>
+          <span className="w-px h-3 bg-white/10" />
+          <span className="flex items-center gap-1">
+            <Calendar size={10} />
+            {year}
+          </span>
         </div>
       </div>
-      <ChevronRight
-        className={`w-4 h-4 text-slate-500 transition-all duration-200 ${
-          isSelected ? "text-indigo-400" : "group-hover:text-slate-400"
+
+      {/* Action Icon */}
+      <div
+        className={`flex-shrink-0 transition-opacity duration-200 ${
+          isSelected ? "opacity-100" : "opacity-0"
         }`}
-      />
-    </Link>
+      >
+        <ArrowRight size={18} className="text-neutral-500" />
+      </div>
+    </motion.div>
   );
-});
+};
 
-SearchResultItem.displayName = "SearchResultItem";
-
+// --- 2. MAIN COMPONENT ---
 const QuickSearch = ({ open, onOpenChange }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedIndex, setSelectedIndex] = useState(0); // Default to first item
   const [totalResults, setTotalResults] = useState(0);
 
   const debounceRef = useRef(null);
   const inputRef = useRef(null);
-  const resultsContainerRef = useRef(null);
+  const scrollRef = useRef(null);
   const router = useRouter();
 
-  // Scroll selected item into view
-  const scrollToSelectedItem = useCallback(() => {
-    if (selectedIndex >= 0 && resultsContainerRef.current) {
-      const selectedElement = document.getElementById(
-        `search-result-${searchResults[selectedIndex]?.media_type}-${searchResults[selectedIndex]?.id}`
-      );
-      if (selectedElement) {
-        selectedElement.scrollIntoView({
-          behavior: "smooth",
+  // Scroll active item into view
+  useEffect(() => {
+    if (scrollRef.current && selectedIndex >= 0) {
+      const listItems = scrollRef.current.children;
+      const activeItem = listItems[selectedIndex];
+      if (activeItem) {
+        activeItem.scrollIntoView({
           block: "nearest",
-          inline: "nearest",
+          behavior: "smooth",
         });
       }
     }
-  }, [selectedIndex, searchResults]);
+  }, [selectedIndex]);
 
-  // Scroll to selected item when selection changes
-  useEffect(() => {
-    scrollToSelectedItem();
-  }, [scrollToSelectedItem]);
-
-  // Debounced API call for search results (keeping original logic)
+  // Fetch Logic
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!searchTerm.trim()) {
       setSearchResults([]);
       setTotalResults(0);
-      setSelectedIndex(-1);
       setIsLoading(false);
       return;
     }
@@ -128,229 +162,154 @@ const QuickSearch = ({ open, onOpenChange }) => {
             searchTerm
           )}&page=1`
         );
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
         const data = await res.json();
+
+        const filtered = (data.results || []).filter(
+          (i) => i.media_type === "movie" || i.media_type === "tv"
+        );
+
+        setSearchResults(filtered.slice(0, 6)); // Limit to 6 for cleaner UI
         setTotalResults(data.total_results || 0);
-        const filteredResults =
-          data.results?.filter(
-            (item) => item.media_type === "movie" || item.media_type === "tv"
-          ) || [];
-        setSearchResults(filteredResults.slice(0, 7));
-        setSelectedIndex(filteredResults.length > 0 ? 0 : -1);
-      } catch (error) {
-        console.error("Quick search error:", error);
-        setSearchResults([]);
-        setTotalResults(0);
-        setSelectedIndex(-1);
+        setSelectedIndex(0);
+      } catch (err) {
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
-    }, 300);
+    }, 250); // Faster debounce
+
     return () => clearTimeout(debounceRef.current);
   }, [searchTerm]);
 
-  // Global keyboard shortcut (keeping original logic)
-  useEffect(() => {
-    const handleGlobalKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        onOpenChange((prev) => !prev);
-      }
-    };
-    window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [onOpenChange]);
-
-  // Auto-focus input when dialog opens (keeping original logic)
-  useEffect(() => {
-    if (open) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-      return () => clearTimeout(timer);
+  // Keyboard Navigation
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % searchResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex(
+        (prev) => (prev - 1 + searchResults.length) % searchResults.length
+      );
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      handleSelect(searchResults[selectedIndex]);
     }
-  }, [open]);
+  };
 
-  // Handle dialog open/close state changes (keeping original logic)
-  const handleOpenChangeInternal = useCallback(
-    (newOpenState) => {
-      onOpenChange(newOpenState);
-      if (!newOpenState) {
-        setSearchTerm("");
-        setSearchResults([]);
-        setSelectedIndex(-1);
-        setTotalResults(0);
-      }
-    },
-    [onOpenChange]
-  );
-
-  const hasMoreResults = totalResults > searchResults.length;
-
-  // Keyboard navigation (keeping original logic)
-  const handleKeyDown = useCallback(
-    (e) => {
-      const numResults = searchResults.length;
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        if (numResults > 0) {
-          setSelectedIndex((prev) => (prev + 1) % numResults);
-        }
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        if (numResults > 0) {
-          setSelectedIndex((prev) => (prev - 1 + numResults) % numResults);
-        }
-      } else if (
-        e.key === "Enter" &&
-        selectedIndex >= 0 &&
-        selectedIndex < numResults &&
-        !e.metaKey &&
-        !e.ctrlKey
-      ) {
-        e.preventDefault();
-        const selectedItem = searchResults[selectedIndex];
-        const href =
-          selectedItem.media_type === "tv"
-            ? `/series/${selectedItem.id}`
-            : `/movie/${selectedItem.id}`;
-        router.push(href);
-        handleOpenChangeInternal(false);
-      } else if (
-        (e.metaKey || e.ctrlKey) &&
-        e.key === "Enter" &&
-        hasMoreResults &&
-        searchTerm.trim()
-      ) {
-        e.preventDefault();
-        router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
-        handleOpenChangeInternal(false);
-      }
-    },
-    [
-      selectedIndex,
-      searchResults,
-      router,
-      searchTerm,
-      hasMoreResults,
-      handleOpenChangeInternal,
-    ]
-  );
+  const handleSelect = (item) => {
+    if (!item) return;
+    onOpenChange(false);
+    const href =
+      item.media_type === "tv" ? `/series/${item.id}` : `/movie/${item.id}`;
+    router.push(href);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChangeInternal}>
-      <DialogContent
-        className="
-          w-full min-h-screen rounded-none shadow-none
-          md:max-w-[640px] md:h-[500px] md:rounded-xl md:shadow-2xl md:min-h-0
-          bg-slate-950/95 backdrop-blur-xl border border-slate-800/50 p-0 overflow-hidden flex flex-col
-        "
-      >
-        {/* Header - Fixed UI styling only */}
-        <div className="flex-shrink-0 px-4 py-4 border-b border-slate-800/50">
-          <div className="flex items-center gap-3 px-4 py-3 bg-slate-900/60 rounded-xl border border-slate-700/50 text-slate-400 focus-within:ring-2 focus-within:ring-indigo-500/50 focus-within:border-indigo-500/50 transition-all duration-200">
-            <SearchIcon className="w-5 h-5 text-slate-500 flex-shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              className="w-full bg-transparent border-0 focus:outline-none text-white placeholder-slate-500 text-base"
-              placeholder="Search for movies and TV shows..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoComplete="off"
-              aria-controls="search-results-list"
-              aria-activedescendant={
-                selectedIndex >= 0 && searchResults[selectedIndex]
-                  ? `search-result-${searchResults[selectedIndex].media_type}-${searchResults[selectedIndex].id}`
-                  : undefined
-              }
-            />
-            {isLoading && (
-              <Loader2 className="w-5 h-5 animate-spin text-indigo-400 flex-shrink-0" />
-            )}
-          </div>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-0 gap-0 max-w-2xl bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/80 rounded-[28px] overflow-hidden">
+        {/* --- HEADER: INPUT FIELD --- */}
+        <div className="relative flex items-center h-20 px-6 border-b border-white/5 bg-white/[0.02]">
+          <Search
+            className={`w-6 h-6 transition-colors ${
+              isLoading ? "text-indigo-500" : "text-neutral-500"
+            }`}
+          />
 
-        {/* Main Content - Fixed UI styling only */}
-        <div
-          ref={resultsContainerRef}
-          className="flex-1 overflow-y-auto px-2 py-2"
-        >
-          {searchResults.length > 0 ? (
-            <div
-              id="search-results-list"
-              role="listbox"
-              className="space-y-1 px-2"
-            >
-              {searchResults.map((item, index) => (
-                <SearchResultItem
-                  key={`${item.media_type}-${item.id}`}
-                  item={item}
-                  onClick={() => handleOpenChangeInternal(false)}
-                  isSelected={index === selectedIndex}
-                  href={
-                    item.media_type === "tv"
-                      ? `/series/${item.id}`
-                      : `/movie/${item.id}`
-                  }
-                />
-              ))}
-            </div>
-          ) : searchTerm.trim() && !isLoading ? (
-            <div className="text-center h-full flex flex-col justify-center items-center text-slate-500 px-4">
-              <div className="p-6 bg-slate-900/50 rounded-lg border border-slate-800/50">
-                <p className="font-medium text-slate-300">
-                  No results found for "{searchTerm}"
-                </p>
-                <p className="text-sm mt-1">Try a different search term.</p>
-              </div>
-            </div>
+          <input
+            ref={inputRef}
+            className="flex-1 h-full bg-transparent border-none outline-none px-4 text-xl font-medium text-white placeholder-neutral-600 font-sans"
+            placeholder="Search movies & series..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
           ) : (
-            <div className="text-center h-full flex flex-col justify-center items-center text-slate-500 px-4">
-              <div className="p-6  rounded-lg ">
-                <SearchIcon className="w-12 h-12 mx-auto mb-3 text-white" />
-                <p className="font-medium text-slate-400">
-                  Find a movie or TV show
-                </p>
-                <p className="text-sm mt-1">Start typing to see results.</p>
-              </div>
+            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/5 text-[10px] font-mono text-neutral-500">
+              <span className="text-xs">ESC</span>
             </div>
           )}
         </div>
 
-        {/* Footer - Fixed UI styling only */}
-        <div className="px-4 py-3 bg-slate-950/90 border-t border-slate-800/50 text-xs text-slate-500 flex items-center justify-between flex-shrink-0">
-          <div className="hidden md:flex items-center gap-4">
+        {/* --- BODY: RESULTS --- */}
+        <div className="min-h-[300px] max-h-[500px] flex flex-col">
+          {/* Empty State */}
+          {!searchTerm && (
+            <div className="flex-1 flex flex-col items-center justify-center text-neutral-600 gap-4 p-8">
+              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
+                <Command size={32} strokeWidth={1.5} />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-medium text-neutral-400">
+                  Search for anything
+                </p>
+                <p className="text-xs font-mono text-neutral-600 uppercase tracking-wide">
+                  Movies • Series • Anime
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Results Grid */}
+          {searchTerm && (
+            <div className="flex-1 overflow-y-auto p-3" ref={scrollRef}>
+              {searchResults.length > 0 ? (
+                <div className="grid gap-1">
+                  {/* Section Label (Swiss Style) */}
+                  <div className="px-3 py-2 text-[10px] font-mono font-bold text-neutral-600 uppercase tracking-widest flex items-center gap-2">
+                    <span>Results_01</span>
+                    <div className="h-px bg-white/5 flex-1" />
+                  </div>
+
+                  {searchResults.map((item, index) => (
+                    <SearchResultItem
+                      key={item.id}
+                      item={item}
+                      isSelected={index === selectedIndex}
+                      onClick={() => handleSelect(item)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                !isLoading && (
+                  <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-2">
+                    <Film className="w-10 h-10 text-neutral-700 mb-2" />
+                    <p className="text-sm">
+                      No results for{" "}
+                      <span className="text-white">"{searchTerm}"</span>
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* --- FOOTER: SPECS --- */}
+        <div className="h-12 bg-neutral-950 border-t border-white/5 flex items-center justify-between px-6 text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+          <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] font-mono">
-                ↑↓
-              </kbd>
-              navigate
+              <div className="w-1 h-1 bg-indigo-500 rounded-full" />
+              TMDB_API_CONNECTED
             </span>
+            {totalResults > 0 && <span>{totalResults} items found</span>}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden md:flex items-center gap-1.5">
+              <ArrowRight size={10} className="-rotate-90" />
+              <ArrowRight size={10} className="rotate-90" />
+              <span>NAVIGATE</span>
+            </span>
+            <div className="w-px h-3 bg-white/10 hidden md:block" />
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] font-mono">
-                ↵
-              </kbd>
-              select
+              <CornerDownLeft size={10} />
+              <span>OPEN</span>
             </span>
           </div>
-          {hasMoreResults && searchTerm.trim() && (
-            <Link
-              href={`/search?q=${encodeURIComponent(searchTerm)}`}
-              className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors duration-200 text-sm font-medium"
-              onClick={() => handleOpenChangeInternal(false)}
-            >
-              View all ({totalResults})
-              <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 font-mono text-[10px] font-medium text-slate-400">
-                <span className="text-xs">⌘</span>
-                <CornerDownLeft className="w-2.5 h-2.5" />
-              </kbd>
-            </Link>
-          )}
         </div>
       </DialogContent>
     </Dialog>

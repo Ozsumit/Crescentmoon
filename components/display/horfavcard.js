@@ -1,47 +1,43 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Calendar, Info, Tv, Film } from "lucide-react";
+import { Heart, Star, Calendar, Tv, Film, ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Placeholder for fetchMovieData if it's an external utility
-// This function would typically make an API call to get more details for a movie/series
-// based on its ID and media_type.
+// --- API PLACEHOLDER ---
 const fetchMovieData = async (id, media_type) => {
-  // console.log(`Fetching data for ${media_type} with ID: ${id}`);
-  // In a real application, you would replace this with actual API calls
-  // For now, return an empty object or some default structure
+  // In a real app, fetch data here.
   return {};
 };
 
 const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
-  // Added toggleFavorite prop
   const [isFavorite, setIsFavorite] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false); // Added for image loading state
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [movieData, setMovieData] = useState({
     ...favoriteItem,
-    number_of_seasons: "N/A", // Default for TV series
+    number_of_seasons: "N/A",
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch additional data for TV series or if specific details are missing
+  // --- DATA FETCHING (Preserved) ---
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      // Only fetch if media_type is TV and we need more data (e.g., number_of_seasons)
       if (favoriteItem.media_type === "tv" && !movieData.number_of_seasons) {
         const data = await fetchMovieData(
           favoriteItem.id,
           favoriteItem.media_type
         );
         if (data) {
-          setMovieData((prevData) => ({
-            ...prevData,
+          setMovieData((prev) => ({
+            ...prev,
             ...data,
             media_type: favoriteItem.media_type,
           }));
         }
       } else {
-        // For movies or if TV data is already sufficient from favoriteItem
         setMovieData({
           ...favoriteItem,
           media_type: favoriteItem.media_type,
@@ -51,206 +47,176 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
       }
       setIsLoading(false);
     };
-
     fetchData();
-  }, [favoriteItem]); // Re-run if favoriteItem changes
+  }, [favoriteItem]);
 
-  // Check if the item is in favorites by checking local storage
+  // --- FAVORITE SYNC (Preserved) ---
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setIsFavorite(favorites.some((item) => item.id === favoriteItem.id));
-  }, [favoriteItem.id]); // Dependency on favoriteItem.id
+  }, [favoriteItem.id]);
 
-  // Determine if it's a TV series based on media_type or available dates
+  // --- HELPERS ---
   const isTV =
     movieData.media_type === "tv" ||
     (movieData.first_air_date && !movieData.release_date);
 
-  // Get the image path for the card
   const getImagePath = () => {
     if (movieData.poster_path)
       return `https://image.tmdb.org/t/p/w500/${movieData.poster_path}`;
     if (movieData.still_path)
       return `https://image.tmdb.org/t/p/w500/${movieData.still_path}`;
-    return "/placeholder.svg"; // Use a good placeholder image
+    return "/placeholder.svg";
   };
 
-  // Get the link for the card
   const getLink = () => {
-    if (isTV) {
-      return `/series/${movieData.id}`;
-    }
-    if (movieData.release_date) {
-      return `/movie/${movieData.id}`;
-    }
+    if (isTV) return `/series/${movieData.id}`;
+    if (movieData.release_date) return `/movie/${movieData.id}`;
     return "#";
   };
 
-  // Render the title based on the type of item
   const renderTitle = () => {
-    if (isTV) {
-      return movieData.name || "Unknown Series";
-    }
-    return movieData.title || "Unknown Movie";
+    return isTV
+      ? movieData.name || "Unknown Series"
+      : movieData.title || "Unknown Movie";
   };
 
-  // Format the date
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return "N/A";
-    }
+  const getYear = () => {
+    const date = movieData.release_date || movieData.first_air_date;
+    return date ? new Date(date).getFullYear() : "N/A";
   };
 
-  // Handle the favorite toggle directly using the prop
   const handleFavoriteToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleFavorite(favoriteItem); // Use the prop to toggle favorite status
-    setIsFavorite(!isFavorite); // Optimistically update local state
+    toggleFavorite(favoriteItem);
+    setIsFavorite(!isFavorite);
   };
 
+  // --- LOADING STATE ---
   if (isLoading && !movieData.title && !movieData.name) {
     return (
-      <div className="bg-slate-800/80 rounded-xl h-[180px] w-full flex items-center justify-center text-slate-400">
-        Loading...
+      <div className="w-full h-48 bg-neutral-900/50 border border-white/5 rounded-2xl flex items-center justify-center animate-pulse">
+        <span className="text-[10px] font-mono text-neutral-600 uppercase">
+          Loading_Asset...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/80 rounded-xl overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl relative group w-full">
-      <div className="flex">
-        {/* Image Section */}
-        <div className="relative w-32 sm:w-48 flex-shrink-0 aspect-[2/3]">
-          {" "}
-          {/* Use aspect ratio for image */}
-          <Link href={getLink()} title={renderTitle()} className="block h-full">
-            <div
-              className={`h-full w-full transition-opacity duration-700 ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              style={{ willChange: "opacity" }}
-            >
-              <Image
-                src={getImagePath() || "/placeholder.svg"}
-                alt={renderTitle()}
-                className="h-full w-full transform object-cover transition-transform duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1.0)] will-change-transform group-hover:scale-105"
-                width={192} // For w-32, actual width. For w-48, scales up.
-                height={288} // For w-32, actual height. For w-48, scales up.
-                unoptimized
-                onLoadingComplete={() => setImageLoaded(true)}
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg"; // Fallback on error
-                }}
-              />
-              {/* Image Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900" />
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative w-full bg-neutral-900/60 backdrop-blur-sm border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-neutral-900/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50"
+    >
+      <Link href={getLink()} className="flex flex-col sm:flex-row h-full">
+        {/* --- LEFT: IMAGE SPINE --- */}
+        <div className="relative w-full sm:w-40 md:w-48 aspect-[2/3] sm:aspect-auto sm:h-auto flex-shrink-0 overflow-hidden">
+          {/* Image */}
+          <Image
+            src={getImagePath() || "/placeholder.svg"}
+            alt={renderTitle()}
+            fill
+            className={`object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            onLoadingComplete={() => setImageLoaded(true)}
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg";
+            }}
+            unoptimized
+          />
+
+          {/* Shine Effect on Hover */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out z-10" />
+
+          {/* Type Badge (Absolute on Mobile, Hidden on Desktop as it moves to text area) */}
+          <div className="absolute top-3 left-3 sm:hidden">
+            <div className="px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[10px] font-bold text-white uppercase">
+              {isTV ? "TV" : "MOV"}
             </div>
-          </Link>
-          {/* Media Type Badge */}
-          <div
-            className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-xs font-semibold text-white shadow-lg backdrop-blur-sm transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-1"
-            style={{ willChange: "transform" }}
-          >
-            {isTV ? (
-              <>
-                <Tv size={10} className="text-blue-400" />
-                <span>Series</span>
-              </>
-            ) : (
-              <>
-                <Film size={10} className="text-purple-400" />
-                <span>Movie</span>
-              </>
-            )}
           </div>
-          {/* Favorite Button */}
-          <button
-            onClick={handleFavoriteToggle}
-            className="absolute right-2 top-2 z-10 rounded-full bg-black/50 p-2 shadow-lg backdrop-blur-sm transition-all duration-300 ease-out hover:bg-black/70"
-            aria-label={
-              isFavorite ? "Remove from favorites" : "Add to favorites"
-            }
-          >
-            <Heart
-              size={14}
-              fill={isFavorite ? "red" : "none"}
-              stroke={isFavorite ? "red" : "white"}
-              className="transition-colors duration-300"
-            />
-          </button>
         </div>
 
-        {/* Content Section */}
-        <div className="flex-1 p-4 flex flex-col justify-between">
-          <div>
-            {" "}
-            {/* Wrapper for title, rating, date, overview */}
-            {/* Title */}
-            <h3 className="mb-2 line-clamp-2 text-lg font-semibold tracking-tight text-white">
-              <Link
-                href={getLink()}
-                className="hover:text-white/80 transition-colors"
-                title={renderTitle()}
-              >
+        {/* --- RIGHT: CONTENT GRID --- */}
+        <div className="flex-1 p-5 md:p-6 flex flex-col relative z-20">
+          {/* Header Row */}
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              {/* Meta Row (Swiss Style) */}
+              <div className="flex flex-wrap items-center gap-3 mb-2 text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+                <span
+                  className={`flex items-center gap-1.5 ${
+                    isTV ? "text-rose-400" : "text-indigo-400"
+                  }`}
+                >
+                  {isTV ? <Tv size={12} /> : <Film size={12} />}
+                  {isTV ? "Series" : "Movie"}
+                </span>
+                <span className="w-px h-3 bg-white/10" />
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={12} />
+                  {getYear()}
+                </span>
+                {movieData.vote_average > 0 && (
+                  <>
+                    <span className="w-px h-3 bg-white/10" />
+                    <span className="flex items-center gap-1.5 text-yellow-500">
+                      <Star size={12} fill="currentColor" />
+                      {movieData.vote_average.toFixed(1)}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Title */}
+              <h3 className="text-xl md:text-2xl font-black text-white leading-tight group-hover:text-indigo-100 transition-colors">
                 {renderTitle()}
-              </Link>
-            </h3>
-            {/* Rating and Date */}
-            <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium text-white/90">
-              <div className="flex items-center gap-1.5">
-                <Star size={14} className="text-yellow-400" />
-                <span className="font-semibold">
-                  {movieData.vote_average
-                    ? `${movieData.vote_average.toFixed(1)}`
-                    : "N/A"}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-white/70">
-                <Calendar size={14} />
-                <span>
-                  {formatDate(
-                    movieData.release_date || movieData.first_air_date
-                  )}
-                </span>
-              </div>
+              </h3>
             </div>
-            {/* Overview */}
-            <p className="text-sm text-white/80 line-clamp-3">
-              {movieData.overview || "No overview available."}
+
+            {/* Favorite Action */}
+            <button
+              onClick={handleFavoriteToggle}
+              className="flex-shrink-0 p-2.5 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-all active:scale-95 group/heart"
+            >
+              <Heart
+                size={18}
+                className={`transition-colors duration-300 ${
+                  isFavorite ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Overview */}
+          <div className="mt-4 mb-6 flex-1">
+            <p className="text-sm text-neutral-400 line-clamp-2 md:line-clamp-3 leading-relaxed">
+              {movieData.overview || "No overview available for this title."}
             </p>
           </div>
 
-          {/* View Details Link */}
-          <Link
-            href={getLink()}
-            className="mt-4 inline-flex items-center text-xs font-medium text-white/70 transition-colors duration-300 hover:text-white"
-          >
-            View details
-            <svg
-              className="ml-1 h-3 w-3 transform transition-transform duration-300 ease-out group-hover:translate-x-0.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Link>
+          {/* Footer / CTA */}
+          <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-neutral-600 uppercase">
+              ID: {movieData.id}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider group/link">
+              <span>View Details</span>
+              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-white/20 transition-colors">
+                <ArrowUpRight
+                  size={12}
+                  className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </Link>
+    </motion.div>
   );
 };
 

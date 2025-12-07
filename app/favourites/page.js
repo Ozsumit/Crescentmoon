@@ -1,7 +1,11 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import FavoriteDisplay from "@/components/display/favouriteDisplay";
+// FIX: Added AnimatePresence to the import below
+import { motion, AnimatePresence } from "framer-motion";
 
+// --- DEFAULT DATA ---
 const defaultMovies = [
   {
     id: 545611,
@@ -10,17 +14,15 @@ const defaultMovies = [
     release_date: "2022-03-24",
     vote_average: 7.8,
     overview:
-      "An aging Chinese immigrant is swept up in an insane adventure, where she alone can save the world by exploring other universes connecting with the lives she could have led.",
+      "An aging Chinese immigrant is swept up in an insane adventure...",
   },
   {
     id: 640,
     title: "Catch Me If You Can",
-    poster_path:
-      "https://image.tmdb.org/t/p/w500/sdYgEkKCDPWNU6KnoL4qd8xZ4w7.jpg",
+    poster_path: "/sdYgEkKCDPWNU6KnoL4qd8xZ4w7.jpg",
     release_date: "2002-12-25",
     vote_average: 8.0,
-    overview:
-      "A true story about Frank Abagnale Jr., who, before his 19th birthday, successfully performed cons worth millions of dollars by posing as a Pan Am pilot, a doctor, and a legal prosecutor.",
+    overview: "A true story about Frank Abagnale Jr...",
   },
   {
     id: 19913,
@@ -28,36 +30,7 @@ const defaultMovies = [
     poster_path: "/f9mbM0YMLpYemcWx6o2WeiYQLDP.jpg",
     release_date: "2009-07-17",
     vote_average: 7.3,
-    overview:
-      "An offbeat romantic comedy about a woman who doesn't believe true love exists, and the young man who falls for her.",
-  },
-  {
-    id: 8363,
-    title: "Superbad",
-    poster_path: "/ek8e8txUyUwd2BNqj6lFEerJfbq.jpg",
-    release_date: "2007-08-17",
-    vote_average: 7.2,
-    overview:
-      "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
-  },
-  {
-    id: 13,
-    title: "Forrest Gump",
-    poster_path: "/h5J4W4veyxMXDMjeNxZI46TsHOb.jpg",
-    release_date: "1994-07-06",
-    vote_average: 8.5,
-    overview:
-      "A man with a low IQ has accomplished great things in his life and been present during significant historic events—in each case, far exceeding what anyone imagined he could do.",
-  },
-  {
-    id: 4951,
-    title: "10 Things I Hate About You",
-    poster_path:
-      "https://image.tmdb.org/t/p/w500/ujERk3aKABXU3NDXOAxEQYTHe9A.jpg",
-    release_date: "1999-03-30",
-    vote_average: 7.5,
-    overview:
-      "A pretty, popular teenager can't go out on a date until her ill-tempered older sister does.",
+    overview: "An offbeat romantic comedy...",
   },
   {
     id: 278,
@@ -65,106 +38,7 @@ const defaultMovies = [
     poster_path: "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg",
     release_date: "1994-09-23",
     vote_average: 8.7,
-    overview:
-      "Framed in the 1940s for the double murder of his wife and her lover, upstanding banker Andy Dufresne begins a new life at the Shawshank prison, where he puts his accounting skills to work for an amoral warden.",
-  },
-  {
-    id: 106646,
-    title: "The Wolf of Wall Street",
-    poster_path: "/pWHf4khOloNVfCxscsXFj3jj6gP.jpg",
-    release_date: "2013-12-25",
-    vote_average: 8.0,
-    overview:
-      "A New York stockbroker refuses to cooperate in a large securities fraud case involving corruption on Wall Street, corporate banking world and mob infiltration.",
-  },
-  {
-    id: 1184918,
-    title: "The Wild Robot",
-    poster_path: "/1pmXyN3sKeYoUhu5VBZiDU4BX21.jpg",
-    release_date: "2024-09-12",
-    vote_average: 8.378,
-    overview: "An adventurous journey of a robot in a futuristic wild setting.",
-  },
-  {
-    id: 149870,
-    title: "The Wind Rises",
-    poster_path: "/zZiflZpuaZerugtfdyXcg6dcylD.jpg",
-    release_date: "2013-07-20",
-    vote_average: 7.8,
-    overview:
-      "A love story and the passion for flying, set during a turbulent historical era.",
-  },
-  {
-    id: 12429,
-    title: "Ponyo",
-    poster_path: "/shqLeIkqPAAXM8iT6wVDiXUYz1p.jpg",
-    release_date: "2008-07-19",
-    vote_average: 7.7,
-    overview:
-      "A magical fish befriends a boy, embarking on a journey filled with wonder.",
-  },
-  {
-    id: 81,
-    title: "Nausicaä of the Valley of the Wind",
-    poster_path: "/ulVUa2MvnJAjAeRt7h23FFJVRKH.jpg",
-    release_date: "1984-03-11",
-    vote_average: 7.9,
-    overview:
-      "A brave princess fights to protect her home and discover harmony in a desolate world.",
-  },
-  {
-    id: 10515,
-    title: "Castle in the Sky",
-    poster_path: "/z6OZ2Q4FYELeGoBj9tVDWCvevkj.jpg",
-    release_date: "1986-08-02",
-    vote_average: 7.976,
-    overview:
-      "A quest to uncover a legendary flying city while avoiding adversaries.",
-  },
-  {
-    id: 14160,
-    title: "Up",
-    poster_path: "/hGGC9gKo7CFE3fW07RA587e5kol.jpg",
-    release_date: "2009-05-28",
-    vote_average: 7.958,
-    overview:
-      "An elderly man and a young boy embark on an adventure in a house lifted by balloons.",
-  },
-  {
-    id: 10681,
-    title: "WALL·E",
-    poster_path: "/fK5ssgvtI43z19FoWigdlqgpLRE.jpg",
-    release_date: "2008-06-22",
-    vote_average: 8.1,
-    overview:
-      "A lone robot on Earth discovers love and purpose while cleaning up waste.",
-  },
-  {
-    id: 823219,
-    title: "Flow",
-    poster_path: "/b3mdmjYTEL70j7nuXATUAD9qgu4.jpg",
-    release_date: "2024-01-30",
-    vote_average: 8.4,
-    overview:
-      "An animated journey through surreal landscapes of adventure and discovery.",
-  },
-  {
-    id: 315162,
-    title: "Puss in Boots: The Last Wish",
-    poster_path: "/jr8tSoJGj33XLgFBy6lmZhpGQNu.jpg",
-    release_date: "2022-12-07",
-    vote_average: 8.2,
-    overview:
-      "A daring feline hero embarks on a quest to restore his nine lives.",
-  },
-  {
-    id: 27205,
-    title: "Inception",
-    poster_path: "/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg",
-    release_date: "2010-07-15",
-    vote_average: 8.37,
-    overview:
-      "A thief uses dream-sharing technology to plant an idea in a corporate target.",
+    overview: "Framed in the 1940s...",
   },
   {
     id: 157336,
@@ -172,7 +46,7 @@ const defaultMovies = [
     poster_path: "/9REO1DLpmwhrBJY3mYW5eVxkXFM.jpg",
     release_date: "2014-11-05",
     vote_average: 8.448,
-    overview: "A team ventures into space to ensure humanity's survival.",
+    overview: "A team ventures into space...",
   },
 ];
 
@@ -182,16 +56,14 @@ const Favorites = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load favorites from localStorage on mount
+  // --- DATA LOADING LOGIC ---
   useEffect(() => {
     try {
       setIsLoading(true);
       const storedFavorites = localStorage.getItem("favorites");
       if (storedFavorites !== null) {
-        // Load existing favorites (even if empty array)
         setFavorites(JSON.parse(storedFavorites));
       } else {
-        // Show defaults only if no 'favorites' key exists
         setFavorites(defaultMovies);
       }
     } catch (err) {
@@ -202,7 +74,6 @@ const Favorites = () => {
     }
   }, []);
 
-  // Sync between tabs
   useEffect(() => {
     const handleStorageChange = () => {
       try {
@@ -210,120 +81,156 @@ const Favorites = () => {
         if (storedFavorites !== null) {
           setFavorites(JSON.parse(storedFavorites));
         } else {
-          // Only show defaults if key is completely removed
           setFavorites(defaultMovies);
         }
       } catch (err) {
         setError("Failed to sync favorites");
       }
     };
-
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Add or remove favorites
   const toggleFavorite = (item) => {
     try {
       const isAlreadyFavorite = favorites.some((fav) => fav.id === item.id);
-
       let updatedFavorites;
       if (isAlreadyFavorite) {
-        // Remove the item
         updatedFavorites = favorites.filter((fav) => fav.id !== item.id);
       } else {
-        // Add the item
         updatedFavorites = [...favorites, item];
       }
-
-      // Update state and localStorage
       setFavorites(updatedFavorites);
       localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (err) {
       setError("Failed to update favorites");
     }
   };
 
-  // Filter logic
   const filteredFavorites = favorites.filter((item) => {
     if (activeTab === "all") return true;
-    if (activeTab === "series") return item.first_air_date; // Assuming item.first_air_date exists for series
-    if (activeTab === "movies") return item.release_date; // Assuming item.release_date exists for movies
+    if (activeTab === "series")
+      return item.first_air_date || item.media_type === "tv";
+    if (activeTab === "movies")
+      return item.release_date || item.media_type === "movie";
     return true;
   });
 
-  // Loading state
+  // --- LOADING STATE ---
   if (isLoading) {
     return (
-      <div className="flex  min-h-screen bg-gradient-to-br from-indigo-950 via-slate-900 to-black text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-lg">Loading your favorites...</p>
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-1 bg-white/10 overflow-hidden rounded-full">
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="w-1/2 h-full bg-indigo-500"
+            />
           </div>
+          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+            Loading_Data...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-br from-indigo-950 via-slate-900 to-black text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Header Section */}
-        <header className="mb-8 sm:mb-12">
-          <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              My Favorites
-            </h1>
-            <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto">
-            Discover and manage your favorite movies and TV series
-            </p>
+    <div className="min-h-screen pt-24 pb-20 bg-neutral-950 text-white relative selection:bg-indigo-500/30">
+      {/* Background Texture */}
+      <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
+
+      {/* Ambient Glows */}
+      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 max-w-[2000px]">
+        {/* --- PAGE HEADER (Swiss Style) --- */}
+        <header className="mb-12 flex flex-col md:flex-row items-end justify-between gap-6 border-b border-white/5 pb-8">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-2"
+            >
+              ARCHIVE
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-sm md:text-base font-mono text-neutral-500 uppercase tracking-widest"
+            >
+              Personal Collection • {favorites.length} Items
+            </motion.p>
+          </div>
+
+          {/* Stats Tiles (Material Cards) */}
+          <div className="flex gap-4">
+            {[
+              {
+                label: "Movies",
+                count: favorites.filter((i) => i.release_date).length,
+                color: "text-indigo-400",
+              },
+              {
+                label: "Series",
+                count: favorites.filter((i) => i.first_air_date).length,
+                color: "text-rose-400",
+              },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="px-5 py-3 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm"
+              >
+                <div className={`text-2xl font-bold ${stat.color}`}>
+                  {stat.count}
+                </div>
+                <div className="text-[10px] font-mono text-neutral-500 uppercase">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </header>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-900/50 border border-red-500/50 rounded-lg p-4 text-center">
-            <p className="text-red-200">{error}</p>
-          </div>
-        )}
+        {/* --- ERROR MESSAGE --- */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8 overflow-hidden"
+            >
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center justify-center">
+                <p className="text-red-400 font-mono text-sm">ERROR: {error}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Always render FavoriteDisplay, it will handle its own empty state. */}
-        <div className="space-y-6">
-          <FavoriteDisplay
-            filteredFavorites={filteredFavorites}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            toggleFavorite={toggleFavorite}
-          />
-        </div>
+        {/* --- MAIN DISPLAY COMPONENT --- */}
+        <FavoriteDisplay
+          filteredFavorites={filteredFavorites}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          toggleFavorite={toggleFavorite}
+        />
 
-        {/* Stats Section - Conditionally rendered only if there are any favorites at all */}
-        {favorites.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-gray-700/50">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-400 mb-1">
-                  {favorites.length}
-                </div>
-                <div className="text-sm text-gray-300">Total Favorites</div>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl sm:text-3xl font-bold text-purple-400 mb-1">
-                  {favorites.filter((item) => item.release_date).length}
-                </div>
-                <div className="text-sm text-gray-300">Movies</div>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-1">
-                  {favorites.filter((item) => item.first_air_date).length}
-                </div>
-                <div className="text-sm text-gray-300">TV Series</div>
-              </div>
-            </div>
+        {/* --- FOOTER --- */}
+        <footer className="mt-20 border-t border-white/5 pt-8 text-center md:text-left">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+            <span>Database_Version: 2.4.0</span>
+            <span>Last_Sync: {new Date().toLocaleDateString()}</span>
           </div>
-        )}
+        </footer>
       </div>
     </div>
   );

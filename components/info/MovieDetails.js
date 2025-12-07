@@ -1,138 +1,213 @@
 import React, { useState } from "react";
 import {
   Play,
-  Clock,
-  Star,
-  CalendarDays,
-  Bookmark,
-  PlayCircle,
+  Pause,
+  X,
+  ArrowRight,
+  Maximize2,
+  Volume2,
+  Film,
 } from "lucide-react";
 
 const MovieDetails = ({ MovieDetail, genreArr, videoId }) => {
-  const [showVideo, setShowVideo] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // Convert minutes to hours and minutes
   const formatRuntime = (minutes) => {
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${minutes}m`;
+    return hours > 0 ? `${hours}H ${remainingMinutes}M` : `${minutes}M`;
   };
 
-  return (
-    <div className="bg-gradient-to-br mt-16 from-slate-900 via-slate-800 to-slate-900 min-h-screen py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Movie Title Section */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            {MovieDetail.title}
-          </h1>
+  // Dynamic styles based on playback state (Swiss "Lights Off" mode)
+  const theme = isPlaying
+    ? "bg-[#0a0a0a] text-[#f4f4f4] border-[#333]"
+    : "bg-[#f4f4f4] text-[#111] border-[#111]";
 
-          {/* Movie Stats */}
-          <div className="flex items-center space-x-6 text-slate-300">
-            <div className="flex items-center space-x-2">
-              <Star className="w-5 h-5 text-yellow-400" />
-              <span>{MovieDetail.vote_average.toFixed(1)}/10</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-indigo-400" />
-              <span>{formatRuntime(MovieDetail.runtime)}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CalendarDays className="w-5 h-5 text-pink-400" />
-              <span>
-                {MovieDetail.release_date
-                  ? new Date(MovieDetail.release_date).getFullYear()
-                  : "N/A"}
-              </span>
-            </div>
+  const accentColor = isPlaying ? "text-[#ff3333]" : "text-[#E62020]";
+  const borderColor = isPlaying ? "border-[#333]" : "border-[#111]";
+
+  return (
+    <div
+      className={`min-h-screen transition-colors duration-700 ease-in-out font-sans ${theme}`}
+    >
+      {/* GRID SYSTEM CONTAINER */}
+      <div className="container mx-auto px-4 sm:px-8 py-8 min-h-screen flex flex-col">
+        {/* TOP BAR: Functional Meta Data */}
+        <div
+          className={`flex justify-between items-end border-b-4 ${borderColor} pb-4 mb-8`}
+        >
+          <div>
+            <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85]">
+              {MovieDetail.title}
+            </h1>
+          </div>
+          <div className="hidden md:flex flex-col items-end text-right font-mono text-xs uppercase tracking-widest gap-1">
+            <span>
+              FIG. 01 — {new Date(MovieDetail.release_date).getFullYear()}
+            </span>
+            <span className={accentColor}>Dir. Unknown</span>{" "}
+            {/* Add director if available */}
           </div>
         </div>
 
-        {/* Movie Content Grid */}
-        <div className="grid md:grid-cols-[300px_1fr] gap-8 max-w-4xl mx-auto">
-          {/* Poster Section */}
-          <div className="relative group">
-            <img
-              src={`https://image.tmdb.org/t/p/w300${MovieDetail.poster_path}`}
-              alt={MovieDetail.title || "Movie Poster"}
-              className="rounded-xl shadow-xl transition-transform group-hover:scale-105"
-            />
-            <button
-              onClick={() => setShowVideo(true)}
-              className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+        {/* MAIN LAYOUT: Video Player is the Hero */}
+        <main className="flex-grow flex flex-col gap-8">
+          {/* THE PLAYER FRAMEWORK */}
+          <div className="relative w-full">
+            {/* Player Status Bar */}
+            <div
+              className={`flex justify-between items-center px-4 py-2 border-x-2 border-t-2 ${borderColor} bg-transparent`}
             >
-              <Play className="text-white w-20 h-20" />
-            </button>
-          </div>
-
-          {/* Movie Details */}
-          <div>
-            {/* Genres */}
-            <div className="flex flex-wrap gap-2 mb-4 justify-center md:justify-start">
-              {genreArr?.map((genre) => (
-                <span
-                  key={genre.id}
-                  className="bg-slate-700 text-slate-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {genre.name}
-                </span>
-              ))}
+              <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-widest">
+                <div
+                  className={`w-2 h-2 ${
+                    isPlaying ? "bg-red-600 animate-pulse" : "bg-gray-400"
+                  }`}
+                ></div>
+                {isPlaying ? "Status: Playing" : "Status: Standby"}
+              </div>
+              <div className="flex items-center gap-4">
+                <Volume2 className="w-4 h-4 opacity-50" />
+                <Maximize2 className="w-4 h-4 opacity-50" />
+              </div>
             </div>
 
-            {/* Synopsis */}
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-3 text-blue-400">
-                Synopsis
+            {/* The Screen Area */}
+            <div
+              className={`relative w-full aspect-video border-2 ${borderColor} bg-black overflow-hidden group`}
+            >
+              {!isPlaying ? (
+                /* POSTER STATE */
+                <div className="absolute inset-0 w-full h-full">
+                  <img
+                    src={`https://image.tmdb.org/t/p/original${
+                      MovieDetail.backdrop_path || MovieDetail.poster_path
+                    }`}
+                    alt="Backdrop"
+                    className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700"
+                  />
+
+                  {/* Brutalist Play Trigger */}
+                  <button
+                    onClick={() => setIsPlaying(true)}
+                    className="absolute inset-0 flex items-center justify-center group hover:bg-red-600/10 transition-colors duration-300"
+                  >
+                    <div className="bg-[#E62020] text-white p-8 md:p-12 flex items-center gap-4 transform group-hover:scale-105 transition-transform duration-300 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                      <Play className="w-12 h-12 md:w-16 md:h-16 fill-current" />
+                      <div className="flex flex-col items-start">
+                        <span className="font-black uppercase text-2xl md:text-4xl tracking-tighter leading-none">
+                          Play
+                        </span>
+                        <span className="font-mono text-xs uppercase tracking-widest">
+                          Trailer
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                /* VIDEO STATE */
+                <div className="relative w-full h-full">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&showinfo=0`}
+                    title="Trailer"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+
+                  {/* Close / Stop Button Overlay */}
+                  <button
+                    onClick={() => setIsPlaying(false)}
+                    className="absolute top-0 right-0 m-6 bg-white text-black p-3 hover:bg-[#E62020] hover:text-white transition-colors z-50 border-2 border-black"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Footer under player */}
+            <div
+              className={`border-x-2 border-b-2 ${borderColor} p-4 flex justify-between items-center`}
+            >
+              <div className="font-mono text-xs uppercase tracking-widest opacity-60">
+                Source: YouTube / API
+              </div>
+              <div className="font-mono text-xs uppercase tracking-widest opacity-60">
+                {formatRuntime(MovieDetail.runtime)}
+              </div>
+            </div>
+          </div>
+
+          {/* DETAILS GRID (Pushed down but strictly aligned) */}
+          <div
+            className={`grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 pt-8 border-t ${
+              isPlaying ? "border-[#333]" : "border-gray-300"
+            }`}
+          >
+            {/* Left Column: Statistics */}
+            <div className="lg:col-span-3 flex flex-col gap-6">
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-widest mb-2 opacity-50">
+                  Rating Index
+                </span>
+                <span
+                  className={`text-5xl font-black tracking-tighter ${accentColor}`}
+                >
+                  {MovieDetail.vote_average.toFixed(1)}
+                </span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-widest mb-2 opacity-50">
+                  Classification
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {genreArr?.map((genre) => (
+                    <span
+                      key={genre.id}
+                      className={`border ${borderColor} px-2 py-1 text-xs font-bold uppercase`}
+                    >
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Narrative */}
+            <div className="lg:col-span-9">
+              <h2 className="text-xl font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                <Film className="w-5 h-5" />
+                Narrative Synopsis
               </h2>
-              <p className="text-slate-300 leading-relaxed">
+              <p className="text-lg md:text-xl leading-relaxed font-medium opacity-90 max-w-4xl">
                 {MovieDetail.overview}
               </p>
+
+              {/* Action Bar */}
+              <div className="mt-10 flex flex-wrap gap-4">
+                <button
+                  className={`h-12 px-8 border-2 ${borderColor} flex items-center gap-3 hover:bg-[#E62020] hover:border-[#E62020] hover:text-white transition-colors group`}
+                >
+                  <span className="font-bold uppercase tracking-widest text-sm">
+                    Add to Watchlist
+                  </span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  className={`h-12 px-8 border-2 ${borderColor} bg-transparent opacity-50 hover:opacity-100 transition-opacity`}
+                >
+                  <span className="font-bold uppercase tracking-widest text-sm">
+                    Share
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center space-x-4 mt-8">
-          <button
-            onClick={() => setShowVideo(true)}
-            className="flex items-center bg-gradient-to-r from-indigo-600 to-pink-600 
-            text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-pink-700 
-            transition-transform hover:scale-105"
-          >
-            <PlayCircle className="mr-2" />
-            Watch Trailer
-          </button>
-          <button
-            className="flex items-center bg-slate-700 text-white px-6 py-3 rounded-lg 
-            hover:bg-slate-600 transition-colors"
-          >
-            <Bookmark className="mr-2" />
-            Watchlist
-          </button>
-        </div>
-
-        {/* Video Player Section */}
-        {showVideo && videoId && (
-          <div className="mt-10 max-w-4xl mx-auto">
-            <div className="relative pt-[56.25%]">
-              {/* 16:9 Aspect Ratio */}
-              <iframe
-                className="absolute top-0 left-0 w-full h-full rounded-xl shadow-xl"
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-                title="Movie Trailer"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-            <button
-              onClick={() => setShowVideo(false)}
-              className="mt-4 bg-slate-700 text-white px-6 py-2 rounded-lg hover:bg-slate-600 transition-colors"
-            >
-              Close Trailer
-            </button>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   );
