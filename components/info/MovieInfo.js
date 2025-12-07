@@ -12,6 +12,7 @@ import {
   Film,
   ArrowRight,
   Tv,
+  List,
   Clapperboard,
   Zap,
   Languages,
