@@ -23,7 +23,7 @@ const Series = async () => {
   const data = await getData();
   return (
     <>
-      <div className=" h-auto pt-16">
+      <div className=" h-auto pt-20">
         <AboutUs />
       </div>
     </>

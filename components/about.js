@@ -1,8 +1,17 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Heart, Play, Star, Users, Film, Globe } from "lucide-react";
+import {
+  Heart,
+  Play,
+  Star,
+  Users,
+  Film,
+  Globe,
+  ArrowRight,
+  ArrowUpRight,
+} from "lucide-react";
 import Link from "next/link";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 const AboutUs = () => {
   const cursorRef = useRef(null);
@@ -12,28 +21,22 @@ const AboutUs = () => {
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
 
-  // Create spring-based smooth interpolation
-  const springX = useSpring(cursorX, {
-    damping: 30,
-    stiffness: 100,
-  });
-  const springY = useSpring(cursorY, {
-    damping: 30,
-    stiffness: 100,
-  });
+  // Softer spring for a fluid, organic feel
+  const springConfig = { damping: 25, stiffness: 120 };
+  const springX = useSpring(cursorX, springConfig);
+  const springY = useSpring(cursorY, springConfig);
 
-  // Cursor movement and interaction effect
   useEffect(() => {
     const handleMouseMove = (e) => {
-      cursorX.set(e.clientX) + 5;
-      cursorY.set(e.clientY) + 5;
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
     };
 
-    // Add event listeners to track mouse movement
     window.addEventListener("mousemove", handleMouseMove);
 
-    // Handle hover interactions
-    const hoverElements = document.querySelectorAll("a, button");
+    const hoverElements = document.querySelectorAll(
+      "a, button, .interactive-card"
+    );
     hoverElements.forEach((el) => {
       el.addEventListener("mouseenter", () => setIsHovering(true));
       el.addEventListener("mouseleave", () => setIsHovering(false));
@@ -44,155 +47,221 @@ const AboutUs = () => {
     };
   }, [cursorX, cursorY]);
 
-  // Animation variants for section entries
   const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        ease: "easeOut",
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1], // Custom bezier for "soft" snap
       },
     },
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden">
-      {/* Smooth Cursor */}
+    <div className="relative min-h-screen bg-[#F9F9F9] text-neutral-900 overflow-hidden font-sans selection:bg-neutral-200 selection:text-black">
+      {/* Custom Cursor: Subtle Ring */}
       <motion.div
         ref={cursorRef}
         style={{
           position: "fixed",
           left: springX,
           top: springY,
-          x: "-50%",
-          y: "-50%",
-          zIndex: -1,
+          translateX: "-50%",
+          translateY: "-50%",
+          zIndex: 50,
+          pointerEvents: "none",
         }}
       >
         <motion.div
           animate={{
-            scale: isHovering ? 1.5 : 1,
-            backgroundColor: isHovering
-              ? "rgba(99, 102, 241, 0.5)"
-              : "rgba(99, 102, 241, 0.3)",
-            width: isHovering ? "2.5rem" : "2rem",
-            height: isHovering ? "2.5rem" : "2rem",
+            scale: isHovering ? 1 : 0.5,
+            width: isHovering ? "3rem" : "1rem",
+            height: isHovering ? "3rem" : "1rem",
+            border: isHovering
+              ? "1px solid rgba(0,0,0,0.2)"
+              : "0px solid transparent",
+            backgroundColor: isHovering ? "transparent" : "black",
           }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 20,
-          }}
-          className="rounded-full pointer-events-none blur-sm bg-indigo-500/30"
-        />
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="rounded-full flex items-center justify-center"
+        >
+          {/* Tiny dot inside the ring when hovering */}
+          <motion.div
+            animate={{ opacity: isHovering ? 1 : 0 }}
+            className="w-1 h-1 bg-black rounded-full"
+          />
+        </motion.div>
       </motion.div>
 
-      <div className="container mx-auto px-4 py-16 relative">
-        {/* Animated Background Shapes */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-
+      <div className="container mx-auto px-6 py-24 relative z-10">
+        {/* Header Section */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={sectionVariants}
-          className="text-center mb-16"
+          className="mb-20"
         >
-          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600 mb-6 tracking-tight">
-            About CineMoon
-          </h1>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-4">
-            Your ultimate destination for immersive cinematic experiences,
-            bringing the magic of movies directly to your screen.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 border-b border-neutral-200 pb-12">
+            <div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="flex items-center gap-4 mb-4"
+              >
+                <span className="w-12 h-[1px] bg-black"></span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-neutral-500">
+                  Established 2024
+                </span>
+              </motion.div>
+              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] text-neutral-900">
+                Crescent<span className="text-neutral-400">Moon</span>.
+              </h1>
+            </div>
+
+            <div className="md:max-w-md">
+              <p className="text-lg md:text-xl text-neutral-600 font-medium leading-relaxed">
+                Curating the invisible threads between storytelling and
+                audience. Cinema, redefined for the modern purist.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Floating Cards Grid */}
+        <div className="grid md:grid-cols-3 gap-6">
           {[
             {
-              icon: <Star className="w-12 h-12 text-yellow-400" />,
-              title: "Our Mission",
+              icon: Star,
+              title: "Curated",
               description:
-                "Curating a diverse film library that celebrates storytelling across genres, making cinema accessible to all.",
+                "Hand-picked selections ensuring quality over quantity.",
             },
             {
-              icon: <Users className="w-12 h-12 text-teal-400" />,
-              title: "Our Community",
+              icon: Users,
+              title: "Community",
               description:
-                "Building a global platform where movie lovers connect, share, and discover new cinematic treasures.",
+                "A space for dialogue, not just passive consumption.",
             },
             {
-              icon: <Globe className="w-12 h-12 text-emerald-400" />,
-              title: "Global Reach",
-              description:
-                "Bridging cultures through the universal language of film, one stream at a time.",
+              icon: Globe,
+              title: "Universal",
+              description: "Cinema without borders, accessible everywhere.",
             },
           ].map((section, index) => (
             <motion.div
               key={section.title}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: "-50px" }}
               variants={{
                 ...sectionVariants,
                 visible: {
                   ...sectionVariants.visible,
-                  transition: {
-                    ...sectionVariants.visible.transition,
-                    delay: index * 0.2,
-                  },
+                  transition: { delay: index * 0.15, duration: 0.8 },
                 },
               }}
-              className="bg-slate-800/60 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-slate-800/80 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
+              className="interactive-card group relative bg-white rounded-3xl p-8 border border-neutral-100 shadow-[0_5px_15px_-5px_rgba(0,0,0,0.02)]"
             >
-              <div className="flex justify-center mb-4">{section.icon}</div>
-              <h2 className="text-2xl font-semibold text-indigo-300 mb-3">
-                {section.title}
-              </h2>
-              <p className="text-slate-300">{section.description}</p>
+              {/* Card Hover Micro-interaction */}
+              <motion.div
+                className="absolute inset-0 rounded-3xl bg-neutral-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                layoutId={`hover-bg-${index}`}
+              />
+
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-10">
+                  <div className="p-3 bg-neutral-100 rounded-2xl group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                    <section.icon className="w-6 h-6" />
+                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-neutral-300 group-hover:text-black group-hover:rotate-45 transition-all duration-300 ease-out" />
+                </div>
+
+                <div className="mt-auto">
+                  <h2 className="text-2xl font-bold tracking-tight mb-3 text-neutral-900">
+                    {section.title}
+                  </h2>
+                  <p className="text-neutral-500 leading-relaxed group-hover:text-neutral-700 transition-colors duration-300">
+                    {section.description}
+                  </p>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
 
+        {/* CTA Section */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={sectionVariants}
-          className="mt-16 text-center"
+          className="mt-24 bg-neutral-900 rounded-[2.5rem] p-12 md:p-16 text-white overflow-hidden relative"
         >
-          <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6">
-            <Link
-              href="/movies"
-              className="flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-3 px-8 rounded-full hover:scale-105 transform transition-all shadow-lg hover:shadow-indigo-500/50"
-            >
-              <Play className="mr-2 w-6 h-6" /> Explore Movies
-            </Link>
-            <Link
-              href="/contact"
-              className="flex items-center justify-center bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-3 px-8 rounded-full hover:scale-105 transform transition-all shadow-lg hover:shadow-emerald-500/50"
-            >
-              <Heart className="mr-2 w-6 h-6" /> Join Our Community
-            </Link>
+          {/* Subtle Background Pattern */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-neutral-800 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+            <div className="max-w-xl">
+              <h3 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+                Ready to stream?
+              </h3>
+              <p className="text-neutral-400 text-lg">
+                Join thousands of cinephiles discovering their next obsession.
+                Start your journey with us today.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+              <Link href="/movie">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] transition-shadow duration-300"
+                >
+                  <Play className="w-5 h-5 fill-black" />
+                  <span>Start Watching</span>
+                </motion.button>
+              </Link>
+
+              <Link href="/contact">
+                <motion.button
+                  whileHover={{
+                    scale: 1.05,
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-transparent border border-neutral-700 text-white rounded-full font-bold text-lg transition-colors duration-300"
+                >
+                  <Heart className="w-5 h-5" />
+                  <span>Join Community</span>
+                </motion.button>
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Enhanced Footer */}
-      <motion.footer
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="bg-slate-800/60 backdrop-blur-sm py-6 text-center"
-      >
-        <p className="text-slate-400">
-          &copy; 2024 Cinematic. Streaming Dreams, Worldwide.
-        </p>
-      </motion.footer>
+      {/* Minimal Footer */}
+      <footer className="w-full py-12 px-6 border-t border-neutral-200 mt-12 bg-white">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm font-medium text-neutral-400">
+          <p className="tracking-wide">&copy; 2024 CINEMOON.</p>
+          <div className="flex gap-8 mt-4 md:mt-0">
+            <Link href="#" className="hover:text-black transition-colors">
+              Instagram
+            </Link>
+            <Link href="#" className="hover:text-black transition-colors">
+              Twitter
+            </Link>
+            <Link href="#" className="hover:text-black transition-colors">
+              LinkedIn
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
