@@ -8,22 +8,15 @@ import {
   Server,
   Heart,
   Share2,
-  Users,
   Film,
   ArrowRight,
-  Tv,
   List,
   Clapperboard,
   Zap,
   Languages,
   Check,
-  Maximize2,
-  Info,
-  ChevronRight,
-  MoreHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import HomeCards from "@/components/display/HomeCard";
 
 // --- CONSTANTS ---
 const VIDEO_SOURCES = [
@@ -48,8 +41,6 @@ const VIDEO_SOURCES = [
     name: "MoviesAPI",
     url: "https://moviesapi.club/movie/",
     params: "?multiLang=true",
-
-    // paramStyle: "path-hyphen-mapi",
     icon: <List className="w-5 h-5 text-green-400" />,
     features: ["Multi-Language", "Fast"],
     description: "A reliable alternative with good subtitle support.",
@@ -57,9 +48,7 @@ const VIDEO_SOURCES = [
   {
     name: "videasy",
     url: "https://player.videasy.net/movie/",
-    // paramStyle: "path-slash",
     params: "?multiLang=true",
-
     icon: <Clapperboard className="w-5 h-5 text-purple-400" />,
     features: ["Multi-sub", "Clean UI"],
     description: "Features a clean player with multiple subtitle choices.",
@@ -67,9 +56,7 @@ const VIDEO_SOURCES = [
   {
     name: "Vidsrc 2",
     url: "https://vidsrc.net/embed/movie/",
-    // paramStyle: "path-slash",\
     params: "?multiLang=true",
-
     icon: <Server className="w-5 h-5 text-slate-400" />,
     features: ["Multi-Language", "Backup"],
     description: "A secondary backup source for language options.",
@@ -115,7 +102,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
   <button
     onClick={onClick}
     className={`
-      relative px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-2 overflow-hidden
+      relative px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-2 overflow-hidden shrink-0
       ${
         active
           ? "text-[#001d35]"
@@ -130,7 +117,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       />
     )}
-    <span className="relative z-10 flex items-center gap-2">
+    <span className="relative z-10 flex items-center gap-2 whitespace-nowrap">
       {icon} {children}
     </span>
   </button>
@@ -139,7 +126,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
 const MetaBadge = ({ icon: Icon, value, color }) => (
   <div className="flex items-center gap-2 bg-[#1a1a1a] border border-white/5 px-3 py-1.5 rounded-xl">
     <Icon size={14} className={color} />
-    <span className="text-sm font-bold text-white">{value}</span>
+    <span className="text-xs md:text-sm font-bold text-white">{value}</span>
   </div>
 );
 
@@ -234,7 +221,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     : `https://image.tmdb.org/t/p/original${MovieDetail.poster_path}`;
 
   return (
-    <div className="h-screen w-full bg-[#050505] text-white font-sans overflow-hidden flex flex-col pt-20">
+    <div className="min-h-screen lg:h-screen w-full bg-[#050505] text-white font-sans flex flex-col pt-16 lg:pt-20 overflow-x-hidden">
       {/* 1. BACKGROUND LAYERS */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
@@ -242,15 +229,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         <img
           src={bgImage}
           className="w-full h-full object-cover blur-2xl opacity-20"
+          alt="Background"
         />
       </div>
 
-      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 lg:divide-x divide-white/5 border-t border-white/5 h-full overflow-hidden">
-        {/* === LEFT COLUMN: INFO & METADATA (Scrollable) === */}
-        <div className="lg:col-span-4 bg-[#050505]/60 backdrop-blur-xl h-full flex flex-col overflow-y-auto custom-scrollbar">
+      {/* Main Layout Grid/Flex */}
+      <div className="relative z-10 flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:divide-x divide-white/5 border-t border-white/5 lg:overflow-hidden">
+        {/* === LEFT COLUMN: INFO & METADATA === */}
+        {/* Mobile: Order 2 (Bottom), Desktop: Order 1 (Left) */}
+        <div className="order-2 lg:order-1 lg:col-span-4 bg-[#050505]/60 backdrop-blur-xl flex flex-col lg:overflow-y-auto custom-scrollbar h-auto lg:h-full pb-20 lg:pb-0">
           {/* Header */}
-          <div className="p-8 pb-0">
-            <div className="flex flex-wrap gap-2 mb-6">
+          <div className="p-5 md:p-8 pb-0">
+            <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
               {genreArr?.slice(0, 3).map((g, i) => (
                 <span
                   key={i}
@@ -261,13 +251,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               ))}
             </div>
 
-            {/* Swiss Typography Title */}
-            <h1 className="text-5xl xl:text-6xl font-black tracking-tighter leading-[0.9] text-white uppercase break-words mb-8 drop-shadow-lg">
+            {/* Title */}
+            <h1 className="text-3xl md:text-5xl xl:text-6xl font-black tracking-tighter leading-[0.95] md:leading-[0.9] text-white uppercase break-words mb-6 md:mb-8 drop-shadow-lg">
               {MovieDetail.title}
             </h1>
 
             {/* Metadata Pills */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-2 md:gap-3 mb-6 md:mb-8">
               <MetaBadge
                 icon={Star}
                 value={`${MovieDetail.vote_average?.toFixed(1)}`}
@@ -286,11 +276,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
           </div>
 
-          {/* Material You Actions */}
-          <div className="px-8 grid grid-cols-2 gap-3 mb-8">
+          {/* Actions */}
+          <div className="px-5 md:px-8 grid grid-cols-2 gap-3 mb-8">
             <button
               onClick={toggleFav}
-              className={`h-12 rounded-[1rem] flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all ${
+              className={`h-10 md:h-12 rounded-[0.8rem] md:rounded-[1rem] flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest transition-all ${
                 isFavorite
                   ? "bg-[#ffb4ab] text-[#690005]"
                   : "bg-[#252525] text-white hover:bg-white hover:text-black"
@@ -301,20 +291,20 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </button>
             <button
               onClick={share}
-              className="h-12 rounded-[1rem] bg-[#252525] flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest hover:bg-[#e6e1e5] hover:text-[#1c1b1f] transition-all"
+              className="h-10 md:h-12 rounded-[0.8rem] md:rounded-[1rem] bg-[#252525] flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-[#e6e1e5] hover:text-[#1c1b1f] transition-all"
             >
               <Share2 size={16} /> Share
             </button>
           </div>
 
           {/* Tabs & Content */}
-          <div className="flex-1 border-t border-white/5">
+          <div className="flex-1 border-t border-white/5 min-h-[300px]">
             <div className="flex px-4 pt-4 gap-2 overflow-x-auto scrollbar-hide">
               {["overview", "cast", "reviews"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                  className={`px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-colors shrink-0 ${
                     activeTab === tab
                       ? "bg-white text-black"
                       : "text-neutral-500 hover:text-white hover:bg-white/5"
@@ -325,15 +315,16 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
               ))}
             </div>
 
-            <div className="p-8">
+            <div className="p-5 md:p-8">
               <AnimatePresence mode="wait">
                 {activeTab === "overview" && (
                   <motion.div
+                    key="overview"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <p className="text-base leading-relaxed font-medium text-neutral-300">
+                    <p className="text-sm md:text-base leading-relaxed font-medium text-neutral-300">
                       {MovieDetail.overview}
                     </p>
                     <div className="mt-8 p-4 rounded-2xl bg-[#111] border border-white/5">
@@ -349,6 +340,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
                 {activeTab === "cast" && (
                   <motion.div
+                    key="cast"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -362,7 +354,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                               ? `https://image.tmdb.org/t/p/w185${c.profile_path}`
                               : "https://via.placeholder.com/50"
                           }
-                          className="w-12 h-12 rounded-xl object-cover bg-neutral-800"
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover bg-neutral-800"
+                          alt={c.name}
                         />
                         <div>
                           <div className="text-sm font-bold text-white group-hover:text-[#d0bcff] transition-colors">
@@ -379,6 +372,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
                 {activeTab === "reviews" && (
                   <motion.div
+                    key="reviews"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -414,13 +408,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         </div>
 
         {/* === RIGHT COLUMN: PLAYER & SUGGESTIONS === */}
-        <div className="lg:col-span-8 flex flex-col h-full bg-black/40 backdrop-blur-md relative">
-          {/* 1. TOP BAR: Server Selector (Material You Pills) */}
-          <div className="h-20 flex items-center px-6 border-b border-white/5 gap-4 overflow-x-auto scrollbar-hide">
-            <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest shrink-0">
+        {/* Mobile: Order 1 (Top), Desktop: Order 2 (Right) */}
+        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col h-auto lg:h-full bg-black/40 backdrop-blur-md relative">
+          {/* 1. TOP BAR: Server Selector */}
+          <div className="h-16 md:h-20 flex items-center px-4 md:px-6 border-b border-white/5 gap-4 overflow-x-auto scrollbar-hide shrink-0">
+            <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest shrink-0 hidden md:block">
               Source
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pr-4">
               {VIDEO_SOURCES.map((s) => (
                 <MaterialChip
                   key={s.name}
@@ -434,45 +429,47 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
           </div>
 
-          {/* 2. PLAYER STAGE (16:9 Aspect Ratio) */}
-          <div className="flex-1 flex items-center justify-center p-6 lg:p-12 overflow-hidden bg-[#0a0a0a] relative group">
+          {/* 2. PLAYER STAGE */}
+          <div className="flex-1 flex items-center justify-center p-2 md:p-6 lg:p-12 bg-[#0a0a0a] relative group min-h-[250px] lg:min-h-0">
             {/* Ambient Light */}
             <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/5 to-blue-500/5 opacity-50 pointer-events-none" />
 
             {/* 16:9 Container */}
-            <div className="w-full max-w-5xl aspect-video relative rounded-[1.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 z-10 bg-black">
+            <div className="w-full max-w-5xl aspect-video relative rounded-xl md:rounded-[1.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 z-10 bg-black">
               <iframe
                 src={iframeSrc}
                 className="w-full h-full"
                 allowFullScreen
                 allow="autoplay; encrypted-media; picture-in-picture"
+                title="Player"
               />
             </div>
           </div>
 
-          {/* 3. RECOMMENDATIONS (Bottom Strip) */}
-          <div className="h-44 border-t border-white/5 bg-[#050505]/80 backdrop-blur-lg flex flex-col justify-center px-6">
+          {/* 3. RECOMMENDATIONS */}
+          <div className="h-auto py-6 lg:py-0 lg:h-44 border-t border-white/5 bg-[#050505]/80 backdrop-blur-lg flex flex-col justify-center px-4 md:px-6 shrink-0">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest flex items-center gap-2">
                 <Film size={12} /> Related Content
               </span>
               <ArrowRight size={14} className="text-neutral-500" />
             </div>
-            <div className="flex gap-4 overflow-x-auto h-full items-center scrollbar-hide">
+            <div className="flex gap-3 md:gap-4 overflow-x-auto items-center scrollbar-hide pb-2 lg:pb-0 h-full">
               {recommendations.map((m) => (
                 <div
                   key={m.id}
-                  className="w-48 shrink-0 aspect-video relative group cursor-pointer overflow-hidden rounded-xl border border-white/10"
+                  className="w-36 md:w-48 shrink-0 aspect-video relative group cursor-pointer overflow-hidden rounded-xl border border-white/10"
                 >
                   <img
                     src={`https://image.tmdb.org/t/p/w300${
                       m.backdrop_path || m.poster_path
                     }`}
                     className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                    alt={m.title}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute bottom-2 left-2 right-2">
-                    <div className="text-xs font-bold truncate text-white translate-y-4 group-hover:translate-y-0 transition-transform">
+                    <div className="text-[10px] md:text-xs font-bold truncate text-white translate-y-4 group-hover:translate-y-0 transition-transform">
                       {m.title}
                     </div>
                   </div>
@@ -491,7 +488,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-10 right-10 z-50 bg-[#cce5ff] text-[#001d35] px-6 py-3 rounded-2xl shadow-xl font-bold text-sm flex items-center gap-3 border border-white/20"
+            className="fixed bottom-4 left-4 right-4 lg:left-auto lg:right-10 lg:bottom-10 z-50 bg-[#cce5ff] text-[#001d35] px-6 py-3 rounded-2xl shadow-xl font-bold text-sm flex items-center justify-center lg:justify-start gap-3 border border-white/20"
           >
             <Check size={16} /> {toast}
           </motion.div>
@@ -502,6 +499,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
         .custom-scrollbar::-webkit-scrollbar {
           width: 0px;
           background: transparent;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>

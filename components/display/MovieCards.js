@@ -1,17 +1,15 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Tv, Film, Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-const MovieCards = ({ MovieCard }) => {
+const MovieCard = ({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // --- Logic Setup ---
   const isTV = MovieCard.media_type === "tv";
   const title = isTV ? MovieCard.name : MovieCard.title;
   const linkPath = isTV ? `/series/${MovieCard.id}` : `/movie/${MovieCard.id}`;
@@ -27,10 +25,12 @@ const MovieCards = ({ MovieCard }) => {
     return new Date(dateString).getFullYear();
   };
 
-  // --- Favorites Logic ---
   const handleFavoriteToggle = (e) => {
+    // 1. Stop propagation so we don't click the card underneath
     e.preventDefault();
     e.stopPropagation();
+
+    // 2. Handle Local Storage
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     if (isFavorite) {
       const updated = favorites.filter((item) => item.id !== MovieCard.id);
@@ -49,20 +49,17 @@ const MovieCards = ({ MovieCard }) => {
     setIsFavorite(favorites.some((item) => item.id === MovieCard.id));
   }, [MovieCard.id]);
 
-  // --- ANIMATION CONFIGURATION (Exact match to HomeCard) ---
-
-  // 1. Container: Tilt and slight rotation
+  // --- ANIMATIONS ---
   const containerVariants = {
     rest: { scale: 1, y: 0, rotate: 0 },
     hover: {
       scale: 1.02,
       y: -5,
-      rotate: 0.5, // The subtle rotation
+      rotate: 0.5, // Subtle rotation
       transition: { type: "spring", stiffness: 300, damping: 20 },
     },
   };
 
-  // 2. Info Sheet: Background opacity change
   const sheetVariants = {
     rest: { backgroundColor: "rgba(10, 10, 10, 0.6)" },
     hover: {
@@ -71,7 +68,6 @@ const MovieCards = ({ MovieCard }) => {
     },
   };
 
-  // 3. Content: Height reveal
   const contentVariants = {
     rest: {
       height: 0,
@@ -93,54 +89,34 @@ const MovieCards = ({ MovieCard }) => {
       whileTap={{ scale: 0.98 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full h-full transform-gpu" // Important for smooth animation
+      className="relative w-full h-full transform-gpu"
     >
+      {/* 
+         1. THE MAIN LINK WRAPPER 
+         Contains Image + Bottom Sheet
+      */}
       <Link
         href={linkPath}
         className="block w-full aspect-[2/3] relative rounded-[2rem] overflow-hidden shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5"
       >
-        {/* --- 1. POSTER IMAGE --- */}
+        {/* IMAGE */}
         <div className="absolute inset-0 z-0 bg-neutral-900">
           <Image
             src={getImagePath()}
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className={`object-cover transition-transform duration-700 ease-out transform-gpu ${
-              // We remove the opacity check to ensure image is visible even if onLoad fails
-              "opacity-100"
-            } ${isHovered ? "scale-110" : "scale-100"}`}
+            className={`
+                object-cover transition-transform duration-700 ease-out transform-gpu 
+                ${imageLoaded ? "opacity-100" : "opacity-0"} 
+                ${isHovered ? "scale-110" : "scale-100"}
+            `}
             onLoadingComplete={() => setImageLoaded(true)}
-            unoptimized // Keeps image visible if config is missing
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
         </div>
 
-        {/* --- 2. FLOATING STICKERS --- */}
-        <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
-            {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
-          </div>
-
-          <motion.button
-            pointerEvents="auto"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleFavoriteToggle}
-            className={`
-                    w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-colors duration-200
-                    ${
-                      isFavorite
-                        ? "bg-[#ffb4ab] text-[#690005]"
-                        : "bg-black/40 text-white hover:bg-white hover:text-black"
-                    }
-                `}
-          >
-            <Heart size={18} className={isFavorite ? "fill-[#690005]" : ""} />
-          </motion.button>
-        </div>
-
-        {/* --- 3. EXPANDING INFO SHEET --- */}
+        {/* EXPANDING INFO SHEET (Bottom) */}
         <motion.div
           variants={sheetVariants}
           className="absolute bottom-2 left-2 right-2 backdrop-blur-xl border border-white/10 rounded-[1.8rem] overflow-hidden z-20 shadow-lg flex flex-col justify-end"
@@ -151,13 +127,13 @@ const MovieCards = ({ MovieCard }) => {
               <div className="flex items-center gap-2">
                 <span
                   className={`
-                            px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1
-                            ${
-                              isTV
-                                ? "bg-[#d0bcff] text-[#381e72]"
-                                : "bg-[#bceeff] text-[#001f2a]"
-                            }
-                        `}
+                    px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1
+                    ${
+                      isTV
+                        ? "bg-[#d0bcff] text-[#381e72]"
+                        : "bg-[#bceeff] text-[#001f2a]"
+                    }
+                  `}
                 >
                   {isTV ? <Tv size={10} /> : <Film size={10} />}
                   {isTV ? "Series" : "Movie"}
@@ -177,23 +153,69 @@ const MovieCards = ({ MovieCard }) => {
             </h3>
           </div>
 
-          {/* Description & Button (Expandable) */}
+          {/* Description & Watch Button (Expandable) */}
           <motion.div variants={contentVariants}>
             <div className="px-4 pb-4">
               <p className="text-xs text-neutral-300 line-clamp-3 leading-relaxed mb-4">
                 {MovieCard.overview || "No description available."}
               </p>
 
-              <button className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
+              <div className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
                 <Play size={16} className="fill-[#07210b]" />
                 <span>Watch Now</span>
-              </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
       </Link>
+
+      {/* 
+         2. FLOATING UI (Top)
+         We moved this OUTSIDE the Link so the button actually clicks
+      */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+          {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
+        </div>
+
+        <motion.button
+          // Remove "pointerEvents='auto'" from here
+          onClick={handleFavoriteToggle}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className={`
+            pointer-events-auto  /* <--- ADD THIS HERE */
+            w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-colors duration-200 cursor-pointer
+            ${
+              isFavorite
+                ? "bg-[#ffb4ab] text-[#690005]"
+                : "bg-black/40 text-white hover:bg-white hover:text-black"
+            }
+          `}
+        >
+          <AnimatePresence mode="wait">
+            {isFavorite ? (
+              <motion.div
+                key="fav"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+              >
+                <Heart size={18} className="fill-[#690005]" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="not-fav"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+              >
+                <Heart size={18} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
     </motion.div>
   );
 };
 
-export default MovieCards;
+export default MovieCard;

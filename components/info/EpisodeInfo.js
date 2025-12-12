@@ -101,7 +101,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
   <button
     onClick={onClick}
     className={`
-      relative px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-2 overflow-hidden shrink-0
+      relative px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wide transition-all duration-300 flex items-center gap-2 overflow-hidden shrink-0
       ${
         active
           ? "text-[#001d35]"
@@ -116,7 +116,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       />
     )}
-    <span className="relative z-10 flex items-center gap-2">
+    <span className="relative z-10 flex items-center gap-2 whitespace-nowrap">
       {icon} {children}
     </span>
   </button>
@@ -125,7 +125,7 @@ const MaterialChip = ({ children, active, onClick, icon }) => (
 const MetaBadge = ({ icon: Icon, value, color }) => (
   <div className="flex items-center gap-2 bg-[#1a1a1a] border border-white/5 px-3 py-1.5 rounded-xl">
     <Icon size={14} className={color} />
-    <span className="text-sm font-bold text-white">{value}</span>
+    <span className="text-xs md:text-sm font-bold text-white">{value}</span>
   </div>
 );
 
@@ -283,7 +283,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     : `https://image.tmdb.org/t/p/original${seriesData.poster_path}`;
 
   return (
-    <div className="h-screen w-full bg-[#050505] text-white font-sans overflow-hidden flex flex-col pt-20">
+    <div className="min-h-screen lg:h-screen w-full bg-[#050505] text-white font-sans overflow-x-hidden flex flex-col pt-16 lg:pt-20">
       {/* 1. BACKGROUND LAYERS */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
@@ -291,16 +291,19 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         <img
           src={bgImage}
           className="w-full h-full object-cover blur-3xl opacity-20"
+          alt="Background"
         />
       </div>
 
-      {/* 2. MAIN GRID LAYOUT */}
-      <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 lg:divide-x divide-white/5 border-t border-white/5 h-full overflow-hidden">
-        {/* === LEFT COLUMN: INFO & SELECTORS (Scrollable) === */}
-        <div className="lg:col-span-4 bg-[#050505]/60 backdrop-blur-xl h-full flex flex-col overflow-y-auto custom-scrollbar">
+      {/* 2. MAIN LAYOUT */}
+      {/* Mobile: Flex-col, Desktop: Grid */}
+      <div className="relative z-10 flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:divide-x divide-white/5 border-t border-white/5 lg:overflow-hidden">
+        {/* === LEFT COLUMN: INFO & SELECTORS === */}
+        {/* Mobile: Order 2 (Bottom), Desktop: Order 1 (Left) */}
+        <div className="order-2 lg:order-1 lg:col-span-4 bg-[#050505]/60 backdrop-blur-xl flex flex-col h-auto lg:h-full lg:overflow-y-auto custom-scrollbar pb-20 lg:pb-0">
           {/* Header */}
-          <div className="p-8 pb-0">
-            <div className="flex flex-wrap gap-2 mb-6">
+          <div className="p-5 md:p-8 pb-0">
+            <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
               <span className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-[#d0bcff]">
                 TV Series
               </span>
@@ -314,11 +317,11 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               ))}
             </div>
 
-            <h1 className="text-4xl xl:text-5xl font-black tracking-tighter leading-[0.9] text-white uppercase break-words mb-4 drop-shadow-lg">
+            <h1 className="text-3xl md:text-4xl xl:text-5xl font-black tracking-tighter leading-[0.95] md:leading-[0.9] text-white uppercase break-words mb-4 drop-shadow-lg">
               {seriesData.name}
             </h1>
 
-            <div className="flex items-center gap-2 mb-8 text-neutral-400 font-mono text-xs uppercase tracking-widest">
+            <div className="flex items-center gap-2 mb-6 md:mb-8 text-neutral-400 font-mono text-[10px] md:text-xs uppercase tracking-widest">
               <span className="text-[#cce5ff]">
                 S{selectedEpisode.season_number}
               </span>
@@ -327,11 +330,13 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                 E{selectedEpisode.episode_number}
               </span>
               <span>•</span>
-              <span>{selectedEpisode.name}</span>
+              <span className="truncate max-w-[150px] md:max-w-none">
+                {selectedEpisode.name}
+              </span>
             </div>
 
             {/* Metadata Pills */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-2 md:gap-3 mb-6 md:mb-8">
               <MetaBadge
                 icon={Star}
                 value={selectedEpisode.vote_average?.toFixed(1)}
@@ -351,10 +356,10 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
           </div>
 
           {/* Actions */}
-          <div className="px-8 grid grid-cols-2 gap-3 mb-8">
+          <div className="px-5 md:px-8 grid grid-cols-2 gap-3 mb-8">
             <button
               onClick={toggleFav}
-              className={`h-12 rounded-[1rem] flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all ${
+              className={`h-10 md:h-12 rounded-[0.8rem] md:rounded-[1rem] flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest transition-all ${
                 isFavorite
                   ? "bg-[#ffb4ab] text-[#690005]"
                   : "bg-[#252525] text-white hover:bg-white hover:text-black"
@@ -365,20 +370,20 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             </button>
             <button
               onClick={copyLink}
-              className="h-12 rounded-[1rem] bg-[#252525] flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest hover:bg-[#e6e1e5] hover:text-[#1c1b1f] transition-all"
+              className="h-10 md:h-12 rounded-[0.8rem] md:rounded-[1rem] bg-[#252525] flex items-center justify-center gap-2 font-bold text-[10px] md:text-xs uppercase tracking-widest hover:bg-[#e6e1e5] hover:text-[#1c1b1f] transition-all"
             >
               <Share2 size={16} /> Share
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex-1 border-t border-white/5 flex flex-col min-h-0">
+          <div className="flex-1 border-t border-white/5 flex flex-col min-h-[400px]">
             <div className="flex px-4 pt-4 gap-2 overflow-x-auto scrollbar-hide shrink-0">
               {["episodes", "info", "cast"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                  className={`px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-widest transition-colors shrink-0 ${
                     activeTab === tab
                       ? "bg-white text-black"
                       : "text-neutral-500 hover:text-white hover:bg-white/5"
@@ -389,11 +394,12 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               ))}
             </div>
 
-            <div className="p-4 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-4 md:p-8 flex-1 lg:overflow-y-auto custom-scrollbar">
               <AnimatePresence mode="wait">
                 {/* TAB: EPISODES */}
                 {activeTab === "episodes" && (
                   <motion.div
+                    key="episodes"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -408,7 +414,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                         <SelectTrigger className="w-full h-12 bg-[#1a1a1a] border-white/10 text-white rounded-xl focus:ring-0 focus:ring-offset-0">
                           <SelectValue placeholder="Select Season" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white max-h-60">
+                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white max-h-60 z-[100]">
                           {seriesData.seasons
                             ?.filter((s) => s.episode_count > 0)
                             .map((s) => (
@@ -429,17 +435,18 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                         <button
                           key={ep.id}
                           onClick={() => setSelectedEpisode(ep)}
-                          className={`w-full text-left p-3 rounded-xl transition-all flex gap-4 items-center group ${
+                          className={`w-full text-left p-2 md:p-3 rounded-xl transition-all flex gap-3 md:gap-4 items-center group ${
                             selectedEpisode.id === ep.id
                               ? "bg-[#cce5ff] text-[#001d35]"
                               : "bg-[#111] hover:bg-white/10 text-neutral-300"
                           }`}
                         >
-                          <div className="relative w-24 aspect-video bg-black rounded-lg overflow-hidden shrink-0 border border-black/20">
+                          <div className="relative w-20 md:w-24 aspect-video bg-black rounded-lg overflow-hidden shrink-0 border border-black/20">
                             {ep.still_path ? (
                               <img
                                 src={`https://image.tmdb.org/t/p/w300${ep.still_path}`}
                                 className="w-full h-full object-cover"
+                                alt={`Episode ${ep.episode_number}`}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-600">
@@ -455,10 +462,10 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-mono opacity-60 mb-1">
+                            <div className="text-[10px] md:text-xs font-mono opacity-60 mb-1">
                               EP {ep.episode_number}
                             </div>
-                            <div className="text-sm font-bold truncate leading-tight">
+                            <div className="text-xs md:text-sm font-bold truncate leading-tight">
                               {ep.name}
                             </div>
                           </div>
@@ -471,6 +478,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                 {/* TAB: INFO */}
                 {activeTab === "info" && (
                   <motion.div
+                    key="info"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -497,6 +505,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                 {/* TAB: CAST */}
                 {activeTab === "cast" && (
                   <motion.div
+                    key="cast"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -515,6 +524,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                                 : "https://via.placeholder.com/50"
                             }
                             className="w-10 h-10 rounded-full object-cover bg-neutral-800"
+                            alt={c.name}
                           />
                           <div>
                             <div className="text-sm font-bold text-white">
@@ -539,13 +549,14 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         </div>
 
         {/* === RIGHT COLUMN: PLAYER & SUGGESTIONS === */}
-        <div className="lg:col-span-8 flex flex-col h-full bg-black/40 backdrop-blur-md relative">
+        {/* Mobile: Order 1 (Top), Desktop: Order 2 (Right) */}
+        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col h-auto lg:h-full bg-black/40 backdrop-blur-md relative">
           {/* 1. TOP BAR: Server Selector */}
-          <div className="h-20 flex items-center px-6 border-b border-white/5 gap-4 overflow-x-auto scrollbar-hide">
-            <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest shrink-0">
+          <div className="h-16 md:h-20 flex items-center px-4 md:px-6 border-b border-white/5 gap-4 overflow-x-auto scrollbar-hide shrink-0">
+            <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest shrink-0 hidden md:block">
               Source
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pr-4">
               {TV_SOURCES.map((s) => (
                 <MaterialChip
                   key={s.name}
@@ -560,16 +571,17 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
           </div>
 
           {/* 2. PLAYER STAGE */}
-          <div className="flex-1 flex items-center justify-center p-6 lg:p-12 overflow-hidden bg-[#0a0a0a] relative group">
+          <div className="flex-1 flex items-center justify-center p-2 md:p-6 lg:p-12 bg-[#0a0a0a] relative group min-h-[250px] lg:min-h-0">
             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-purple-500/5 opacity-50 pointer-events-none" />
 
-            <div className="w-full max-w-5xl aspect-video relative rounded-[1.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 z-10 bg-black">
+            <div className="w-full max-w-5xl aspect-video relative rounded-xl md:rounded-[1.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 z-10 bg-black">
               {iframeSrc ? (
                 <iframe
                   src={iframeSrc}
                   className="w-full h-full"
                   allowFullScreen
                   allow="autoplay; encrypted-media; picture-in-picture"
+                  title="Player"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-neutral-500">
@@ -580,29 +592,30 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
           </div>
 
           {/* 3. RECOMMENDATIONS STRIP */}
-          <div className="h-44 border-t border-white/5 bg-[#050505]/80 backdrop-blur-lg flex flex-col justify-center px-6">
+          <div className="h-auto py-6 lg:py-0 lg:h-44 border-t border-white/5 bg-[#050505]/80 backdrop-blur-lg flex flex-col justify-center px-4 md:px-6 shrink-0">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest flex items-center gap-2">
                 <Film size={12} /> Recommended
               </span>
               <ArrowRight size={14} className="text-neutral-500" />
             </div>
-            <div className="flex gap-4 overflow-x-auto h-full items-center scrollbar-hide">
+            <div className="flex gap-3 md:gap-4 overflow-x-auto items-center scrollbar-hide pb-2 lg:pb-0 h-full">
               {recommendations.map((m) => (
                 <a
                   key={m.id}
                   href={`/series/${m.id}`}
-                  className="w-48 shrink-0 aspect-video relative group cursor-pointer overflow-hidden rounded-xl border border-white/10 block"
+                  className="w-36 md:w-48 shrink-0 aspect-video relative group cursor-pointer overflow-hidden rounded-xl border border-white/10 block"
                 >
                   <img
                     src={`https://image.tmdb.org/t/p/w300${
                       m.backdrop_path || m.poster_path
                     }`}
                     className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                    alt={m.name}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute bottom-2 left-2 right-2">
-                    <div className="text-xs font-bold truncate text-white translate-y-4 group-hover:translate-y-0 transition-transform">
+                    <div className="text-[10px] md:text-xs font-bold truncate text-white translate-y-4 group-hover:translate-y-0 transition-transform">
                       {m.name}
                     </div>
                   </div>
@@ -620,7 +633,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-10 right-10 z-50 bg-[#cce5ff] text-[#001d35] px-6 py-3 rounded-2xl shadow-xl font-bold text-sm flex items-center gap-3 border border-white/20"
+            className="fixed bottom-4 left-4 right-4 lg:left-auto lg:right-10 lg:bottom-10 z-[100] bg-[#cce5ff] text-[#001d35] px-6 py-3 rounded-2xl shadow-xl font-bold text-sm flex items-center justify-center lg:justify-start gap-3 border border-white/20"
           >
             <Check size={16} /> {toast}
           </motion.div>
@@ -631,7 +644,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-10 left-10 z-50 max-w-sm bg-[#1a1a1a] border border-white/10 p-4 rounded-2xl shadow-2xl"
+            className="fixed bottom-4 left-4 right-4 lg:bottom-10 lg:left-10 lg:right-auto z-[100] max-w-sm mx-auto bg-[#1a1a1a] border border-white/10 p-4 rounded-2xl shadow-2xl"
           >
             <div className="flex gap-3">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0">
@@ -662,6 +675,13 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
         .custom-scrollbar::-webkit-scrollbar {
           width: 0px;
           background: transparent;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
