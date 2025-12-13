@@ -203,8 +203,9 @@ const SpotlightCarousel = () => {
                 className="absolute w-full h-[140%] -top-[20%] pointer-events-none scale-110"
                 src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&autoplay=1&mute=${
                   isMuted ? 1 : 0
-                }&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}`}
+                }&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&vq=hd1080&rel=0&playsinline=1`}
                 allow="autoplay; encrypted-media"
+                allowFullScreen
                 title="Trailer"
               />
             </div>
