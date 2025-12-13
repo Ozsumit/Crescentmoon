@@ -2,6 +2,7 @@ import Link from "next/link";
 import React from "react";
 import { Space_Grotesk } from "next/font/google"; // Swiss-style geometric sans
 import { Moon } from "lucide-react";
+import Image from "next/image";
 
 const spaceGrotesk = Space_Grotesk({
   weight: ["300", "700"], // Mixing weights is very Swiss
@@ -17,13 +18,8 @@ const Logo = () => {
       aria-label="Crescent Moon Home"
     >
       {/* Icon Container - Material Surface Style */}
-      <div className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-white text-black transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
-        <Moon
-          size={20}
-          fill="currentColor"
-          className="md:w-6 md:h-6"
-          strokeWidth={0}
-        />
+      <div className="relative flex items-bottom justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-transparent text-black transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+        <Image src="/logo.svg" alt="alt" width={100} height={100} />
         {/* Decorative blur for glow effect */}
         <div className="absolute inset-0 bg-white blur-lg opacity-40 group-hover:opacity-60 transition-opacity" />
       </div>
