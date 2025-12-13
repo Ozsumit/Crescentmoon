@@ -13,6 +13,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
   title: "Crescent moon",
   description: "When you are wanting more entertainment",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {
