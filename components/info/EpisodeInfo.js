@@ -147,6 +147,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
 
   // --- EFFECTS ---
 
+  // 1. Initial Checks (Adblock, Favorites, Recs)
   useEffect(() => {
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
     if (dismissed !== "true") setShowAdPopup(true);
@@ -168,6 +169,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     fetchRecs();
   }, [seriesId, seriesData.id]);
 
+  // 2. Fetch Cast on Episode Change
   useEffect(() => {
     const fetchCast = async () => {
       if (!selectedEpisode) return;
@@ -184,6 +186,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     fetchCast();
   }, [seriesId, selectedEpisode]);
 
+  // 3. Update Player Source URL
   useEffect(() => {
     if (!selectedServer || !seriesId || !selectedEpisode) return;
     const { url, paramStyle } = selectedServer;
@@ -200,6 +203,46 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     }
     setIframeSrc(finalUrl);
   }, [selectedServer, seriesId, selectedEpisode]);
+
+  // 4. SAVE PROGRESS FOR CONTINUE WATCHING
+  // This logic saves the current position to localStorage so the library works.
+  useEffect(() => {
+    if (!seriesData || !selectedEpisode) return;
+
+    try {
+      // Get existing progress map
+      const progressData = JSON.parse(
+        localStorage.getItem("mediaProgress") || "{}"
+      );
+
+      // Construct the entry object
+      // Note: We use 0 for 'watched' because we can't get real-time progress from iframe embeds easily.
+      // However, we save the Season/Episode numbers so the user can resume the correct file.
+      const entry = {
+        id: seriesData.id,
+        type: "tv",
+        title: seriesData.name,
+        poster_path: seriesData.poster_path,
+        backdrop_path: seriesData.backdrop_path,
+        last_season_watched: selectedEpisode.season_number,
+        last_episode_watched: selectedEpisode.episode_number,
+        last_updated: Date.now(),
+        progress: {
+          watched: 0,
+          duration: (selectedEpisode.runtime || 24) * 60, // Estimate in seconds
+        },
+      };
+
+      // Update and Save
+      progressData[seriesData.id] = entry;
+      localStorage.setItem("mediaProgress", JSON.stringify(progressData));
+
+      // Trigger storage event so other tabs/components update immediately
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error saving watch progress:", error);
+    }
+  }, [seriesData, selectedEpisode]);
 
   // --- HANDLERS ---
 
@@ -264,7 +307,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       {/* 2. MAIN LAYOUT (Grid 4/8 for Balance) */}
       <div className="relative z-10 flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:divide-x divide-white/5 border-t border-white/5 lg:h-[calc(100vh)]">
         {/* === LEFT COLUMN: INFO & SELECTORS === */}
-        {/* Adjusted padding to be tighter for laptops */}
         <div className="order-2 lg:order-1 lg:col-span-4 bg-[#050505]/60 backdrop-blur-xl flex flex-col h-auto lg:h-full lg:overflow-y-auto custom-scrollbar pb-20 lg:pb-0 lg:pt-20">
           {/* Header */}
           <div className="px-5 md:px-8 pb-0 pt-6 lg:pt-0">
@@ -282,7 +324,6 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               ))}
             </div>
 
-            {/* Slightly reduced text size from 5xl to 3xl/4xl for laptop fit */}
             <h1 className="text-3xl lg:text-4xl font-black tracking-tighter leading-[0.95] text-white uppercase break-words mb-3 drop-shadow-lg">
               {seriesData.name}
             </h1>
@@ -301,7 +342,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               </span>
             </div>
 
-            {/* Metadata Pills - Tighter margins */}
+            {/* Metadata Pills */}
             <div className="flex flex-wrap gap-2 md:gap-3 mb-6">
               <MetaBadge
                 icon={Star}
@@ -510,7 +551,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
 
         {/* === RIGHT COLUMN: PLAYER & SUGGESTIONS === */}
         <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col h-auto lg:h-full bg-black/40 backdrop-blur-md relative lg:pt-20">
-          {/* 1. TOP BAR: Compressed Height (h-14 vs h-20) */}
+          {/* 1. TOP BAR */}
           <div className="h-14 flex items-center px-4 md:px-6 border-b border-white/5 gap-4 overflow-x-auto scrollbar-hide shrink-0 bg-[#050505]/40">
             <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest shrink-0 hidden md:block">
               Source
@@ -529,7 +570,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             </div>
           </div>
 
-          {/* 2. PLAYER STAGE: Reduced Padding (p-4 vs p-12) */}
+          {/* 2. PLAYER STAGE */}
           <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-[#0a0a0a] relative group min-h-[250px] lg:min-h-0">
             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-purple-500/5 opacity-50 pointer-events-none" />
 
@@ -550,7 +591,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
             </div>
           </div>
 
-          {/* 3. RECOMMENDATIONS: Compressed Height (h-36 vs h-44) */}
+          {/* 3. RECOMMENDATIONS */}
           <div className="h-auto py-6 lg:py-0 lg:h-36 border-t border-white/5 bg-[#050505]/80 backdrop-blur-lg flex flex-col justify-center px-4 md:px-6 shrink-0">
             <div className="flex items-center justify-between mb-2 lg:hidden">
               <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest flex items-center gap-2">
@@ -558,7 +599,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
               </span>
             </div>
             <div className="flex gap-3 overflow-x-auto items-center scrollbar-hide pb-2 lg:pb-0 h-full">
-              {/* Added a text label for desktop layout */}
+              {/* Desktop label */}
               <div className="hidden lg:flex flex-col justify-center mr-4 w-24 shrink-0">
                 <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest mb-1">
                   Up Next

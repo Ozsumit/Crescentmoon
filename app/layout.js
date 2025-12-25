@@ -3,7 +3,8 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Footer from "@/components/footer/Footer";
 import AdBlocker from "@/components/filters";
-import AppInstallPopup from "@/components/app-installpopup"; // Add this import
+import AppInstallPopup from "@/components/app-installpopup";
+import SnowButton from "@/components/snowbutton"; // 1. Import the new component
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PostHogProvider } from "./providers";
@@ -63,10 +64,11 @@ export default function RootLayout({ children }) {
           <Header />
           <Analytics />
           <SpeedInsights />
-          <div className="mt-0">{children}</div>
+
+          <div className="mt-0">{children} </div>
           <AdBlocker />
           <Footer />
-          <AppInstallPopup /> {/* Add the popup component here */}
+          <AppInstallPopup />
         </PostHogProvider>
       </body>
     </html>
