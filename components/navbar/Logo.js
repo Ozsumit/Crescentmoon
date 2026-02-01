@@ -18,8 +18,8 @@ const Logo = () => {
       aria-label="Crescent Moon Home"
     >
       {/* Icon Container - Material Surface Style */}
-      <div className="relative flex items-bottom justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-transparent text-black transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
-        <Image src="/logo-christmas.svg" alt="alt" width={100} height={100} />
+      <div className="relative flex items-bottom justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-transparent text-black transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
+        <Image src="/logo.svg" alt="alt" width={100} height={100} />
         {/* Decorative blur for glow effect */}
         <div className="absolute inset-0 bg-white blur-lg opacity-40 group-hover:opacity-60 transition-opacity" />
       </div>

@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
           <div className="mt-0">{children} </div>
           <AdBlocker />
           <Footer />
-          <AppInstallPopup />
+          {/* <AppInstallPopup /> */}
         </PostHogProvider>
       </body>
     </html>

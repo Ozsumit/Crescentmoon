@@ -1,130 +1,144 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Download, Smartphone } from "lucide-react";
+import { X, ArrowDown, Monitor } from "lucide-react";
 
 const AppInstallPopup = () => {
-  const [showPopup, setShowPopup] = useState(false);
+  const [isRendered, setIsRendered] = useState(false); // Controls conditional rendering (DOM existence)
+  const [isVisible, setIsVisible] = useState(false); // Controls CSS opacity (Visuals)
 
   useEffect(() => {
-    const checkAndShowPopup = () => {
-      // 1. Check if the user is on a Mac
+    const checkLogic = () => {
+      // 1. Debugging: Check detected platform
       const userAgent = navigator.userAgent;
-      const isMac =
-        userAgent.includes("Mac") || userAgent.includes("Macintosh");
+      const isMac = /Mac|Macintosh|Intel Mac|PPC Mac/.test(userAgent);
 
-      if (!isMac) {
-        // If not a Mac, do not show the popup and exit early.
-        console.log("Not a Mac device. AppInstallPopup will not be shown."); // Optional: for debugging
-        return;
-      }
+      console.log(`[AppPopup] Platform: ${isMac ? "Mac Detected" : "Not Mac"}`);
 
-      // 2. Proceed with existing logic if it is a Mac
-      const lastShown = localStorage.getItem("appInstallPopupLastShown");
-      const today = new Date().toDateString();
+      if (!isMac) return;
 
-      // Show popup if it hasn't been shown today
-      if (lastShown !== today) {
-        // Add a small delay to avoid immediate popup on page load
-        const timer = setTimeout(() => {
-          setShowPopup(true);
-        }, 3000); // Show after 3 seconds
+      // 2. Session Logic
+      const hasVisitedThisSession = sessionStorage.getItem(
+        "hasVisitedCurrentSession",
+      );
 
-        return () => clearTimeout(timer);
+      if (!hasVisitedThisSession) {
+        // Mark this tab as visited immediately so we don't count refreshes
+        sessionStorage.setItem("hasVisitedCurrentSession", "true");
+
+        // Increment persistent total visits
+        const currentTotal = parseInt(
+          localStorage.getItem("totalVisitCount") || "0",
+          10,
+        );
+        const newTotal = currentTotal + 1;
+        localStorage.setItem("totalVisitCount", newTotal.toString());
+
+        console.log(`[AppPopup] Session Count: ${newTotal}`);
+
+        // 3. Trigger on every 3rd session (3, 6, 9...)
+        if (newTotal > 0 && newTotal % 3 === 0) {
+          console.log("[AppPopup] Triggering Popup...");
+
+          // Delay purely for UX (wait for page load)
+          const timer = setTimeout(() => {
+            setIsRendered(true);
+            // Trigger animation slightly after render
+            setTimeout(() => setIsVisible(true), 50);
+          }, 2000);
+
+          return () => clearTimeout(timer);
+        }
       }
     };
 
-    checkAndShowPopup();
-  }, []); // Empty dependency array ensures this runs once on mount
+    checkLogic();
+  }, []);
 
   const handleClose = () => {
-    setShowPopup(false);
-    // Mark as shown today
-    localStorage.setItem("appInstallPopupLastShown", new Date().toDateString());
+    // Fade out first
+    setIsVisible(false);
+    // Remove from DOM after transition finishes (500ms match duration)
+    setTimeout(() => {
+      setIsRendered(false);
+    }, 500);
   };
 
   const handleDownload = () => {
-    // IMPORTANT: Since this popup is now only for Macs, you should
-    // ideally change this URL to point to your iOS App Store link or
-    // a direct download for a macOS app if applicable.
-    // The current link is for Google Play.
     window.open(
-      "https://apps.apple.com/us/app/your-app-name/idYOURAPPID", // Example for iOS App Store
-      // Or if it's a desktop Mac app: "https://yourwebsite.com/downloads/your-app.dmg"
-      "_blank"
+      "https://apps.apple.com/us/app/your-app-name/idYOURAPPID",
+      "_blank",
     );
     handleClose();
   };
 
-  if (!showPopup) return null;
+  // If logical state is false, do not render anything to DOM
+  if (!isRendered) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50 p-4">
-      <div className="bg-[#f1f1f128]  backdrop-blur-md rounded-lg shadow-xl max-w-sm w-full transform transition-transform duration-300 ease-out animate-slide-up">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <Smartphone className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[#ffd22e]">
-                  Get Our Mac App
-                </h3>
-                <p className="text-sm text-gray-500">Ad-free experience</p>
-              </div>
-            </div>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* Dimmed Backdrop */}
+      <div
+        className={`absolute inset-0 bg-neutral-900/40 backdrop-blur-sm transition-opacity duration-500 ease-out ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleClose}
+      />
+
+      {/* Swiss Style Card */}
+      <div
+        className={`relative bg-white text-black w-full max-w-md p-8 rounded-[2rem] shadow-2xl transform transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
+          isVisible
+            ? "translate-y-0 opacity-100 scale-100"
+            : "translate-y-12 opacity-0 scale-95"
+        }`}
+      >
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-6 right-6 p-2 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors"
+        >
+          <X className="w-5 h-5 text-neutral-900" strokeWidth={2.5} />
+        </button>
+
+        <div className="flex flex-col items-start space-y-6">
+          {/* Iconography */}
+          <div className="bg-black text-white p-4 rounded-full">
+            <Monitor className="w-8 h-8" strokeWidth={1.5} />
           </div>
 
-          {/* Content */}
-          <div className="mb-6">
-            <p className="text-white text-sm leading-relaxed">
-              Enjoy Crescent Moon without ads and get faster loading times with
-              our dedicated Mac app.
+          {/* Typography */}
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tight leading-tight">
+              Mac Experience.
+            </h2>
+            <p className="text-neutral-500 font-medium text-lg leading-relaxed max-w-xs">
+              Install the dedicated macOS application for a faster, ad-free
+              workflow.
             </p>
           </div>
 
-          {/* Buttons */}
-          <div className="flex space-x-3">
+          {/* Actions */}
+          <div className="w-full pt-2 flex flex-col gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="group w-full bg-black text-white text-lg font-semibold py-4 px-6 rounded-full flex items-center justify-between hover:bg-neutral-800 transition-all active:scale-[0.98]"
             >
-              <Download className="w-4 h-4" />
-              <span>Download for Mac</span>
+              <span>Download</span>
+              <span className="bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors">
+                <ArrowDown className="w-5 h-5" />
+              </span>
             </button>
+
             <button
               onClick={handleClose}
-              className="px-4 py-3 text-white hover:text-[#ffd22e] font-medium transition-colors"
+              className="w-full text-neutral-400 font-medium py-2 hover:text-neutral-600 transition-colors text-sm"
             >
-              Later
+              No, stick to browser
             </button>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

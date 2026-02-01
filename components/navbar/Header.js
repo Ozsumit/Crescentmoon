@@ -93,7 +93,7 @@ const Header = () => {
         className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ${
           isScrolled
             ? "bg-neutral-950/80 backdrop-blur-md border-white/10"
-            : "bg-transparent border-transparent"
+            : "bg-black/98 backdrop-blur-md border-transparent"
         }`}
       >
         {/* SWISS GRID LAYOUT */}
