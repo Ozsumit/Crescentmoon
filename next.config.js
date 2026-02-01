@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["image.tmdb.org", "imgur.com", "arc.io", "i.imgur.com"],
+    domains: [
+      "image.tmdb.org",
+      "imgur.com",
+      "arc.io",
+      "i.imgur.com",
+      "via.placeholder.com",
+    ],
   },
   env: {
     API_KEY: process.env.NEXT_PUBLIC_TMDB_API_KEY,

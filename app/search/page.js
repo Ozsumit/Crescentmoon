@@ -40,20 +40,20 @@ const SearchPageContent = () => {
 
     try {
       const url = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(
-        query
+        query,
       )}&page=1`;
       const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(
-          `API error: ${response.status} ${response.statusText}. Please try again.`
+          `API error: ${response.status} ${response.statusText}. Please try again.`,
         );
       }
       const resultData = await response.json();
 
       const filteredAndSorted = (resultData.results || [])
         .filter(
-          (item) => item.media_type === "movie" || item.media_type === "tv"
+          (item) => item.media_type === "movie" || item.media_type === "tv",
         )
         .sort((a, b) => b.popularity - a.popularity)
         .map((item) => ({
@@ -122,7 +122,7 @@ const SearchPageContent = () => {
   useEffect(() => {
     if (!apiKey) {
       setError(
-        "TMDB API key is missing. Please check your environment variables (NEXT_PUBLIC_TMDB_API_KEY)."
+        "TMDB API key is missing. Please check your environment variables (NEXT_PUBLIC_TMDB_API_KEY).",
       );
     }
   }, []);

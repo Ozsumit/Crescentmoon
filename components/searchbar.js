@@ -291,10 +291,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
         {/* --- FOOTER: SPECS --- */}
         <div className="h-12 bg-neutral-950 border-t border-white/5 flex items-center justify-between px-6 text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <div className="w-1 h-1 bg-indigo-500 rounded-full" />
-              TMDB_API_CONNECTED
-            </span>
+          
             {totalResults > 0 && <span>{totalResults} items found</span>}
           </div>
 
