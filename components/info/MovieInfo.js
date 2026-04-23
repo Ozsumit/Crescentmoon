@@ -23,6 +23,15 @@ import { motion, AnimatePresence } from "framer-motion";
 // --- CONSTANTS ---
 const VIDEO_SOURCES = [
   {
+    name: "vidking",
+    url: "https://www.vidking.net/embed/movie/",
+    params:
+      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
+    icon: <Play className="w-4 h-4 text-pink-400" />,
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
+  },
+  {
     name: "VidLink",
     url: "https://vidlink.pro/movie/",
     params:
@@ -86,6 +95,7 @@ const VIDEO_SOURCES = [
     url: "https://2embed.cc/embed/movie/",
     icon: <Film className="w-4 h-4 text-teal-400" />,
     features: ["Ads"],
+    params: "?multiLang=true",
     description: "May have more pop-up ads.",
   },
   {
@@ -156,13 +166,13 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       try {
         const [c, r, rv] = await Promise.all([
           fetch(
-            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${key}`
+            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${key}`,
           ).then((res) => res.json()),
           fetch(
-            `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${key}`
+            `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${key}`,
           ).then((res) => res.json()),
           fetch(
-            `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${key}`
+            `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${key}`,
           ).then((res) => res.json()),
         ]);
         setCast(c.cast?.slice(0, 10) || []);
@@ -178,7 +188,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
       setIsFavorite(favs.some((i) => i.id === MovieDetail.id));
 
       const progress = JSON.parse(
-        localStorage.getItem("mediaProgress") || "{}"
+        localStorage.getItem("mediaProgress") || "{}",
       );
       if (!progress[id]) {
         progress[id] = {
@@ -206,7 +216,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
     if (isFavorite) {
       localStorage.setItem(
         "favorites",
-        JSON.stringify(favs.filter((i) => i.id !== id))
+        JSON.stringify(favs.filter((i) => i.id !== id)),
       );
       setToast("Removed from Library");
     } else {

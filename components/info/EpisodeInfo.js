@@ -30,6 +30,14 @@ import {
 // --- CONSTANTS ---
 const TV_SOURCES = [
   {
+    name: "vidking",
+    url: "https://www.vidking.net/embed/tv/",
+    paramStyle: "path-slash",
+    icon: <Zap className="w-4 h-4 text-yellow-400" />,
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player and tracking.",
+  },
+  {
     name: "VidLink",
     url: "https://vidlink.pro/tv/",
     paramStyle: "path-slash",
@@ -158,7 +166,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     const fetchRecs = async () => {
       try {
         const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
         );
         const data = await res.json();
         setRecommendations(data.results.slice(0, 10));
@@ -175,7 +183,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       if (!selectedEpisode) return;
       try {
         const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
         );
         const data = await res.json();
         setCast(data.cast || []);
@@ -197,6 +205,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
       case "path-hyphen-mapi":
         finalUrl = `${url}${seriesId}-${season_number}-${episode_number}`;
         break;
+
       default:
         finalUrl = `${url}${seriesId}/${season_number}/${episode_number}`;
         break;
@@ -212,7 +221,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     try {
       // Get existing progress map
       const progressData = JSON.parse(
-        localStorage.getItem("mediaProgress") || "{}"
+        localStorage.getItem("mediaProgress") || "{}",
       );
 
       // Construct the entry object
@@ -249,7 +258,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const handleSeasonChange = async (seasonNumber) => {
     try {
       const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
       );
       const data = await res.json();
       setSelectedSeason(data);
@@ -265,7 +274,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     if (isFavorite) {
       localStorage.setItem(
         "favorites",
-        JSON.stringify(favs.filter((i) => i.id !== seriesData.id))
+        JSON.stringify(favs.filter((i) => i.id !== seriesData.id)),
       );
       setToast("Removed from Library");
     } else {
