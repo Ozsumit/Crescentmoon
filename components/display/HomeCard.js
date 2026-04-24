@@ -558,45 +558,53 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
             ) : (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
                 {episodes.map((ep) => (
-                  <div
+                  <Link
+                    href={
+                      getLink() +
+                      `/season/${selectedSeason}/${ep.episode_number}`
+                    }
                     key={ep.id}
-                    className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10"
                   >
-                    <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
-                      <Image
-                        src={getImageUrl(
-                          ep.still_path || movie.backdrop_path,
-                          "w300",
-                        )}
-                        alt={ep.name}
-                        fill
-                        sizes="200px"
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="bg-black/50 p-3 rounded-full border border-white/20 backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                          <Play size={20} className="fill-white text-white" />
+                    <div
+                      key={ep.id}
+                      className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10"
+                    >
+                      <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
+                        <Image
+                          src={getImageUrl(
+                            ep.still_path || movie.backdrop_path,
+                            "w300",
+                          )}
+                          alt={ep.name}
+                          fill
+                          sizes="200px"
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-black/50 p-3 rounded-full border border-white/20 backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                            <Play size={20} className="fill-white text-white" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-center py-2">
-                      <div className="flex justify-between items-start mb-2 gap-4">
-                        <h4 className="text-white font-bold text-lg line-clamp-1 tracking-tight">
-                          {ep.episode_number}. {ep.name}
-                        </h4>
-                        {ep.runtime && (
-                          <span className="text-sm font-bold text-white/40 shrink-0">
-                            {ep.runtime}m
-                          </span>
-                        )}
+                      <div className="flex-1 flex flex-col justify-center py-2">
+                        <div className="flex justify-between items-start mb-2 gap-4">
+                          <h4 className="text-white font-bold text-lg line-clamp-1 tracking-tight">
+                            {ep.episode_number}. {ep.name}
+                          </h4>
+                          {ep.runtime && (
+                            <span className="text-sm font-bold text-white/40 shrink-0">
+                              {ep.runtime}m
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-white/60 line-clamp-2 leading-relaxed font-medium">
+                          {ep.overview ||
+                            "No overview available for this episode."}
+                        </p>
                       </div>
-                      <p className="text-sm text-white/60 line-clamp-2 leading-relaxed font-medium">
-                        {ep.overview ||
-                          "No overview available for this episode."}
-                      </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
                 {episodes.length === 0 && (
                   <div className="text-white/50 text-base py-4 font-medium">
