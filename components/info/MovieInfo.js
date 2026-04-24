@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Play,
   Star,
@@ -25,8 +25,7 @@ const VIDEO_SOURCES = [
   {
     name: "vidking",
     url: "https://www.vidking.net/embed/movie/",
-    params:
-      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
+    params: "?color=c3f0c2&icons=default&autoplay=true&nextbutton=true",
     icon: <Play className="w-4 h-4 text-pink-400" />,
     features: ["Recommended", "Fast"],
     description: "Fast loading with a modern player.",
@@ -155,7 +154,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showAdPopup, setShowAdPopup] = useState(false);
 
-  // --- DATA FETCHING ---
+  const lastSavedTime = useRef(0);
+
+  // --- DATA FETCHING & PROGRESS TRACKING ---
   useEffect(() => {
     // Adblock check
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
@@ -176,34 +177,120 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
           ).then((res) => res.json()),
         ]);
         setCast(c.cast?.slice(0, 10) || []);
-        setRecommendations(r.results?.slice(0, 8) || []); // slightly more recs
+        setRecommendations(r.results?.slice(0, 8) || []);
         setReviews(rv.results?.slice(0, 5) || []);
       } catch (e) {
         console.error(e);
       }
     };
 
+    fetchData();
+
     if (typeof window !== "undefined") {
       const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
       setIsFavorite(favs.some((i) => i.id === MovieDetail.id));
 
-      const progress = JSON.parse(
-        localStorage.getItem("mediaProgress") || "{}",
-      );
-      if (!progress[id]) {
-        progress[id] = {
-          id,
-          type: "movie",
-          title: MovieDetail.title,
-          poster_path: MovieDetail.poster_path,
-          last_updated: Date.now(),
-          progress: { watched: 0, duration: MovieDetail.runtime || 1 },
-        };
-        localStorage.setItem("mediaProgress", JSON.stringify(progress));
-      }
-    }
+      // 1. Initialize Media Progress
+      const initProgress = () => {
+        const progress = JSON.parse(
+          localStorage.getItem("mediaProgress") || "{}",
+        );
+        if (!progress[id]) {
+          progress[id] = {
+            id,
+            type: "movie",
+            title: MovieDetail.title,
+            poster_path: MovieDetail.poster_path,
+            last_updated: Date.now(),
+            progress: { watched: 0, duration: MovieDetail.runtime * 60 || 1 },
+          };
+          localStorage.setItem("mediaProgress", JSON.stringify(progress));
+        }
+      };
+      initProgress();
 
-    fetchData();
+      // 2. Setup message listener for iframe progress tracking
+      // 2. Setup message listener for iframe progress tracking
+      const handleMessage = (event) => {
+        try {
+          // Parse stringified JSON from iframe players safely
+          let data = event.data;
+          if (typeof data === "string") {
+            data = JSON.parse(data);
+          }
+
+          // Broad detection for various iframe players
+          const isTimeUpdate =
+            data.event === "timeupdate" ||
+            data.type === "timeupdate" ||
+            data.event === "time" ||
+            data.type === "time";
+
+          if (
+            isTimeUpdate ||
+            data.currentTime !== undefined ||
+            data?.data?.currentTime !== undefined
+          ) {
+            // Extract current time safely (checks common JWPlayer/VidLink patterns)
+            const currentTime =
+              data.currentTime ??
+              data.data?.currentTime ??
+              data.time ??
+              data.data?.time ??
+              data.seconds ??
+              0;
+
+            // Extract duration safely
+            const duration =
+              data.duration ??
+              data.data?.duration ??
+              MovieDetail.runtime * 60 ??
+              1;
+
+            // THROTTLE: Only update localStorage every 5 seconds AND ensure currentTime is a valid number > 0
+            if (
+              currentTime > 0 &&
+              Math.abs(currentTime - lastSavedTime.current) >= 5
+            ) {
+              const progressDict = JSON.parse(
+                localStorage.getItem("mediaProgress") || "{}",
+              );
+
+              progressDict[id] = {
+                id,
+                type: "movie",
+                title: MovieDetail.title,
+                poster_path: MovieDetail.poster_path,
+                backdrop_path: MovieDetail.backdrop_path,
+                vote_average: MovieDetail.vote_average,
+                overview: MovieDetail.overview,
+                last_updated: Date.now(),
+                progress: {
+                  watched: Number(currentTime),
+                  duration: Number(duration),
+                },
+              };
+
+              localStorage.setItem(
+                "mediaProgress",
+                JSON.stringify(progressDict),
+              );
+              lastSavedTime.current = currentTime;
+            }
+          }
+        } catch (err) {
+          // Ignore parsing errors for cross-origin messages that aren't valid JSON
+        }
+      };
+
+      // Add the listener
+      window.addEventListener("message", handleMessage);
+
+      // Cleanup
+      return () => {
+        window.removeEventListener("message", handleMessage);
+      };
+    }
   }, [id, MovieDetail]);
 
   useEffect(() => {

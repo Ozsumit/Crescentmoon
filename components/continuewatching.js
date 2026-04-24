@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,13 +9,13 @@ import {
   Tv,
   Film,
   Play,
-  Info,
   X,
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
   Rows,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -25,329 +24,262 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-// --- UTILITY & COLORS ---
-const GENRE_COLORS = {
-  Action: "bg-[#ffb4ab] text-[#690005]",
-  Adventure: "bg-[#ffdbcd] text-[#360f00]",
-  Drama: "bg-[#e8def8] text-[#1d192b]",
-  Comedy: "bg-[#c4eed0] text-[#07210b]",
-  "Science Fiction": "bg-[#d0bcff] text-[#381e72]",
-  Horror: "bg-[#3c2f2f] text-[#ffdad6]",
-  Animation: "bg-[#e0e3aa] text-[#1c1d00]",
-  Crime: "bg-[#ffdad6] text-[#410002]",
-  Default: "bg-[#e7e0ec] text-[#1d1b20]",
+// --- UTILITIES ---
+const getImagePath = (path) => {
+  if (!path) return "https://i.imgur.com/HIYYPtZ.png";
+  return `https://image.tmdb.org/t/p/w500${path}`;
 };
-
-const getImagePath = (p) =>
-  p
-    ? p.startsWith("/")
-      ? `https://image.tmdb.org/t/p/w500${p}`
-      : p
-    : "/placeholder.svg?height=750&width=500";
-
-const formatWatchTime = (s) => {
-  if (!s || isNaN(s)) return "0m";
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  if (h === 0) return `${m}m`;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-};
-
-const formatDate = (d) => (d ? new Date(d).getFullYear() : "N/A");
 
 const getMediaLink = (m) =>
   m.type === "tv" && m.last_season_watched && m.last_episode_watched
     ? `/series/${m.id}/season/${m.last_season_watched}/${m.last_episode_watched}`
     : `/${m.type}/${m.id}`;
 
-// --- GENRE CHIPS ---
-const GenreChips = ({ genres }) => (
-  <div className="flex flex-wrap gap-1.5">
-    {(genres?.slice(0, 3) || []).map((g) => (
-      <span
-        key={g.id || g.name}
-        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-          GENRE_COLORS[g.name] || GENRE_COLORS.Default
-        }`}
-      >
-        {g.name}
-      </span>
-    ))}
-  </div>
-);
+const formatWatchTime = (s) => {
+  if (!s || isNaN(s) || s < 0) return "0m";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (h === 0) return `${m}m`;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+};
 
-// --- MEDIA CARD COMPONENT ---
-const MediaCard = ({
+// --- SWISS GLASSMORPHISM MEDIA CARD ---
+const GlassMediaCard = ({
   media,
   isFavorite,
   handleFavoriteToggle,
-  onRemove,
-  fetchDetails,
+  onRemoveClick,
 }) => {
-  const [details, setDetails] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(() => {
-    const loadDetails = async () =>
-      setDetails(await fetchDetails(media.id, media.type));
-    loadDetails();
-  }, [media.id, media.type, fetchDetails]);
+  const isTV = media.type === "tv";
+  const title = media.title || media.name;
 
-  // Calculate Progress
-  const currentWatched = media.progress?.watched || 0;
-  const totalDuration = media.progress?.duration || 1; // prevent divide by zero
+  // Calculate Progress Safely
+  const currentWatched = Number(media.progress?.watched) || 0;
+  const totalDuration = Number(media.progress?.duration) || 1;
   const progressPercent = Math.min((currentWatched / totalDuration) * 100, 100);
   const remainingSeconds = Math.max(0, totalDuration - currentWatched);
 
-  const rating = details?.vote_average
-    ? details.vote_average.toFixed(1)
-    : "N/A";
-
-  const cardVariants = {
+  const containerVariants = {
     rest: { scale: 1, y: 0 },
     hover: {
       scale: 1.02,
-      y: -4,
+      y: -5,
       transition: { type: "spring", stiffness: 300, damping: 20 },
     },
   };
 
+  const contentStagger = {
+    rest: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.2, when: "afterChildren" },
+    },
+    hover: {
+      height: "auto",
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.1,
+        when: "beforeChildren",
+      },
+    },
+  };
+
+  const itemFade = {
+    rest: { opacity: 0, y: 10 },
+    hover: { opacity: 1, y: 0 },
+  };
+
   return (
     <motion.div
-      variants={cardVariants}
+      variants={containerVariants}
       initial="rest"
       whileHover="hover"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full aspect-[2/3] rounded-[2rem] overflow-hidden bg-[#0a0a0a] border border-white/5 shadow-2xl group select-none"
+      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu select-none group"
     >
-      {/* 1. IMAGE LAYER */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src={getImagePath(media.poster_path)}
-          alt={media.title}
-          fill
-          className={`object-cover transition-all duration-700 ease-out ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          } ${
-            isHovered && !showDetails
-              ? "scale-110 blur-[2px]"
-              : "scale-100 blur-0"
-          }`}
-          onLoadingComplete={() => setImageLoaded(true)}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-      </div>
+      <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden">
+        <div className="absolute inset-0 bg-neutral-900">
+          <Image
+            src={getImagePath(media.poster_path)}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className={`object-cover transition-all duration-700 ease-out ${
+              imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"
+            } ${isHovered ? "scale-110" : "scale-100"}`}
+            onLoad={() => setImageLoaded(true)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+        </div>
 
-      {/* 2. PROGRESS BAR (Visible & Thick) */}
-      {/* Container prevents radius clipping issues by adding padding if needed, but here we span full width absolute bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-800/50 z-20 backdrop-blur-sm">
+        {/* PROGRESS BAR */}
+        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10 z-20">
+          <motion.div
+            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          />
+        </div>
+
+        {/* GLASS BOTTOM INFO BOX */}
         <motion.div
-          className="h-full bg-[#c3f0c2] shadow-[0_0_15px_rgba(195,240,194,0.6)]" // Bright Mint Green
-          initial={{ width: 0 }}
-          animate={{ width: `${progressPercent}%` }}
-          transition={{ duration: 1, ease: "circOut" }}
-        />
-      </div>
-
-      {/* 3. TOP BADGES */}
-      <div className="absolute top-4 left-4 right-4 z-30 flex justify-between items-start pointer-events-none">
-        <div
-          className={`
-          px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg flex items-center gap-1.5 border border-white/10
-          ${
-            media.type === "tv"
-              ? "bg-[#d0bcff]/90 text-[#381e72]"
-              : "bg-[#c4eed0]/90 text-[#07210b]"
-          }
-        `}
+          className="absolute bottom-1.5 left-0 right-0 p-2 z-10"
+          animate={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
         >
-          {media.type === "tv" ? <Tv size={12} /> : <Film size={12} />}
-          <span className="text-[10px] font-black uppercase tracking-wider">
-            {media.type === "tv" && media.last_season_watched
-              ? `S${media.last_season_watched} E${media.last_episode_watched}`
-              : media.type === "tv"
-              ? "Series"
-              : "Movie"}
-          </span>
-        </div>
-
-        <div className="flex gap-2 pointer-events-auto">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(media.id);
-            }}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white/70 hover:bg-red-500 hover:text-white transition-all backdrop-blur-md border border-white/10"
-          >
-            <Trash2 size={14} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleFavoriteToggle(media.id);
-            }}
-            className={`w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-md border border-white/10 transition-all ${
-              isFavorite
-                ? "bg-[#ffb4ab] text-[#690005]"
-                : "bg-black/40 text-white hover:bg-white hover:text-black"
-            }`}
-          >
-            <Heart size={14} className={isFavorite ? "fill-current" : ""} />
-          </button>
-        </div>
-      </div>
-
-      {/* 4. MAIN OVERLAY (Title & Play) */}
-      <AnimatePresence>
-        {!showDetails && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col justify-end p-5 z-20 pb-8" // Added pb-8 to clear progress bar
-          >
-            <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-              <h3 className="text-xl font-bold text-white leading-tight line-clamp-2 drop-shadow-md mb-2">
-                {media.title}
-              </h3>
-
-              {/* Progress Text Indicator on Hover */}
-              <div className="flex items-center gap-2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Clock size={12} className="text-[#c3f0c2]" />
-                <span className="text-xs font-mono font-bold text-[#c3f0c2]">
-                  {Math.round(progressPercent)}% Complete
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                <Link href={getMediaLink(media)} className="flex-1">
-                  <button className="w-full bg-white text-black py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    <Play size={14} className="fill-black" />
-                    RESUME
-                  </button>
-                </Link>
-                <button
-                  onClick={() => setShowDetails(true)}
-                  className="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-xl backdrop-blur-md border border-white/10 transition-colors"
-                >
-                  <Info size={16} />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 5. GLASS DETAILS SHEET */}
-      <AnimatePresence>
-        {showDetails && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="absolute inset-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-white/10 p-5 flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-white line-clamp-1">
-                  {media.title}
-                </h3>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs text-neutral-400 font-mono">
-                    {formatDate(
-                      details?.release_date || details?.first_air_date
-                    )}
+          <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/40">
+            <div className="px-4 pt-4 pb-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                      isTV
+                        ? "bg-[#d0bcff] text-[#381e72]"
+                        : "bg-[#bceeff] text-[#001f2a]"
+                    }`}
+                  >
+                    {isTV && media.last_season_watched
+                      ? `S${media.last_season_watched} E${media.last_episode_watched}`
+                      : isTV
+                        ? "Series"
+                        : "Movie"}
                   </span>
-                  <div className="flex items-center gap-1 text-[#ffdcc2] text-xs font-bold">
-                    <Star size={10} className="fill-[#ffdcc2]" />
-                    {rating}
-                  </div>
+                  {media.vote_average > 0 && (
+                    <div className="flex items-center gap-1 text-xs font-bold text-[#ffdcc2]">
+                      <Star size={12} className="fill-[#ffdcc2]" />
+                      <span>{media.vote_average.toFixed(1)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <button
-                onClick={() => setShowDetails(false)}
-                className="p-1.5 bg-white/10 rounded-full hover:bg-white/20 text-white"
-              >
-                <X size={16} />
-              </button>
+              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-white mb-1">
+                {title}
+              </h3>
             </div>
 
-            <div className="mb-4">
-              <GenreChips genres={details?.genres} />
-            </div>
+            <motion.div variants={contentStagger}>
+              <div className="px-4 pb-4 flex flex-col gap-3">
+                <motion.p
+                  variants={itemFade}
+                  className="text-xs text-neutral-300 line-clamp-2 leading-relaxed"
+                >
+                  {media.overview ||
+                    "Saved in your continue watching list. Click to resume playback."}
+                </motion.p>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <p className="text-xs leading-relaxed text-neutral-300">
-                {details?.overview || "No description available."}
-              </p>
-            </div>
+                {/* PROGRESS TRACKER TEXT (ONLY SHOWS ON HOVER) */}
+                <motion.div
+                  variants={itemFade}
+                  className="flex justify-between items-center bg-black/40 rounded-lg p-2.5 border border-white/5 backdrop-blur-sm"
+                >
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <Clock size={12} />
+                    <span className="text-[10px] font-mono font-bold tracking-wider uppercase">
+                      {progressPercent > 0
+                        ? `${formatWatchTime(remainingSeconds)} left`
+                        : "Not started"}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-white tracking-wider">
+                    {Math.round(progressPercent)}%
+                  </span>
+                </motion.div>
 
-            {/* Detailed Progress Stats */}
-            <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-              <div className="flex justify-between items-center text-xs text-neutral-400 font-mono bg-white/5 p-2 rounded-lg">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#c3f0c2] rounded-full animate-pulse" />
-                  {formatWatchTime(remainingSeconds)} left
-                </span>
-                <span>{Math.round(progressPercent)}%</span>
+                <motion.div variants={itemFade}>
+                  <Link href={getMediaLink(media)}>
+                    <div className="w-full py-3 rounded-xl bg-emerald-400 text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-emerald-300 transition-colors">
+                      <Play size={16} className="fill-[#07210b]" />
+                      <span>
+                        {progressPercent > 95 ? "Watch Again" : "Resume"}
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
               </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
 
-              <Link href={getMediaLink(media)} className="block w-full">
-                <button className="w-full bg-[#c3f0c2] text-[#07210b] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-[0.98] transition-all">
-                  <Play size={16} className="fill-[#07210b]" />
-                  CONTINUE WATCHING
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* TOP FLOATING ACTIONS */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveClick(media);
+          }}
+          className="pointer-events-auto bg-black/40 backdrop-blur-md text-white/70 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300"
+        >
+          <X size={18} strokeWidth={2.5} />
+        </button>
+
+        <motion.button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleFavoriteToggle(media.id);
+          }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.85 }}
+          className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${
+            isFavorite
+              ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
+              : "bg-black/40 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+          }`}
+        >
+          <AnimatePresence mode="wait">
+            {isFavorite ? (
+              <motion.div
+                key="liked"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Heart size={18} className="fill-[#690005]" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="unliked"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <Heart size={18} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
     </motion.div>
   );
 };
 
-// --- MAIN CONTAINER COMPONENT ---
+// --- MAIN CONTINUE WATCHING CONTAINER ---
 const ContinueWatching = () => {
   const [mediaItems, setMediaItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewAll, setViewAll] = useState(false);
-  const detailCache = useRef({});
-
-  const fetchDetails = useCallback(async (mediaId, mediaType) => {
-    const cacheKey = `${mediaType}-${mediaId}`;
-    if (detailCache.current[cacheKey]) return detailCache.current[cacheKey];
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-      const response = await fetch(
-        `https://api.themoviedb.org/3/${mediaType}/${mediaId}?api_key=${apiKey}&language=en-US`
-      );
-      if (!response.ok) throw new Error("Failed to fetch details");
-      const data = await response.json();
-      detailCache.current[cacheKey] = data;
-      return data;
-    } catch (error) {
-      console.error("Error fetching details:", error);
-      return null;
-    }
-  }, []);
+  const [mediaToRemove, setMediaToRemove] = useState(null);
 
   useEffect(() => {
     const loadStoredData = () => {
       try {
         const progressData = JSON.parse(
-          localStorage.getItem("mediaProgress") || "{}"
+          localStorage.getItem("mediaProgress") || "{}",
         );
         const storedFavorites = JSON.parse(
-          localStorage.getItem("favorites") || "[]"
+          localStorage.getItem("favorites") || "[]",
         );
+
         const mediaArray = Object.values(progressData).sort(
-          (a, b) => (b.last_updated || 0) - (a.last_updated || 0)
+          (a, b) => (b.last_updated || 0) - (a.last_updated || 0),
         );
+
         setMediaItems(mediaArray);
         setFavorites(storedFavorites.map((fav) => fav.id));
       } catch (error) {
@@ -355,41 +287,64 @@ const ContinueWatching = () => {
       }
       setIsLoading(false);
     };
+
     loadStoredData();
     window.addEventListener("storage", loadStoredData);
     return () => window.removeEventListener("storage", loadStoredData);
   }, []);
 
-  const handleRemoveMedia = useCallback((mediaId) => {
-    setMediaItems((prev) => prev.filter((item) => item.id !== mediaId));
+  const confirmRemove = () => {
+    if (!mediaToRemove) return;
+    setMediaItems((prev) =>
+      prev.filter((item) => item.id !== mediaToRemove.id),
+    );
     try {
       const progressData = JSON.parse(
-        localStorage.getItem("mediaProgress") || "{}"
+        localStorage.getItem("mediaProgress") || "{}",
       );
-      delete progressData[mediaId];
+      delete progressData[mediaToRemove.id];
       localStorage.setItem("mediaProgress", JSON.stringify(progressData));
     } catch (error) {
       console.error("Error removing media:", error);
     }
-  }, []);
+    setMediaToRemove(null);
+  };
 
-  const handleFavoriteToggle = useCallback((mediaId) => {
-    setFavorites((prev) =>
-      prev.includes(mediaId)
-        ? prev.filter((id) => id !== mediaId)
-        : [...prev, mediaId]
-    );
-  }, []);
-
-  const clearAllMedia = useCallback(() => {
-    if (window.confirm("Are you sure you want to clear your watch history?")) {
-      localStorage.setItem("mediaProgress", "{}");
-      setMediaItems([]);
-    }
-  }, []);
+  const handleFavoriteToggle = useCallback(
+    (mediaId) => {
+      setFavorites((prev) => {
+        const isFav = prev.includes(mediaId);
+        const newFavs = isFav
+          ? prev.filter((id) => id !== mediaId)
+          : [...prev, mediaId];
+        try {
+          const fullFavObjs = JSON.parse(
+            localStorage.getItem("favorites") || "[]",
+          );
+          if (isFav) {
+            localStorage.setItem(
+              "favorites",
+              JSON.stringify(fullFavObjs.filter((f) => f.id !== mediaId)),
+            );
+          } else {
+            const itemToAdd = mediaItems.find((m) => m.id === mediaId);
+            if (itemToAdd)
+              localStorage.setItem(
+                "favorites",
+                JSON.stringify([...fullFavObjs, itemToAdd]),
+              );
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        return newFavs;
+      });
+    },
+    [mediaItems],
+  );
 
   return (
-    <div className="w-full max-w-[2400px] mx-auto px-4 md:px-8 py-12">
+    <div className="w-full max-w-[2400px] mx-auto px-4 md:px-8 py-12 relative">
       <motion.div
         className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8"
         initial={{ opacity: 0, y: -20 }}
@@ -397,8 +352,8 @@ const ContinueWatching = () => {
       >
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">
               Library
             </span>
           </div>
@@ -415,14 +370,6 @@ const ContinueWatching = () => {
             >
               {viewAll ? <Rows size={14} /> : <LayoutGrid size={14} />}
               {viewAll ? "Collapse" : "Grid View"}
-            </button>
-          )}
-          {mediaItems.length > 0 && (
-            <button
-              onClick={clearAllMedia}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
-            >
-              <Trash2 size={14} />
             </button>
           )}
         </div>
@@ -447,54 +394,48 @@ const ContinueWatching = () => {
             transition={{ duration: 0.4 }}
           >
             {viewAll ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
                 {mediaItems.map((media) => (
-                  <MediaCard
+                  <GlassMediaCard
                     key={media.id}
                     media={media}
                     isFavorite={favorites.includes(media.id)}
                     handleFavoriteToggle={handleFavoriteToggle}
-                    onRemove={handleRemoveMedia}
-                    fetchDetails={fetchDetails}
+                    onRemoveClick={setMediaToRemove}
                   />
                 ))}
               </div>
             ) : (
-              <div className="relative">
+              <div className="relative group/swiper">
                 <Swiper
                   modules={[Navigation, Pagination, A11y]}
-                  spaceBetween={16}
+                  spaceBetween={24}
                   slidesPerView={1.2}
-                  loop={mediaItems.length > 4}
-                  navigation={{
-                    prevEl: ".cw-prev",
-                    nextEl: ".cw-next",
-                  }}
+                  navigation={{ prevEl: ".cw-prev", nextEl: ".cw-next" }}
                   breakpoints={{
                     640: { slidesPerView: 2.2 },
                     1024: { slidesPerView: 3.2 },
                     1400: { slidesPerView: 4.2 },
                     1600: { slidesPerView: 5.2 },
                   }}
-                  className="!pb-12 !pl-1"
+                  className="!pb-12 !px-2"
                 >
                   {mediaItems.map((media) => (
                     <SwiperSlide key={media.id}>
-                      <MediaCard
+                      <GlassMediaCard
                         media={media}
                         isFavorite={favorites.includes(media.id)}
                         handleFavoriteToggle={handleFavoriteToggle}
-                        onRemove={handleRemoveMedia}
-                        fetchDetails={fetchDetails}
+                        onRemoveClick={setMediaToRemove}
                       />
                     </SwiperSlide>
                   ))}
                 </Swiper>
-                <div className="cw-prev absolute left-0 top-1/2 -translate-y-1/2 z-20 -ml-4 w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-xl cursor-pointer hover:scale-110 transition-transform hidden md:flex">
-                  <ChevronLeft size={24} />
+                <div className="cw-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                  <ChevronLeft size={24} strokeWidth={3} />
                 </div>
-                <div className="cw-next absolute right-0 top-1/2 -translate-y-1/2 z-20 -mr-4 w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-xl cursor-pointer hover:scale-110 transition-transform hidden md:flex">
-                  <ChevronRight size={24} />
+                <div className="cw-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                  <ChevronRight size={24} strokeWidth={3} />
                 </div>
               </div>
             )}
@@ -506,38 +447,97 @@ const ContinueWatching = () => {
           animate={{ opacity: 1, y: 0 }}
           className="border border-dashed border-white/10 rounded-[2rem] p-12 text-center bg-[#0a0a0a]"
         >
-          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
             <Tv size={32} className="text-neutral-500" />
           </div>
           <h3 className="text-xl font-bold text-white mb-2">
-            It's quiet here...
+            Nothing in progress...
           </h3>
-          <p className="text-neutral-500 mb-6">
-            Start watching movies or series to track your progress.
+          <p className="text-neutral-500 mb-6 font-medium">
+            Start watching movies or series, and we'll track your progress here.
           </p>
           <Link
             href="/browse"
-            className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform"
+            className="inline-flex items-center gap-2 bg-emerald-400 text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform"
           >
             Explore Library
           </Link>
         </motion.div>
       )}
 
+      {/* --- CONFIRMATION DIALOG MODAL (THEMED) --- */}
+      <AnimatePresence>
+        {mediaToRemove && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMediaToRemove(null)}
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 p-6 sm:p-8 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden z-10"
+            >
+              {/* Subtle Red Ambient Glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-red-500/20 blur-[50px] pointer-events-none" />
+
+              {/* Close X Button */}
+              <button
+                onClick={() => setMediaToRemove(null)}
+                className="absolute top-6 right-6 p-2 bg-white/5 border border-white/10 backdrop-blur-xl rounded-full text-white/50 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all"
+              >
+                <X size={16} strokeWidth={2.5} />
+              </button>
+
+              <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-6 border border-red-500/20 backdrop-blur-md relative z-10">
+                <Trash2 size={24} strokeWidth={2.5} />
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight relative z-10">
+                Remove Title?
+              </h3>
+
+              <p className="text-sm text-neutral-400 mb-8 leading-relaxed relative z-10">
+                Are you sure you want to remove{" "}
+                <span className="text-white font-bold">
+                  "{mediaToRemove.title || mediaToRemove.name}"
+                </span>{" "}
+                from your watch list? You will lose your tracked progress.
+              </p>
+
+              <div className="flex gap-3 relative z-10">
+                <button
+                  onClick={() => setMediaToRemove(null)}
+                  className="flex-1 px-4 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/10 backdrop-blur-md active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRemove}
+                  className="flex-1 px-4 py-3.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={18} />
+                  Remove
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
-        }
         .swiper-button-disabled {
           opacity: 0 !important;
-          cursor: default;
+          pointer-events: none;
         }
       `}</style>
     </div>

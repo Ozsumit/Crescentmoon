@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Play,
   Star,
@@ -153,6 +153,8 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
   const [activeTab, setActiveTab] = useState("episodes");
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  const lastSavedTime = useRef(0);
+
   // --- EFFECTS ---
 
   // 1. Initial Checks (Adblock, Favorites, Recs)
@@ -213,44 +215,103 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     setIframeSrc(finalUrl);
   }, [selectedServer, seriesId, selectedEpisode]);
 
-  // 4. SAVE PROGRESS FOR CONTINUE WATCHING
-  // This logic saves the current position to localStorage so the library works.
+  // 4. ROBUST IFRAME PROGRESS TRACKING (For Continue Watching)
   useEffect(() => {
-    if (!seriesData || !selectedEpisode) return;
+    if (!seriesData || !selectedEpisode || typeof window === "undefined")
+      return;
 
-    try {
-      // Get existing progress map
-      const progressData = JSON.parse(
-        localStorage.getItem("mediaProgress") || "{}",
-      );
+    // Helper to generate and save payload
+    const saveProgressPayload = (currentTime, duration) => {
+      try {
+        const progressDict = JSON.parse(
+          localStorage.getItem("mediaProgress") || "{}",
+        );
+        progressDict[seriesData.id] = {
+          id: seriesData.id,
+          type: "tv",
+          title: seriesData.name,
+          poster_path: seriesData.poster_path,
+          backdrop_path: seriesData.backdrop_path,
+          overview: seriesData.overview,
+          vote_average: seriesData.vote_average,
+          last_season_watched: selectedEpisode.season_number,
+          last_episode_watched: selectedEpisode.episode_number,
+          last_updated: Date.now(),
+          progress: {
+            watched: Number(currentTime),
+            duration: Number(duration),
+          },
+        };
+        localStorage.setItem("mediaProgress", JSON.stringify(progressDict));
+        window.dispatchEvent(new Event("storage")); // Keep tabs synced
+      } catch (e) {
+        console.error("Failed to save progress", e);
+      }
+    };
 
-      // Construct the entry object
-      // Note: We use 0 for 'watched' because we can't get real-time progress from iframe embeds easily.
-      // However, we save the Season/Episode numbers so the user can resume the correct file.
-      const entry = {
-        id: seriesData.id,
-        type: "tv",
-        title: seriesData.name,
-        poster_path: seriesData.poster_path,
-        backdrop_path: seriesData.backdrop_path,
-        last_season_watched: selectedEpisode.season_number,
-        last_episode_watched: selectedEpisode.episode_number,
-        last_updated: Date.now(),
-        progress: {
-          watched: 0,
-          duration: (selectedEpisode.runtime || 24) * 60, // Estimate in seconds
-        },
-      };
+    // If starting a NEW episode (or first time), initialize it to 0 so the "S1 E2" pointer updates immediately
+    const currentProgress = JSON.parse(
+      localStorage.getItem("mediaProgress") || "{}",
+    )[seriesData.id];
+    const isSameEpisode =
+      currentProgress &&
+      currentProgress.last_season_watched === selectedEpisode.season_number &&
+      currentProgress.last_episode_watched === selectedEpisode.episode_number;
 
-      // Update and Save
-      progressData[seriesData.id] = entry;
-      localStorage.setItem("mediaProgress", JSON.stringify(progressData));
-
-      // Trigger storage event so other tabs/components update immediately
-      window.dispatchEvent(new Event("storage"));
-    } catch (error) {
-      console.error("Error saving watch progress:", error);
+    if (!isSameEpisode) {
+      saveProgressPayload(0, (selectedEpisode.runtime || 24) * 60);
+      lastSavedTime.current = 0;
     }
+
+    // Listener for cross-origin messages from video providers
+    const handleMessage = (event) => {
+      try {
+        let data = event.data;
+        if (typeof data === "string") {
+          data = JSON.parse(data);
+        }
+
+        const isTimeUpdate =
+          data.event === "timeupdate" ||
+          data.type === "timeupdate" ||
+          data.event === "time" ||
+          data.type === "time";
+
+        if (
+          isTimeUpdate ||
+          data.currentTime !== undefined ||
+          data?.data?.currentTime !== undefined
+        ) {
+          const currentTime =
+            data.currentTime ??
+            data.data?.currentTime ??
+            data.time ??
+            data.data?.time ??
+            data.seconds ??
+            0;
+
+          const duration =
+            data.duration ??
+            data.data?.duration ??
+            selectedEpisode.runtime * 60 ??
+            1440; // Default 24 mins if no duration found
+
+          // THROTTLE: Save every 5 seconds, ensure currentTime is valid
+          if (
+            currentTime > 0 &&
+            Math.abs(currentTime - lastSavedTime.current) >= 5
+          ) {
+            saveProgressPayload(currentTime, duration);
+            lastSavedTime.current = currentTime;
+          }
+        }
+      } catch (err) {
+        // Ignore parsing errors for irrelevant iframe messages
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, [seriesData, selectedEpisode]);
 
   // --- HANDLERS ---

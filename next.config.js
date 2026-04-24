@@ -5,6 +5,7 @@ const nextConfig = {
       "image.tmdb.org",
       "imgur.com",
       "arc.io",
+      "cdn.mos.cms.futurecdn.net",
       "i.imgur.com",
       "via.placeholder.com",
     ],
