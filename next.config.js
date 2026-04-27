@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Add this block to enable Server Actions
+  experimental: {
+    serverActions: true,
+  },
   images: {
     domains: [
       "image.tmdb.org",
@@ -26,11 +30,8 @@ const nextConfig = {
               style-src 'self' 'unsafe-inline' https:;
               img-src 'self' data: https:;
               connect-src *;
-              frame-src
-              *
-                
-              child-src
-                *
+              frame-src *;
+              child-src *;
               media-src *;
               font-src 'self' https:;
               base-uri 'self';

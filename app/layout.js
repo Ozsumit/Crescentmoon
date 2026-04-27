@@ -8,7 +8,7 @@ import SnowButton from "@/components/snowbutton"; // 1. Import the new component
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PostHogProvider } from "./providers";
-
+import DeveloperFeedback from "@/components/feedback";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -64,7 +64,7 @@ export default function RootLayout({ children }) {
           <Header />
           <Analytics />
           <SpeedInsights />
-
+          <DeveloperFeedback />
           <div className="mt-0">{children} </div>
           <AdBlocker />
           <Footer />
