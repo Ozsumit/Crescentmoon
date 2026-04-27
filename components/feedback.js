@@ -15,8 +15,7 @@ import {
 import { submitFeedback } from "../action"; // Adjust path as needed
 
 // --- MICRO COMPONENTS ---
-console.log("Full Env Object:", process.env);
-console.log("Specific Var:", process.env.NEXT_PUBLIC_YOUR_VARIABLE_NAME);
+
 const TypeChip = ({ active, onClick, icon: Icon, label }) => (
   <button
     type="button"
