@@ -6,12 +6,11 @@ import {
   Github,
   Instagram,
   Facebook,
-  ArrowUpRight,
   Mail,
   Clapperboard,
   PlayCircle,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import DeveloperFeedback from "@/components/feedback";
 
 const Footer = () => {
   const [movieOfTheDay, setMovieOfTheDay] = useState(null);
@@ -23,15 +22,13 @@ const Footer = () => {
         const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
         if (!apiKey) return;
 
-        // Fetch Top Rated for quality suggestions
         const resp = await fetch(
-          `https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&page=1`
+          `https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&page=1`,
         );
 
         if (!resp.ok) throw new Error("Failed to fetch");
         const data = await resp.json();
         const movies = data.results;
-        // Random pick
         setMovieOfTheDay(movies[Math.floor(Math.random() * movies.length)]);
       } catch (error) {
         console.error(error);
@@ -79,7 +76,7 @@ const Footer = () => {
       </div>
 
       <div className="max-w-[1600px] mx-auto">
-        {/* --- ROW 1: NEWSLETTER & BRAND --- */}
+        {/* --- ROW 1: BRAND & FEEDBACK --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 border-b border-white/10">
           {/* Brand Identity */}
           <div className="p-8 md:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between h-full">
@@ -100,24 +97,9 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Newsletter */}
-          <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-            <label className="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-4">
-              Weekly Digest
-            </label>
-            <div className="relative group">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="w-full bg-transparent border-b border-white/20 py-4 text-xl md:text-2xl outline-none placeholder:text-neutral-700 focus:border-white transition-colors"
-              />
-              <button className="absolute right-0 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-white hover:text-white transition-colors">
-                <ArrowUpRight size={32} />
-              </button>
-            </div>
-            <p className="mt-4 text-sm text-neutral-600">
-              Join 10,000+ film enthusiasts. No spam, just cinema.
-            </p>
+          {/* Inline Developer Feedback Form */}
+          <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/[0.01]">
+            <DeveloperFeedback />
           </div>
         </div>
 
@@ -195,12 +177,9 @@ const Footer = () => {
 
         {/* --- ROW 3: FOOTER BOTTOM --- */}
         <div className="border-t border-white/10 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Copyright */}
           <div className="text-xs text-neutral-600 font-mono">
             © {currentYear} VASS INC. / OMEGA
           </div>
-
-          {/* Social Icons (Minimal) */}
           <div className="flex items-center gap-6">
             {[Github, Instagram, Facebook, Mail].map((Icon, i) => (
               <a
