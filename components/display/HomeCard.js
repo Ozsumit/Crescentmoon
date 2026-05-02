@@ -1,14 +1,14 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   Heart,
   Star,
   Play,
   Plus,
   X,
-  Check,
   ChevronDown,
   Volume2,
   VolumeX,
@@ -28,35 +28,35 @@ const formatDate = (dateString) => {
   return new Date(dateString).getFullYear();
 };
 
+// --- DYNAMIC IMPORTS ---
+// Lazy load the modal so it doesn't block the initial page render
+const MovieModal = dynamic(() => Promise.resolve(MovieModalComponent), {
+  ssr: false,
+});
+
 // --- MORE LIKE THIS CARD ---
-const MoreLikeThisCard = ({
-  item,
-  index,
-  isActive,
-  setActiveIndex,
-  onHover,
-}) => {
+const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
   const [trailerKey, setTrailerKey] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
   const [playVideo, setPlayVideo] = useState(false);
-  const [hoverProgress, setHoverProgress] = useState(0);
 
-  // Track fetching to prevent loop
+  // Track fetching to prevent loops
   const hasFetchedTrailer = useRef(false);
 
   const type = item.media_type || (item.first_air_date ? "tv" : "movie");
   const posterUrl = getImageUrl(item.backdrop_path || item.poster_path, "w500");
 
-  // OPTIMIZED FETCH: Only run once per card when hovered.
+  // OPTIMIZED FETCH: Only run once per card when hovered. Added AbortController.
   useEffect(() => {
     if (!isActive || !API_KEY || hasFetchedTrailer.current) return;
-    let isMounted = true;
     hasFetchedTrailer.current = true;
+    const controller = new AbortController();
 
     const fetchTrailer = async () => {
       try {
         const res = await fetch(
           `https://api.themoviedb.org/3/${type}/${item.id}/videos?api_key=${API_KEY}`,
+          { signal: controller.signal },
         );
         const data = await res.json();
         const trailer = data.results?.find(
@@ -64,47 +64,29 @@ const MoreLikeThisCard = ({
             vid.site === "YouTube" &&
             (vid.type === "Trailer" || vid.type === "Teaser"),
         );
-        if (isMounted && trailer) setTrailerKey(trailer.key);
+        if (trailer) setTrailerKey(trailer.key);
       } catch (err) {
-        console.error("Error fetching trailer", err);
+        if (err.name !== "AbortError") {
+          console.error("Error fetching trailer", err);
+        }
       }
     };
     fetchTrailer();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isActive, item.id, type]); // trailerKey safely removed from dependencies
+    return () => controller.abort();
+  }, [isActive, item.id, type]);
 
-  // --- PROGRESS BAR & TIMERS ---
+  // OPTIMIZED TIMER: Handled via setTimeout, progress visual handled by Framer Motion
   useEffect(() => {
     let delayTimer;
-    let progressInterval;
-
     if (isActive) {
-      // Safely fill progress bar over 3 seconds and STOP updating state at 100
-      progressInterval = setInterval(() => {
-        setHoverProgress((p) => {
-          if (p >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return p + 100 / 60; // 60 ticks for 3s
-        });
-      }, 50);
-
       delayTimer = setTimeout(() => {
         setPlayVideo(true);
       }, 3000);
     } else {
       setPlayVideo(false);
-      setHoverProgress(0);
     }
-
-    return () => {
-      clearTimeout(delayTimer);
-      if (progressInterval) clearInterval(progressInterval);
-    };
+    return () => clearTimeout(delayTimer);
   }, [isActive]);
 
   return (
@@ -123,7 +105,9 @@ const MoreLikeThisCard = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.8 }}
             transition={{ duration: 0.8 }}
-            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&playsinline=1`}
+            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${
+              isMuted ? 1 : 0
+            }&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&playsinline=1`}
             className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen"
             allow="autoplay; encrypted-media"
             title="Trailer"
@@ -141,6 +125,7 @@ const MoreLikeThisCard = ({
           src={posterUrl}
           alt={item.title || item.name}
           fill
+          loading="lazy"
           sizes="(max-width: 640px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 opacity-80 group-hover:opacity-100"
         />
@@ -148,7 +133,9 @@ const MoreLikeThisCard = ({
 
       {/* Glassmorphic overlay for text */}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0 sm:opacity-100"}`}
+        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 ${
+          isActive ? "opacity-100" : "opacity-0 sm:opacity-100"
+        }`}
       >
         <div className="absolute bottom-0 p-4 w-full">
           <div className="flex items-center gap-2 mb-2">
@@ -177,21 +164,24 @@ const MoreLikeThisCard = ({
         </div>
       </div>
 
-      {/* Hover Progress Bar */}
+      {/* Hover Progress Bar - Now using framer-motion instead of setinterval */}
       {isActive && !playVideo && trailerKey && (
         <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full z-20 overflow-hidden">
-          <div
-            className="h-full bg-white transition-all duration-75 ease-linear"
-            style={{ width: `${hoverProgress}%` }}
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 3, ease: "linear" }}
+            className="h-full bg-white"
           />
         </div>
       )}
     </div>
   );
-};
+});
+MoreLikeThisCard.displayName = "MoreLikeThisCard";
 
 // --- MORE LIKE THIS GRID ---
-const MoreLikeThisGrid = ({ items }) => {
+const MoreLikeThisGrid = memo(({ items }) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
   const handleHover = useCallback((idx) => setActiveIndex(idx), []);
@@ -231,16 +221,22 @@ const MoreLikeThisGrid = ({ items }) => {
           item={item}
           index={index}
           isActive={activeIndex === index}
-          setActiveIndex={setActiveIndex}
           onHover={handleHover}
         />
       ))}
     </div>
   );
-};
+});
+MoreLikeThisGrid.displayName = "MoreLikeThisGrid";
 
 // --- MODAL COMPONENT ---
-const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
+const MovieModalComponent = ({
+  movie,
+  onClose,
+  isFavorite,
+  toggleFavorite,
+  isTV,
+}) => {
   const [mounted, setMounted] = useState(false);
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
@@ -254,6 +250,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
   const [isLoadingTV, setIsLoadingTV] = useState(false);
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
+
   const getLink = () => {
     if (isTV) return `/series/${movie.id}`;
     if (movie.release_date) return `/movie/${movie.id}`;
@@ -274,17 +271,20 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
   }, []);
 
   const fetchEpisodes = useCallback(
-    async (seasonNum) => {
+    async (seasonNum, signal) => {
       if (!API_KEY || !movie?.id) return;
       setIsLoadingEpisodes(true);
       try {
         const res = await fetch(
           `https://api.themoviedb.org/3/tv/${movie.id}/season/${seasonNum}?api_key=${API_KEY}`,
+          { signal },
         );
         const data = await res.json();
         setEpisodes(data.episodes || []);
       } catch (error) {
-        console.error("Error fetching episodes:", error);
+        if (error.name !== "AbortError") {
+          console.error("Error fetching episodes:", error);
+        }
       } finally {
         setIsLoadingEpisodes(false);
       }
@@ -294,16 +294,20 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 
   useEffect(() => {
     if (!API_KEY || !movie?.id) return;
-    let isMounted = true;
+    const controller = new AbortController();
     const type = isTV ? "tv" : "movie";
 
     const fetchAllData = async () => {
       try {
+        const fetchOpts = { signal: controller.signal };
+
         const similarPromise = fetch(
           `https://api.themoviedb.org/3/${type}/${movie.id}/similar?api_key=${API_KEY}&language=en-US&page=1`,
+          fetchOpts,
         ).then((res) => res.json());
         const videoPromise = fetch(
           `https://api.themoviedb.org/3/${type}/${movie.id}/videos?api_key=${API_KEY}`,
+          fetchOpts,
         ).then((res) => res.json());
 
         let tvDetailsPromise = Promise.resolve(null);
@@ -311,6 +315,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
           setIsLoadingTV(true);
           tvDetailsPromise = fetch(
             `https://api.themoviedb.org/3/tv/${movie.id}?api_key=${API_KEY}`,
+            fetchOpts,
           ).then((res) => res.json());
         }
 
@@ -319,8 +324,6 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
           videoPromise,
           tvDetailsPromise,
         ]);
-
-        if (!isMounted) return;
 
         // Process Hero Trailer
         const trailer = videoData.results?.find(
@@ -354,13 +357,13 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
           if (mainSeasons.length > 0) {
             const firstSeasonNum = mainSeasons[0].season_number;
             setSelectedSeason(firstSeasonNum);
-            fetchEpisodes(firstSeasonNum);
+            fetchEpisodes(firstSeasonNum, controller.signal);
           }
           setIsLoadingTV(false);
         }
       } catch (error) {
-        console.error("Error fetching modal data:", error);
-        if (isMounted) {
+        if (error.name !== "AbortError") {
+          console.error("Error fetching modal data:", error);
           setIsLoadingSimilar(false);
           setIsLoadingTV(false);
         }
@@ -369,9 +372,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 
     fetchAllData();
 
-    return () => {
-      isMounted = false;
-    };
+    return () => controller.abort();
   }, [isTV, movie?.id, fetchEpisodes]);
 
   // Trigger Hero Trailer after 3 seconds of banner display
@@ -388,6 +389,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
   const handleSeasonChange = (e) => {
     const newSeason = parseInt(e.target.value);
     setSelectedSeason(newSeason);
+    // Don't pass abort signal on manual change so it completes safely
     fetchEpisodes(newSeason);
   };
 
@@ -434,7 +436,9 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
               className="absolute inset-0 z-0 pointer-events-none"
             >
               <iframe
-                src={`https://www.youtube.com/embed/${heroTrailer}?autoplay=1&mute=${isHeroMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${heroTrailer}&playsinline=1`}
+                src={`https://www.youtube.com/embed/${heroTrailer}?autoplay=1&mute=${
+                  isHeroMuted ? 1 : 0
+                }&controls=0&modestbranding=1&loop=1&playlist=${heroTrailer}&playsinline=1`}
                 className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 allow="autoplay; encrypted-media"
               />
@@ -451,12 +455,11 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 
             <div className="flex flex-wrap items-center gap-4">
               <Link href={getLink()}>
-                {" "}
                 <button className="group flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-extrabold text-lg hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
                   <Play
                     size={22}
                     className="fill-black group-hover:scale-110 transition-transform"
-                  />{" "}
+                  />
                   Play
                 </button>
               </Link>
@@ -565,10 +568,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
                     }
                     key={ep.id}
                   >
-                    <div
-                      key={ep.id}
-                      className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10"
-                    >
+                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10">
                       <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
                         <Image
                           src={getImageUrl(
@@ -641,7 +641,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 };
 
 // --- HOME CARD COMPONENT ---
-const HomeCard = ({ MovieCard }) => {
+const HomeCard = memo(({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -657,21 +657,24 @@ const HomeCard = ({ MovieCard }) => {
     return "https://i.imgur.com/HIYYPtZ.png";
   };
 
-  const handleFavoriteToggle = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (isFavorite) {
-      const updated = favorites.filter((item) => item.id !== MovieCard.id);
-      localStorage.setItem("favorites", JSON.stringify(updated));
-    } else {
-      favorites.push(MovieCard);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-    }
-    setIsFavorite(!isFavorite);
-  };
+  const handleFavoriteToggle = useCallback(
+    (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+      if (isFavorite) {
+        const updated = favorites.filter((item) => item.id !== MovieCard.id);
+        localStorage.setItem("favorites", JSON.stringify(updated));
+      } else {
+        favorites.push(MovieCard);
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+      }
+      setIsFavorite(!isFavorite);
+    },
+    [isFavorite, MovieCard],
+  );
 
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
@@ -731,8 +734,11 @@ const HomeCard = ({ MovieCard }) => {
               src={getImagePath()}
               alt={title}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className={`object-cover transition-all duration-700 ease-out ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} ${isHovered ? "scale-110" : "scale-100"}`}
+              loading="lazy"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className={`object-cover transition-all duration-700 ease-out ${
+                imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"
+              } ${isHovered ? "scale-110" : "scale-100"}`}
               onLoad={() => setImageLoaded(true)}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
@@ -747,7 +753,11 @@ const HomeCard = ({ MovieCard }) => {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${isTV ? "bg-[#d0bcff] text-[#381e72]" : "bg-[#bceeff] text-[#001f2a]"}`}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                        isTV
+                          ? "bg-[#d0bcff] text-[#381e72]"
+                          : "bg-[#bceeff] text-[#001f2a]"
+                      }`}
                     >
                       {isTV ? "Series" : "Movie"}
                     </span>
@@ -789,7 +799,11 @@ const HomeCard = ({ MovieCard }) => {
             onClick={handleFavoriteToggle}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.85 }}
-            className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${isFavorite ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]" : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"}`}
+            className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${
+              isFavorite
+                ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
+                : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+            }`}
           >
             <AnimatePresence mode="wait">
               {isFavorite ? (
@@ -817,6 +831,7 @@ const HomeCard = ({ MovieCard }) => {
         </div>
       </motion.div>
 
+      {/* MODAL IS NOW DYNAMICALLY IMPORTED */}
       <AnimatePresence>
         {isModalOpen && (
           <MovieModal
@@ -830,6 +845,7 @@ const HomeCard = ({ MovieCard }) => {
       </AnimatePresence>
     </>
   );
-};
+});
+HomeCard.displayName = "HomeCard";
 
 export default HomeCard;
