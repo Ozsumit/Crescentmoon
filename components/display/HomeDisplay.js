@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Filter, X, Film, Tv, ArrowUp } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HomeCards from "./HomeCard";
@@ -12,17 +12,91 @@ import HorizontalHomeCard from "./HorHomeCards";
 import HomePagination from "../pagination/HomePagination";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- SKELETONS ---
-const CardSkeleton = () => (
-  <div className="flex flex-col gap-3">
+// ─── Constants ────────────────────────────────────────────────────────────────
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const GENRE_DEBOUNCE_MS = 320;
+const PREFETCH_DELAY_MS = 600; // wait until current render settles
+
+// ─── Cache (module-level — survives re-renders, cleared on page unload) ───────
+const fetchCache = new Map(); // key → { data, ts }
+
+function getCached(key) {
+  const entry = fetchCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL_MS) {
+    fetchCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCache(key, data) {
+  fetchCache.set(key, { data, ts: Date.now() });
+}
+
+// ─── Build TMDB URL ────────────────────────────────────────────────────────────
+function buildUrl(type, page, genres) {
+  const isMovie = type === "movies";
+  const base = isMovie ? "movie" : "tv";
+  if (genres.length > 0) {
+    const ids = genres.map((g) => g.id).join(",");
+    return `https://api.themoviedb.org/3/discover/${base}?api_key=${API_KEY}&with_genres=${ids}&page=${page}&language=en-US&sort_by=popularity.desc`;
+  }
+  return `https://api.themoviedb.org/3/${base}/popular?api_key=${API_KEY}&page=${page}&language=en-US`;
+}
+
+// ─── Normalise API response ────────────────────────────────────────────────────
+function normalise(items, isMovie) {
+  return items.map((item) => ({
+    ...item,
+    media_type: isMovie ? "movie" : "tv",
+    title: isMovie ? item.title : item.name,
+    release_date: isMovie ? item.release_date : item.first_air_date,
+  }));
+}
+
+// ─── Core fetch (respects cache + abort signal) ───────────────────────────────
+async function fetchPage(type, page, genres, signal) {
+  const cacheKey = `${type}|${page}|${genres
+    .map((g) => g.id)
+    .sort()
+    .join(",")}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const url = buildUrl(type, page, genres);
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`TMDB ${res.status}`);
+
+  const json = await res.json();
+  const isMovie = type === "movies";
+  const result = {
+    items: normalise(json.results, isMovie),
+    totalPages: Math.min(json.total_pages, 500),
+  };
+
+  setCache(cacheKey, result);
+  return result;
+}
+
+// ─── Skeletons ────────────────────────────────────────────────────────────────
+const CardSkeleton = ({ index }) => (
+  <div
+    className="flex flex-col gap-3"
+    style={{ animationDelay: `${index * 45}ms` }}
+  >
     <div className="w-full aspect-[2/3] bg-neutral-900/50 rounded-[2rem] animate-pulse border border-white/5" />
     <div className="h-4 w-3/4 bg-neutral-900/50 rounded-full animate-pulse" />
     <div className="h-3 w-1/4 bg-neutral-900/50 rounded-full animate-pulse" />
   </div>
 );
 
-const HorizontalCardSkeleton = () => (
-  <div className="flex gap-4 h-40 p-2 bg-neutral-900/30 rounded-[2rem] border border-white/5">
+const HorizontalCardSkeleton = ({ index }) => (
+  <div
+    className="flex gap-4 h-40 p-2 bg-neutral-900/30 rounded-[2rem] border border-white/5"
+    style={{ animationDelay: `${index * 45}ms` }}
+  >
     <div className="w-28 h-full bg-neutral-800/50 rounded-[1.5rem] animate-pulse" />
     <div className="flex-1 flex flex-col justify-center gap-3">
       <div className="h-6 w-3/4 bg-neutral-800/50 rounded-full animate-pulse" />
@@ -31,101 +105,187 @@ const HorizontalCardSkeleton = () => (
   </div>
 );
 
-// --- MAIN COMPONENT ---
+// ─── Main Component ────────────────────────────────────────────────────────────
 const HomeDisplay = () => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
+
   const [contentData, setContentData] = useState({ movies: [], tvShows: [] });
   const [activeTab, setActiveTab] = useState("movies");
   const [pageData, setPageData] = useState({ movies: 1, tvShows: 1 });
-  const [loading, setLoading] = useState({ movies: false, tvShows: false });
+  // Per-type loading: only show skeleton on *first* load for that type
+  const [loading, setLoading] = useState({ movies: true, tvShows: true });
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState({ movies: 1, tvShows: 1 });
   const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
+  // Track whether each type has ever successfully loaded data
+  const hasLoaded = useRef({ movies: false, tvShows: false });
+
+  // AbortController refs — one per type so we can cancel stale requests
+  const abortRefs = useRef({ movies: null, tvShows: null });
+
+  // Debounce timer for genre changes
+  const genreDebounce = useRef(null);
+
+  // Prefetch timer
+  const prefetchTimer = useRef(null);
+
+  // ── Scroll-to-top visibility ──────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => setShowTopBtn(window.scrollY > 500);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const fetchContent = async (type, page, genres) => {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const isMovie = type === "movies";
-    const baseUrl = isMovie ? "movie" : "tv";
+  // ── Core loader ───────────────────────────────────────────────────────────
+  const loadType = useCallback(
+    async (type, page, genres, { silent = false } = {}) => {
+      // Cancel any in-flight request for this type
+      abortRefs.current[type]?.abort();
+      const controller = new AbortController();
+      abortRefs.current[type] = controller;
 
-    try {
-      setLoading((prev) => ({ ...prev, [type]: true }));
+      // Only show skeleton when there's no data yet for this type
+      if (!silent && !hasLoaded.current[type]) {
+        setLoading((prev) => ({ ...prev, [type]: true }));
+      }
+
       setError(null);
 
-      const url =
-        genres.length > 0
-          ? `https://api.themoviedb.org/3/discover/${
-              isMovie ? "movie" : "tv"
-            }?api_key=${apiKey}&with_genres=${genres
-              .map((g) => g.id)
-              .join(",")}&page=${page}&language=en-US&sort_by=popularity.desc`
-          : `https://api.themoviedb.org/3/${baseUrl}/popular?api_key=${apiKey}&page=${page}&language=en-US`;
+      try {
+        const result = await fetchPage(type, page, genres, controller.signal);
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch ${type}`);
+        // Don't update state if this request was superseded
+        if (controller.signal.aborted) return;
 
-      const data = await response.json();
-      const processed = data.results.map((item) => ({
-        ...item,
-        media_type: isMovie ? "movie" : "tv",
-        title: isMovie ? item.title : item.name,
-        release_date: isMovie ? item.release_date : item.first_air_date,
-      }));
+        setContentData((prev) => ({ ...prev, [type]: result.items }));
+        setTotalPages((prev) => ({ ...prev, [type]: result.totalPages }));
+        hasLoaded.current[type] = true;
+      } catch (err) {
+        if (err.name === "AbortError") return; // intentionally cancelled
+        console.error(`Error fetching ${type}:`, err);
+        setError(`Unable to load ${type}. Please try again.`);
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading((prev) => ({ ...prev, [type]: false }));
+        }
+      }
+    },
+    [],
+  );
 
-      setContentData((prev) => ({
-        ...prev,
-        [type]: processed,
-      }));
+  // ── Prefetch helper (silent — only warms the cache) ───────────────────────
+  const prefetchPage = useCallback((type, page, genres) => {
+    clearTimeout(prefetchTimer.current);
+    prefetchTimer.current = setTimeout(() => {
+      // Fire-and-forget; AbortController not needed for prefetch
+      fetchPage(type, page, genres, new AbortController().signal).catch(
+        () => {},
+      );
+    }, PREFETCH_DELAY_MS);
+  }, []);
 
-      setTotalPages((prev) => ({
-        ...prev,
-        [type]: Math.min(data.total_pages, 500),
-      }));
-    } catch (err) {
-      console.error(`Error fetching ${type}:`, err);
-      setError(`Unable to load ${type}. Please try again later.`);
-    } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
-    }
-  };
-
+  // ── Initial load: fetch BOTH tabs in parallel ─────────────────────────────
   useEffect(() => {
-    const currentType = activeTab === "movies" ? "movies" : "tvShows";
-    fetchContent(currentType, pageData[currentType], activeGenres);
+    Promise.all([
+      loadType("movies", 1, activeGenres),
+      loadType("tvShows", 1, activeGenres),
+    ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    activeGenres,
-    pageData[activeTab === "movies" ? "movies" : "tvShows"],
-  ]);
+  }, []);
 
-  const handleTabChange = (value) => {
-    setActiveTab(value);
-  };
+  // ── Genre change: debounce then reload active tab; also reset pages ────────
+  const activeGenresRef = useRef(activeGenres);
+  useEffect(() => {
+    activeGenresRef.current = activeGenres;
+  }, [activeGenres]);
+
+  // Track if this is the mount (skip debounce on first render)
+  const isMounted = useRef(false);
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    clearTimeout(genreDebounce.current);
+    genreDebounce.current = setTimeout(() => {
+      // Reset to page 1 for both types when genres change
+      setPageData({ movies: 1, tvShows: 1 });
+      hasLoaded.current = { movies: false, tvShows: false };
+
+      // Fetch both types with new genres in parallel
+      Promise.all([
+        loadType("movies", 1, activeGenres),
+        loadType("tvShows", 1, activeGenres),
+      ]);
+    }, GENRE_DEBOUNCE_MS);
+
+    return () => clearTimeout(genreDebounce.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGenres]);
+
+  // ── Page change: load new page for active type, prefetch next ─────────────
+  const prevPageData = useRef(pageData);
+  useEffect(() => {
+    const type = activeTab === "movies" ? "movies" : "tvShows";
+    const page = pageData[type];
+
+    // Only trigger if page actually changed (not on genre-driven reset)
+    if (prevPageData.current[type] === page) return;
+    prevPageData.current = pageData;
+
+    loadType(type, page, activeGenres);
+
+    // Prefetch next page
+    if (page < totalPages[type]) {
+      prefetchPage(type, page + 1, activeGenres);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageData]);
+
+  // ── Tab switch: prefetch inactive tab's next page when idle ───────────────
+  const handleTabChange = useCallback(
+    (value) => {
+      setActiveTab(value);
+      const type = value === "movies" ? "movies" : "tvShows";
+      const page = pageData[type];
+      // Prefetch the next page of the tab we just switched to
+      if (page < totalPages[type]) {
+        prefetchPage(type, page + 1, activeGenres);
+      }
+    },
+    [pageData, totalPages, activeGenres, prefetchPage],
+  );
+
+  // ── Cleanup on unmount ────────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      abortRefs.current.movies?.abort();
+      abortRefs.current.tvShows?.abort();
+      clearTimeout(genreDebounce.current);
+      clearTimeout(prefetchTimer.current);
+    };
+  }, []);
 
   const handlePageChange = (newPage) => {
-    const currentType = activeTab === "movies" ? "movies" : "tvShows";
-    setPageData((prev) => ({ ...prev, [currentType]: newPage }));
+    const type = activeTab === "movies" ? "movies" : "tvShows";
+    setPageData((prev) => ({ ...prev, [type]: newPage }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const currentType = activeTab === "movies" ? "movies" : "tvShows";
   const isLoading = loading[currentType];
   const currentData = contentData[currentType];
 
-  // --- RENDER HELPERS ---
+  // ── Render helpers ────────────────────────────────────────────────────────
   const renderGrid = (items) => (
     <motion.div
-      key={pageData[currentType]}
-      initial={{ opacity: 0, y: 20 }}
+      key={`${currentType}-${pageData[currentType]}`}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Desktop Grid */}
       <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 gap-6 xl:gap-8 z-20">
@@ -150,43 +310,34 @@ const HomeDisplay = () => {
     <div className="w-full">
       <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 xl:gap-8">
         {Array.from({ length: 20 }).map((_, i) => (
-          <CardSkeleton key={i} />
+          <CardSkeleton key={i} index={i} />
         ))}
       </div>
       <div className="grid lg:hidden grid-cols-1 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <HorizontalCardSkeleton key={i} />
+          <HorizontalCardSkeleton key={i} index={i} />
         ))}
       </div>
     </div>
   );
 
+  // ── JSX ───────────────────────────────────────────────────────────────────
   return (
     <div className="w-full max-w-[2400px] mx-auto px-2 sm:px-6 lg:px-12 pb-24">
-      {/* 1. Continue Watching Section */}
+      {/* Continue Watching */}
       <section className="mb-12">
         <ContinueWatching />
       </section>
 
-      {/* 
-         2. Main Discovery Surface 
-         FIX: Removed 'overflow-hidden' so dropdowns can float outside.
-      */}
+      {/* Main Discovery Surface */}
       <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative">
-        {/* 
-          FIX: Added a dedicated background container with overflow-hidden and rounded corners.
-          This clips the background noise image without clipping UI elements (like the dropdown).
-        */}
+        {/* Background texture */}
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
         </div>
 
-        {/* 
-          --- HEADER BLOCK --- 
-          FIX: Increased z-index to z-50 to ensure header (and dropdown) sits above the Tabs/Grid.
-        */}
+        {/* Header */}
         <div className="relative z-50 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-          {/* Typography */}
           <div className="space-y-2 z-10">
             <span className="block text-xs font-mono text-neutral-500 uppercase tracking-widest pl-1">
               Browse Library
@@ -203,9 +354,8 @@ const HomeDisplay = () => {
             </h2>
           </div>
 
-          {/* Controls Cluster */}
+          {/* Controls */}
           <div className="flex flex-wrap items-center gap-3 relative z-[60]">
-            {/* Filter Pill Container */}
             <div className="relative">
               <button
                 onClick={() => setIsGenreMenuOpen(!isGenreMenuOpen)}
@@ -235,7 +385,6 @@ const HomeDisplay = () => {
               />
             </div>
 
-            {/* Clear All 'X' Button */}
             {activeGenres.length > 0 && (
               <button
                 onClick={() => {
@@ -250,16 +399,12 @@ const HomeDisplay = () => {
           </div>
         </div>
 
-        {/* 
-          --- TABS & CONTENT --- 
-          FIX: Lowered z-index to z-0 so it sits below the header.
-        */}
+        {/* Tabs */}
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
           className="relative z-0 space-y-8"
         >
-          {/* Tabs List */}
           <div className="w-full border-b border-white/10 pb-1">
             <TabsList className="bg-transparent p-0 flex gap-8 w-auto h-auto">
               {["movies", "tv"].map((tab) => {
@@ -269,16 +414,12 @@ const HomeDisplay = () => {
                     key={tab}
                     value={tab}
                     className="
-    relative px-0 py-4 bg-transparent 
-    data-[state=active]:bg-transparent data-[state=active]:shadow-none 
-    text-lg md:text-xl font-medium tracking-tight transition-colors
-    
-
-    text-neutral-500 hover:text-neutral-300
-    
-
-    data-[state=active]:text-white
-  "
+                      relative px-0 py-4 bg-transparent
+                      data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                      text-lg md:text-xl font-medium tracking-tight transition-colors
+                      text-neutral-500 hover:text-neutral-300
+                      data-[state=active]:text-white
+                    "
                   >
                     <span className="flex items-center gap-2">
                       {tab === "movies" ? <Film size={18} /> : <Tv size={18} />}
@@ -296,7 +437,7 @@ const HomeDisplay = () => {
             </TabsList>
           </div>
 
-          {/* Tab Contents */}
+          {/* Tab Content */}
           <div className="min-h-[500px]">
             {isLoading ? (
               renderSkeletons()
@@ -308,7 +449,6 @@ const HomeDisplay = () => {
                 >
                   {renderGrid(contentData.movies)}
                 </TabsContent>
-
                 <TabsContent
                   value="tv"
                   className="mt-0 focus-visible:outline-none"
@@ -318,7 +458,6 @@ const HomeDisplay = () => {
               </>
             )}
 
-            {/* Error Message */}
             {error && !isLoading && (
               <div className="p-12 text-center text-red-400 font-mono tracking-widest bg-red-900/10 rounded-3xl border border-red-500/20">
                 ERR: {error}
@@ -327,7 +466,7 @@ const HomeDisplay = () => {
           </div>
         </Tabs>
 
-        {/* --- FOOTER: PAGINATION & RECCOMENDATION --- */}
+        {/* Footer: Pagination + Recommendations */}
         <div className="mt-16 border-t border-white/5 pt-12">
           {!isLoading && currentData.length > 0 && (
             <HomePagination
@@ -345,7 +484,7 @@ const HomeDisplay = () => {
         </div>
       </div>
 
-      {/* FAB - Scroll to Top */}
+      {/* FAB – scroll to top */}
       <AnimatePresence>
         {showTopBtn && (
           <motion.button
