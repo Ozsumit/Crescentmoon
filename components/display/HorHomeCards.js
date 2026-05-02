@@ -1,15 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Calendar, PlayCircle, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const HorizontalHomeCard = ({ MovieCard, className }) => {
+const HorizontalHomeCard = memo(({ MovieCard, className }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const isTV = MovieCard.media_type === "tv";
+  // Safely determine if it's TV or Movie
+  const isTV =
+    MovieCard.media_type === "tv" || MovieCard.first_air_date !== undefined;
   const title = isTV ? MovieCard.name : MovieCard.title;
   const linkPath = isTV ? `/series/${MovieCard.id}` : `/movie/${MovieCard.id}`;
 
@@ -24,36 +26,39 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
     return new Date(dateString).getFullYear();
   };
 
-  // --- FAVORITE LOGIC ---
+  // --- FAVORITE LOGIC OPTIMIZED ---
   useEffect(() => {
-    // Check initial state from local storage
     const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
     setIsFavorite(favorites.some((item) => item.id === MovieCard.id));
   }, [MovieCard.id]);
 
-  const handleFavoriteToggle = (e) => {
-    // 1. PREVENT NAVIGATION (Crucial for UX)
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 2. Optimistic UI Update (Instant feedback)
-    const newStatus = !isFavorite;
-    setIsFavorite(newStatus);
-
-    // 3. Update Storage
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (!newStatus) {
-      // Remove
-      const updated = favorites.filter((item) => item.id !== MovieCard.id);
-      localStorage.setItem("favorites", JSON.stringify(updated));
-    } else {
-      // Add
-      if (!favorites.some((item) => item.id === MovieCard.id)) {
-        favorites.push(MovieCard);
-        localStorage.setItem("favorites", JSON.stringify(favorites));
+  // Wrapped in useCallback so it doesn't recreate on every render
+  const handleFavoriteToggle = useCallback(
+    (e) => {
+      // 1. PREVENT NAVIGATION (Crucial for UX inside a Link container)
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
       }
-    }
-  };
+
+      // 2. Optimistic UI Update
+      const newStatus = !isFavorite;
+      setIsFavorite(newStatus);
+
+      // 3. Update Storage
+      const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+      if (!newStatus) {
+        const updated = favorites.filter((item) => item.id !== MovieCard.id);
+        localStorage.setItem("favorites", JSON.stringify(updated));
+      } else {
+        if (!favorites.some((item) => item.id === MovieCard.id)) {
+          favorites.push(MovieCard);
+          localStorage.setItem("favorites", JSON.stringify(favorites));
+        }
+      }
+    },
+    [isFavorite, MovieCard],
+  );
 
   return (
     <motion.div
@@ -63,26 +68,16 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full transform-gpu relative group"
     >
-      {/* 
-        FAVORITE BUTTON 
-        Positioned absolute so it sits on top. 
-        High z-index to ensure clickability.
-      */}
+      {/* FAVORITE BUTTON */}
       <motion.button
         onClick={handleFavoriteToggle}
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.8 }}
-        className={`
-          absolute top-3 right-3 z-20 
-          w-9 h-9 flex items-center justify-center rounded-full 
-          backdrop-blur-md shadow-lg border 
-          transition-all duration-300 ease-out
-          ${
-            isFavorite
-              ? "bg-rose-500/20 border-rose-500/50" // Active Glow
-              : "bg-black/30 border-white/10 hover:bg-black/60" // Inactive Glass
-          }
-        `}
+        className={`absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md shadow-lg border transition-all duration-300 ease-out ${
+          isFavorite
+            ? "bg-rose-500/20 border-rose-500/50"
+            : "bg-black/30 border-white/10 hover:bg-black/60"
+        }`}
       >
         <AnimatePresence mode="wait">
           {isFavorite ? (
@@ -111,13 +106,7 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
       {/* MAIN CARD LINK */}
       <Link
         href={linkPath}
-        className={`
-          flex w-full h-40 
-          bg-[#141414] rounded-[2rem] overflow-hidden 
-          border border-white/5 shadow-md hover:shadow-2xl hover:border-white/10 hover:bg-[#1a1a1a]
-          transition-all duration-300
-          ${className}
-        `}
+        className={`flex w-full h-40 bg-[#141414] rounded-[2rem] overflow-hidden border border-white/5 shadow-md hover:shadow-2xl hover:border-white/10 hover:bg-[#1a1a1a] transition-all duration-300 ${className || ""}`}
       >
         {/* --- LEFT: IMAGE --- */}
         <div className="p-2 h-full w-[120px] flex-shrink-0">
@@ -126,49 +115,44 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
               src={getImagePath()}
               alt={title}
               fill
+              loading="lazy"
+              sizes="120px" // Optimized for exact container bounds
               className={`object-cover transition-all duration-700 ${
-                imageLoaded ? "opacity-100" : "opacity-0"
+                imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-md"
               } group-hover:scale-110`}
-              onLoadingComplete={() => setImageLoaded(true)}
+              onLoad={() => setImageLoaded(true)} // Replaced deprecated onLoadingComplete
             />
-            {/* Dark overlay on hover for better text contrast if needed */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
           </div>
         </div>
 
         {/* --- RIGHT: INFO --- */}
         <div className="flex-1 py-3 pr-4 pl-2 flex flex-col justify-center gap-1.5 relative">
-          {/* Top Row */}
           <div className="flex items-center gap-2">
             <span
-              className={`
-                text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors duration-300
-                ${
-                  isTV
-                    ? "bg-[#e8def8] text-[#1d192b] group-hover:bg-[#d0bcff]"
-                    : "bg-[#c4eed0] text-[#0a2010] group-hover:bg-[#bceeff]"
-                }
-              `}
+              className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors duration-300 ${
+                isTV
+                  ? "bg-[#e8def8] text-[#1d192b] group-hover:bg-[#d0bcff]"
+                  : "bg-[#c4eed0] text-[#0a2010] group-hover:bg-[#bceeff]"
+              }`}
             >
               {isTV ? "TV" : "FILM"}
             </span>
 
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#25232a] text-[#ffdcc2] text-[10px] font-bold">
-              <Star size={10} className="fill-[#ffdcc2]" />
-              {MovieCard.vote_average?.toFixed(1)}
-            </div>
+            {MovieCard.vote_average > 0 && (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#25232a] text-[#ffdcc2] text-[10px] font-bold">
+                <Star size={10} className="fill-[#ffdcc2]" />
+                {MovieCard.vote_average?.toFixed(1)}
+              </div>
+            )}
           </div>
 
-          {/* Title */}
           <div className="pr-8">
-            {" "}
-            {/* Padding right to avoid text overlapping the heart */}
             <h3 className="text-lg font-bold text-white leading-tight line-clamp-1 mb-0.5 group-hover:text-violet-200 transition-colors duration-300">
               {title}
             </h3>
           </div>
 
-          {/* Meta */}
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <Calendar size={12} />
             <span>
@@ -177,10 +161,9 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
           </div>
 
           <p className="text-[11px] text-neutral-500 line-clamp-1 leading-relaxed">
-            {MovieCard.overview}
+            {MovieCard.overview || "No description available."}
           </p>
 
-          {/* CTA */}
           <div className="mt-auto flex justify-end">
             <motion.div
               whileTap={{ scale: 0.95 }}
@@ -194,6 +177,8 @@ const HorizontalHomeCard = ({ MovieCard, className }) => {
       </Link>
     </motion.div>
   );
-};
+});
+
+HorizontalHomeCard.displayName = "HorizontalHomeCard";
 
 export default HorizontalHomeCard;
