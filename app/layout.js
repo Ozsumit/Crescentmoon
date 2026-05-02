@@ -7,7 +7,7 @@ import AppInstallPopup from "@/components/app-installpopup";
 import SnowButton from "@/components/snowbutton"; // 1. Import the new component
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { PostHogProvider } from "./providers";
+
 import DeveloperFeedback from "@/components/feedback";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -60,15 +60,13 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.className}>
-        <PostHogProvider>
-          <Header />
-          <Analytics />
-          <SpeedInsights />
-          <div className="mt-0">{children} </div>
-          <AdBlocker />
-          <Footer />
-          {/* <AppInstallPopup /> */}
-        </PostHogProvider>
+        <Header />
+        <Analytics />
+        <SpeedInsights />
+        <div className="mt-0">{children} </div>
+        <AdBlocker />
+        <Footer />
+        {/* <AppInstallPopup /> */}
       </body>
     </html>
   );
