@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Filter, X, Film, Tv, ArrowUp } from "lucide-react";
+import { Filter, X, Film, Tv, ArrowUp, LayoutGrid } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import HomeCards from "./HomeCard";
 import useGenreStore from "@/components/zustand";
@@ -19,7 +19,7 @@ const GENRE_DEBOUNCE_MS = 320;
 const PREFETCH_DELAY_MS = 600; // wait until current render settles
 
 // ─── Cache (module-level — survives re-renders, cleared on page unload) ───────
-const fetchCache = new Map(); // key → { data, ts }
+const fetchCache = new Map();
 
 function getCached(key) {
   const entry = fetchCache.get(key);
@@ -46,7 +46,6 @@ function buildUrl(type, page, genres) {
   return `https://api.themoviedb.org/3/${base}/popular?api_key=${API_KEY}&page=${page}&language=en-US`;
 }
 
-// ─── Normalise API response ────────────────────────────────────────────────────
 function normalise(items, isMovie) {
   return items.map((item) => ({
     ...item,
@@ -56,7 +55,6 @@ function normalise(items, isMovie) {
   }));
 }
 
-// ─── Core fetch (respects cache + abort signal) ───────────────────────────────
 async function fetchPage(type, page, genres, signal) {
   const cacheKey = `${type}|${page}|${genres
     .map((g) => g.id)
@@ -80,29 +78,63 @@ async function fetchPage(type, page, genres, signal) {
   return result;
 }
 
-// ─── Skeletons ────────────────────────────────────────────────────────────────
+// ─── Polished Skeletons ─────────────────────────────────────────────────────────
+const ShimmerStyles = () => (
+  <style>{`
+    @keyframes premium-shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .animate-shimmer {
+      animation: premium-shimmer 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  `}</style>
+);
+
 const CardSkeleton = ({ index }) => (
-  <div
-    className="flex flex-col gap-3"
-    style={{ animationDelay: `${index * 45}ms` }}
+  <motion.div
+    initial={{ opacity: 0, y: 15 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.03, duration: 0.4, ease: "easeOut" }}
+    className="relative w-full aspect-[2/3] rounded-[2rem] bg-[#0a0a0a] ring-1 ring-white/5 isolate overflow-hidden transform-gpu will-change-transform"
   >
-    <div className="w-full aspect-[2/3] bg-neutral-900/50 rounded-[2rem] animate-pulse border border-white/5" />
-    <div className="h-4 w-3/4 bg-neutral-900/50 rounded-full animate-pulse" />
-    <div className="h-3 w-1/4 bg-neutral-900/50 rounded-full animate-pulse" />
-  </div>
+    <div className="absolute inset-0 bg-neutral-900/40" />
+    <div className="absolute inset-0 z-0 animate-shimmer bg-gradient-to-r from-transparent via-white/[0.07] to-transparent w-[150%] transform-gpu will-change-transform" />
+    <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+      <div className="rounded-[1.5rem] bg-black/40 border border-white/5 backdrop-blur-md p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-5 w-12 bg-white/10 rounded-md" />
+          <div className="h-3 w-8 bg-white/10 rounded-md" />
+        </div>
+        <div className="h-5 w-3/4 bg-white/20 rounded-md mb-2" />
+        <div className="h-3 w-full bg-white/10 rounded-md mb-1.5" />
+        <div className="h-3 w-2/3 bg-white/10 rounded-md" />
+      </div>
+    </div>
+    <div className="absolute top-4 left-4 h-6 w-12 bg-white/10 rounded-full backdrop-blur-md" />
+    <div className="absolute top-4 right-4 h-10 w-10 bg-white/5 rounded-full border border-white/5 backdrop-blur-md" />
+  </motion.div>
 );
 
 const HorizontalCardSkeleton = ({ index }) => (
-  <div
-    className="flex gap-4 h-40 p-2 bg-neutral-900/30 rounded-[2rem] border border-white/5"
-    style={{ animationDelay: `${index * 45}ms` }}
+  <motion.div
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: index * 0.04, duration: 0.4, ease: "easeOut" }}
+    className="flex gap-4 p-2 h-36 bg-[#0a0a0a]/50 rounded-[2rem] border border-white/5 relative overflow-hidden isolate transform-gpu will-change-transform"
   >
-    <div className="w-28 h-full bg-neutral-800/50 rounded-[1.5rem] animate-pulse" />
-    <div className="flex-1 flex flex-col justify-center gap-3">
-      <div className="h-6 w-3/4 bg-neutral-800/50 rounded-full animate-pulse" />
-      <div className="h-4 w-1/3 bg-neutral-800/50 rounded-full animate-pulse" />
+    <div className="absolute inset-0 z-0 animate-shimmer bg-gradient-to-r from-transparent via-white/[0.04] to-transparent w-[150%] transform-gpu will-change-transform" />
+    <div className="w-24 sm:w-28 shrink-0 h-full bg-white/5 rounded-[1.5rem]" />
+    <div className="flex-1 flex flex-col justify-center gap-2.5 py-2 pr-4 z-10">
+      <div className="flex gap-2">
+        <div className="h-4 w-12 bg-white/10 rounded-md" />
+        <div className="h-4 w-8 bg-white/5 rounded-md" />
+      </div>
+      <div className="h-6 w-3/4 bg-white/20 rounded-md mb-1" />
+      <div className="h-3 w-full bg-white/5 rounded-md" />
+      <div className="h-3 w-4/5 bg-white/5 rounded-md" />
     </div>
-  </div>
+  </motion.div>
 );
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -110,43 +142,32 @@ const HomeDisplay = () => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
 
   const [contentData, setContentData] = useState({ movies: [], tvShows: [] });
-  const [activeTab, setActiveTab] = useState("movies");
-  const [pageData, setPageData] = useState({ movies: 1, tvShows: 1 });
-  // Per-type loading: only show skeleton on *first* load for that type
+  const [activeTab, setActiveTab] = useState("all"); // Initially mixed
+  const [pageData, setPageData] = useState({ all: 1, movies: 1, tvShows: 1 });
   const [loading, setLoading] = useState({ movies: true, tvShows: true });
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState({ movies: 1, tvShows: 1 });
   const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
-  // Track whether each type has ever successfully loaded data
   const hasLoaded = useRef({ movies: false, tvShows: false });
-
-  // AbortController refs — one per type so we can cancel stale requests
   const abortRefs = useRef({ movies: null, tvShows: null });
-
-  // Debounce timer for genre changes
   const genreDebounce = useRef(null);
-
-  // Prefetch timer
   const prefetchTimer = useRef(null);
+  const isMounted = useRef(false);
 
-  // ── Scroll-to-top visibility ──────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => setShowTopBtn(window.scrollY > 500);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ── Core loader ───────────────────────────────────────────────────────────
   const loadType = useCallback(
     async (type, page, genres, { silent = false } = {}) => {
-      // Cancel any in-flight request for this type
       abortRefs.current[type]?.abort();
       const controller = new AbortController();
       abortRefs.current[type] = controller;
 
-      // Only show skeleton when there's no data yet for this type
       if (!silent && !hasLoaded.current[type]) {
         setLoading((prev) => ({ ...prev, [type]: true }));
       }
@@ -155,15 +176,13 @@ const HomeDisplay = () => {
 
       try {
         const result = await fetchPage(type, page, genres, controller.signal);
-
-        // Don't update state if this request was superseded
         if (controller.signal.aborted) return;
 
         setContentData((prev) => ({ ...prev, [type]: result.items }));
         setTotalPages((prev) => ({ ...prev, [type]: result.totalPages }));
         hasLoaded.current[type] = true;
       } catch (err) {
-        if (err.name === "AbortError") return; // intentionally cancelled
+        if (err.name === "AbortError") return;
         console.error(`Error fetching ${type}:`, err);
         setError(`Unable to load ${type}. Please try again.`);
       } finally {
@@ -175,18 +194,16 @@ const HomeDisplay = () => {
     [],
   );
 
-  // ── Prefetch helper (silent — only warms the cache) ───────────────────────
   const prefetchPage = useCallback((type, page, genres) => {
     clearTimeout(prefetchTimer.current);
     prefetchTimer.current = setTimeout(() => {
-      // Fire-and-forget; AbortController not needed for prefetch
       fetchPage(type, page, genres, new AbortController().signal).catch(
         () => {},
       );
     }, PREFETCH_DELAY_MS);
   }, []);
 
-  // ── Initial load: fetch BOTH tabs in parallel ─────────────────────────────
+  // Initial load
   useEffect(() => {
     Promise.all([
       loadType("movies", 1, activeGenres),
@@ -195,14 +212,9 @@ const HomeDisplay = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Genre change: debounce then reload active tab; also reset pages ────────
-  const activeGenresRef = useRef(activeGenres);
-  useEffect(() => {
-    activeGenresRef.current = activeGenres;
-  }, [activeGenres]);
+  // Handle Genre filters
+  const prevPageData = useRef(pageData);
 
-  // Track if this is the mount (skip debounce on first render)
-  const isMounted = useRef(false);
   useEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true;
@@ -210,11 +222,11 @@ const HomeDisplay = () => {
     }
     clearTimeout(genreDebounce.current);
     genreDebounce.current = setTimeout(() => {
-      // Reset to page 1 for both types when genres change
-      setPageData({ movies: 1, tvShows: 1 });
+      const resetPages = { all: 1, movies: 1, tvShows: 1 };
+      setPageData(resetPages);
+      prevPageData.current = resetPages;
       hasLoaded.current = { movies: false, tvShows: false };
 
-      // Fetch both types with new genres in parallel
       Promise.all([
         loadType("movies", 1, activeGenres),
         loadType("tvShows", 1, activeGenres),
@@ -225,40 +237,33 @@ const HomeDisplay = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGenres]);
 
-  // ── Page change: load new page for active type, prefetch next ─────────────
-  const prevPageData = useRef(pageData);
+  // Handle Pagination Fetching based on Active Tab
   useEffect(() => {
-    const type = activeTab === "movies" ? "movies" : "tvShows";
-    const page = pageData[type];
-
-    // Only trigger if page actually changed (not on genre-driven reset)
-    if (prevPageData.current[type] === page) return;
-    prevPageData.current = pageData;
-
-    loadType(type, page, activeGenres);
-
-    // Prefetch next page
-    if (page < totalPages[type]) {
-      prefetchPage(type, page + 1, activeGenres);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageData]);
-
-  // ── Tab switch: prefetch inactive tab's next page when idle ───────────────
-  const handleTabChange = useCallback(
-    (value) => {
-      setActiveTab(value);
-      const type = value === "movies" ? "movies" : "tvShows";
-      const page = pageData[type];
-      // Prefetch the next page of the tab we just switched to
-      if (page < totalPages[type]) {
-        prefetchPage(type, page + 1, activeGenres);
+    if (activeTab === "all") {
+      const page = pageData.all;
+      if (prevPageData.current.all !== page) {
+        prevPageData.current.all = page;
+        loadType("movies", page, activeGenres);
+        loadType("tvShows", page, activeGenres);
       }
-    },
-    [pageData, totalPages, activeGenres, prefetchPage],
-  );
+    } else {
+      const type = activeTab === "movies" ? "movies" : "tvShows";
+      const page = pageData[activeTab];
+      if (prevPageData.current[activeTab] !== page) {
+        prevPageData.current[activeTab] = page;
+        loadType(type, page, activeGenres);
 
-  // ── Cleanup on unmount ────────────────────────────────────────────────────
+        if (page < totalPages[type]) {
+          prefetchPage(type, page + 1, activeGenres);
+        }
+      }
+    }
+  }, [pageData, activeTab, activeGenres, loadType, prefetchPage, totalPages]);
+
+  const handleTabChange = useCallback((value) => {
+    setActiveTab(value);
+  }, []);
+
   useEffect(() => {
     return () => {
       abortRefs.current.movies?.abort();
@@ -269,32 +274,49 @@ const HomeDisplay = () => {
   }, []);
 
   const handlePageChange = (newPage) => {
-    const type = activeTab === "movies" ? "movies" : "tvShows";
-    setPageData((prev) => ({ ...prev, [type]: newPage }));
+    setPageData((prev) => ({ ...prev, [activeTab]: newPage }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const currentType = activeTab === "movies" ? "movies" : "tvShows";
-  const isLoading = loading[currentType];
-  const currentData = contentData[currentType];
+  // Compose Data based on current active view
+  let currentData = [];
+  let isLoading = false;
+  let currentTotalPages = 1;
+  let currentPage = 1;
 
-  // ── Render helpers ────────────────────────────────────────────────────────
+  if (activeTab === "all") {
+    // Interleave Movies & TV Shows perfectly for the mixed state
+    const m = contentData.movies;
+    const t = contentData.tvShows;
+    const maxLen = Math.max(m.length, t.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (m[i]) currentData.push(m[i]);
+      if (t[i]) currentData.push(t[i]);
+    }
+    isLoading = loading.movies || loading.tvShows;
+    currentTotalPages = Math.max(totalPages.movies, totalPages.tvShows);
+    currentPage = pageData.all;
+  } else {
+    const type = activeTab === "movies" ? "movies" : "tvShows";
+    currentData = contentData[type];
+    isLoading = loading[type];
+    currentTotalPages = totalPages[type];
+    currentPage = pageData[activeTab];
+  }
+
   const renderGrid = (items) => (
     <motion.div
-      key={`${currentType}-${pageData[currentType]}`}
+      key={`${activeTab}-${currentPage}`} // Ensure Framer fires on swap & pagination
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Desktop Grid */}
       <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 gap-6 xl:gap-8 z-20">
         {items.map((item) => (
           <HomeCards key={`${item.media_type}-${item.id}`} MovieCard={item} />
         ))}
       </div>
-
-      {/* Mobile Horizontal List */}
       <div className="grid lg:hidden grid-cols-1 gap-4">
         {items.map((item) => (
           <HorizontalHomeCard
@@ -307,9 +329,16 @@ const HomeDisplay = () => {
   );
 
   const renderSkeletons = () => (
-    <div className="w-full">
-      <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-6 xl:gap-8">
-        {Array.from({ length: 20 }).map((_, i) => (
+    <motion.div
+      key={`skeleton-${activeTab}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="w-full"
+    >
+      <div className="hidden lg:grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 gap-6 xl:gap-8">
+        {Array.from({ length: 15 }).map((_, i) => (
           <CardSkeleton key={i} index={i} />
         ))}
       </div>
@@ -318,25 +347,22 @@ const HomeDisplay = () => {
           <HorizontalCardSkeleton key={i} index={i} />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 
-  // ── JSX ───────────────────────────────────────────────────────────────────
   return (
     <div className="w-full max-w-[2400px] mx-auto px-2 sm:px-6 lg:px-12 pb-24">
-      {/* Continue Watching */}
+      <ShimmerStyles />
+
       <section className="mb-12">
         <ContinueWatching />
       </section>
 
-      {/* Main Discovery Surface */}
-      <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative">
-        {/* Background texture */}
+      <div className="bg-[#080808] border inset-shadow-white-2xl border-white/5 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-white-2xl relative">
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
         </div>
 
-        {/* Header */}
         <div className="relative z-50 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           <div className="space-y-2 z-10">
             <span className="block text-xs font-mono text-neutral-500 uppercase tracking-widest pl-1">
@@ -354,7 +380,6 @@ const HomeDisplay = () => {
             </h2>
           </div>
 
-          {/* Controls */}
           <div className="flex flex-wrap items-center gap-3 relative z-[60]">
             <div className="relative">
               <button
@@ -399,15 +424,14 @@ const HomeDisplay = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
           className="relative z-0 space-y-8"
         >
           <div className="w-full border-b border-white/10 pb-1">
-            <TabsList className="bg-transparent p-0 flex gap-8 w-auto h-auto">
-              {["movies", "tv"].map((tab) => {
+            <TabsList className="bg-transparent p-0 flex gap-6 md:gap-8 w-auto h-auto overflow-x-auto no-scrollbar">
+              {["all", "movies", "tv"].map((tab) => {
                 const isActive = activeTab === tab;
                 return (
                   <TabsTrigger
@@ -422,13 +446,19 @@ const HomeDisplay = () => {
                     "
                   >
                     <span className="flex items-center gap-2">
-                      {tab === "movies" ? <Film size={18} /> : <Tv size={18} />}
-                      {tab === "movies" ? "Movies" : "TV Series"}
+                      {tab === "all" && <LayoutGrid size={18} />}
+                      {tab === "movies" && <Film size={18} />}
+                      {tab === "tv" && <Tv size={18} />}
+                      {tab === "all"
+                        ? "All"
+                        : tab === "movies"
+                          ? "Movies"
+                          : "TV Series"}
                     </span>
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-white"
+                        className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-white transform-gpu"
                       />
                     )}
                   </TabsTrigger>
@@ -437,26 +467,39 @@ const HomeDisplay = () => {
             </TabsList>
           </div>
 
-          {/* Tab Content */}
           <div className="min-h-[500px]">
-            {isLoading ? (
-              renderSkeletons()
-            ) : (
-              <>
-                <TabsContent
-                  value="movies"
-                  className="mt-0 focus-visible:outline-none"
-                >
-                  {renderGrid(contentData.movies)}
-                </TabsContent>
-                <TabsContent
-                  value="tv"
-                  className="mt-0 focus-visible:outline-none"
-                >
-                  {renderGrid(contentData.tvShows)}
-                </TabsContent>
-              </>
-            )}
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                renderSkeletons()
+              ) : (
+                <>
+                  <TabsContent
+                    value="all"
+                    forceMount
+                    hidden={activeTab !== "all"}
+                    className="mt-0 focus-visible:outline-none"
+                  >
+                    {renderGrid(currentData)}
+                  </TabsContent>
+                  <TabsContent
+                    value="movies"
+                    forceMount
+                    hidden={activeTab !== "movies"}
+                    className="mt-0 focus-visible:outline-none"
+                  >
+                    {renderGrid(currentData)}
+                  </TabsContent>
+                  <TabsContent
+                    value="tv"
+                    forceMount
+                    hidden={activeTab !== "tv"}
+                    className="mt-0 focus-visible:outline-none"
+                  >
+                    {renderGrid(currentData)}
+                  </TabsContent>
+                </>
+              )}
+            </AnimatePresence>
 
             {error && !isLoading && (
               <div className="p-12 text-center text-red-400 font-mono tracking-widest bg-red-900/10 rounded-3xl border border-red-500/20">
@@ -466,13 +509,12 @@ const HomeDisplay = () => {
           </div>
         </Tabs>
 
-        {/* Footer: Pagination + Recommendations */}
         <div className="mt-16 border-t border-white/5 pt-12">
           {!isLoading && currentData.length > 0 && (
             <HomePagination
-              page={pageData[currentType]}
+              page={currentPage}
               setPage={handlePageChange}
-              totalPages={totalPages[currentType]}
+              totalPages={currentTotalPages}
             />
           )}
 
@@ -484,7 +526,6 @@ const HomeDisplay = () => {
         </div>
       </div>
 
-      {/* FAB – scroll to top */}
       <AnimatePresence>
         {showTopBtn && (
           <motion.button
@@ -492,7 +533,7 @@ const HomeDisplay = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-8 right-8 z-50 p-4 rounded-[1.5rem] bg-[#c3f0c2] text-[#07210b] shadow-xl hover:scale-110 active:scale-95 transition-transform"
+            className="fixed bottom-8 right-8 z-50 p-4 rounded-[1.5rem] bg-[#c3f0c2] text-[#07210b] shadow-xl hover:scale-110 active:scale-95 transition-transform transform-gpu will-change-transform"
           >
             <ArrowUp size={24} />
           </motion.button>

@@ -62,12 +62,14 @@ const GlassMediaCard = ({
   const progressPercent = Math.min((currentWatched / totalDuration) * 100, 100);
   const remainingSeconds = Math.max(0, totalDuration - currentWatched);
 
+  // Snappy GPU-accelerated framer motion configurations
   const containerVariants = {
-    rest: { scale: 1, y: 0 },
+    rest: { scale: 1, y: 0, translateZ: 0 },
     hover: {
-      scale: 1.02,
-      y: -5,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
+      scale: 1.03,
+      y: -8,
+      translateZ: 0,
+      transition: { type: "spring", stiffness: 400, damping: 25, mass: 0.8 },
     },
   };
 
@@ -75,22 +77,28 @@ const GlassMediaCard = ({
     rest: {
       height: 0,
       opacity: 0,
-      transition: { duration: 0.2, when: "afterChildren" },
+      translateZ: 0,
+      transition: { duration: 0.2, ease: "easeOut", when: "afterChildren" },
     },
     hover: {
       height: "auto",
       opacity: 1,
+      translateZ: 0,
       transition: {
-        duration: 0.3,
-        staggerChildren: 0.1,
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+        mass: 0.8,
+        staggerChildren: 0.05,
+        delayChildren: 0.05,
         when: "beforeChildren",
       },
     },
   };
 
   const itemFade = {
-    rest: { opacity: 0, y: 10 },
-    hover: { opacity: 1, y: 0 },
+    rest: { opacity: 0, y: 10, translateZ: 0 },
+    hover: { opacity: 1, y: 0, translateZ: 0 },
   };
 
   return (
@@ -100,29 +108,29 @@ const GlassMediaCard = ({
       whileHover="hover"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu select-none group"
+      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu will-change-transform select-none group"
     >
-      <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden">
+      <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden block">
         <div className="absolute inset-0 bg-neutral-900">
           <Image
             src={getImagePath(media.poster_path)}
             alt={title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className={`object-cover transition-all duration-700 ease-out ${
+            className={`object-cover transition-[transform,filter,opacity] duration-500 ease-out transform-gpu will-change-[transform,filter,opacity] ${
               imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"
             } ${isHovered ? "scale-110" : "scale-100"}`}
             onLoad={() => setImageLoaded(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 will-change-opacity group-hover:opacity-80" />
         </div>
 
-        {/* PROGRESS BAR */}
-        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10 z-20">
+        {/* PROGRESS BAR - Accelerated via scaleX instead of width */}
+        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10 z-20 overflow-hidden">
           <motion.div
-            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-            initial={{ width: 0 }}
-            animate={{ width: `${progressPercent}%` }}
+            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] origin-left transform-gpu will-change-transform"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: progressPercent / 100 }}
             transition={{ duration: 1, ease: "easeOut" }}
           />
         </div>
@@ -132,7 +140,7 @@ const GlassMediaCard = ({
           className="absolute bottom-1.5 left-0 right-0 p-2 z-10"
           animate={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
         >
-          <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/40">
+          <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/40 transform-gpu">
             <div className="px-4 pt-4 pb-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -162,20 +170,23 @@ const GlassMediaCard = ({
               </h3>
             </div>
 
-            <motion.div variants={contentStagger}>
+            <motion.div
+              variants={contentStagger}
+              className="transform-gpu will-change-[height,opacity]"
+            >
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <motion.p
                   variants={itemFade}
-                  className="text-xs text-neutral-300 line-clamp-2 leading-relaxed"
+                  className="text-xs text-neutral-300 line-clamp-2 leading-relaxed transform-gpu"
                 >
                   {media.overview ||
                     "Saved in your continue watching list. Click to resume playback."}
                 </motion.p>
 
-                {/* PROGRESS TRACKER TEXT (ONLY SHOWS ON HOVER) */}
+                {/* PROGRESS TRACKER TEXT */}
                 <motion.div
                   variants={itemFade}
-                  className="flex justify-between items-center bg-black/40 rounded-lg p-2.5 border border-white/5 backdrop-blur-sm"
+                  className="flex justify-between items-center bg-black/40 rounded-lg p-2.5 border border-white/5 backdrop-blur-sm transform-gpu"
                 >
                   <div className="flex items-center gap-2 text-emerald-400">
                     <Clock size={12} />
@@ -190,7 +201,7 @@ const GlassMediaCard = ({
                   </span>
                 </motion.div>
 
-                <motion.div variants={itemFade}>
+                <motion.div variants={itemFade} className="transform-gpu">
                   <Link href={getMediaLink(media)}>
                     <div className="w-full py-3 rounded-xl bg-emerald-400 text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-emerald-300 transition-colors">
                       <Play size={16} className="fill-[#07210b]" />
@@ -213,7 +224,7 @@ const GlassMediaCard = ({
             e.stopPropagation();
             onRemoveClick(media);
           }}
-          className="pointer-events-auto bg-black/40 backdrop-blur-md text-white/70 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300"
+          className="pointer-events-auto bg-black/40 backdrop-blur-md text-white/70 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-[background-color,color,border-color] duration-300 transform-gpu will-change-transform"
         >
           <X size={18} strokeWidth={2.5} />
         </button>
@@ -223,9 +234,12 @@ const GlassMediaCard = ({
             e.stopPropagation();
             handleFavoriteToggle(media.id);
           }}
-          whileHover={{ scale: 1.1 }}
+          whileHover={{
+            scale: 1.1,
+            transition: { type: "spring", stiffness: 400, damping: 20 },
+          }}
           whileTap={{ scale: 0.85 }}
-          className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${
+          className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-colors duration-300 transform-gpu will-change-transform ${
             isFavorite
               ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
               : "bg-black/40 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
@@ -235,18 +249,20 @@ const GlassMediaCard = ({
             {isFavorite ? (
               <motion.div
                 key="liked"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                initial={{ scale: 0, translateZ: 0 }}
+                animate={{ scale: 1, translateZ: 0 }}
+                exit={{ scale: 0, translateZ: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
                 <Heart size={18} className="fill-[#690005]" />
               </motion.div>
             ) : (
               <motion.div
                 key="unliked"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                initial={{ scale: 0, translateZ: 0 }}
+                animate={{ scale: 1, translateZ: 0 }}
+                exit={{ scale: 0, translateZ: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
                 <Heart size={18} />
               </motion.div>
@@ -346,9 +362,9 @@ const ContinueWatching = () => {
   return (
     <div className="w-full max-w-[2400px] mx-auto px-4 md:px-8 py-12 relative">
       <motion.div
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 transform-gpu"
+        initial={{ opacity: 0, y: -20, translateZ: 0 }}
+        animate={{ opacity: 1, y: 0, translateZ: 0 }}
       >
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -388,10 +404,11 @@ const ContinueWatching = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={viewAll ? "grid" : "swiper"}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0, translateZ: 0 }}
+            animate={{ opacity: 1, translateZ: 0 }}
+            exit={{ opacity: 0, translateZ: 0 }}
+            transition={{ duration: 0.3 }}
+            className="transform-gpu will-change-opacity"
           >
             {viewAll ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
@@ -431,10 +448,10 @@ const ContinueWatching = () => {
                     </SwiperSlide>
                   ))}
                 </Swiper>
-                <div className="cw-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                <div className="cw-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-[transform,background-color,color] opacity-0 group-hover/swiper:opacity-100 hidden md:flex transform-gpu will-change-transform">
                   <ChevronLeft size={24} strokeWidth={3} />
                 </div>
-                <div className="cw-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                <div className="cw-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-[transform,background-color,color] opacity-0 group-hover/swiper:opacity-100 hidden md:flex transform-gpu will-change-transform">
                   <ChevronRight size={24} strokeWidth={3} />
                 </div>
               </div>
@@ -443,9 +460,9 @@ const ContinueWatching = () => {
         </AnimatePresence>
       ) : (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="border border-dashed border-white/10 rounded-[2rem] p-12 text-center bg-[#0a0a0a]"
+          initial={{ opacity: 0, y: 20, translateZ: 0 }}
+          animate={{ opacity: 1, y: 0, translateZ: 0 }}
+          className="border border-dashed border-white/10 rounded-[2rem] p-12 text-center bg-[#0a0a0a] transform-gpu"
         >
           <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
             <Tv size={32} className="text-neutral-500" />
@@ -458,7 +475,7 @@ const ContinueWatching = () => {
           </p>
           <Link
             href="/browse"
-            className="inline-flex items-center gap-2 bg-emerald-400 text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 bg-emerald-400 text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform transform-gpu will-change-transform"
           >
             Explore Library
           </Link>
@@ -471,29 +488,32 @@ const ContinueWatching = () => {
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0, translateZ: 0 }}
+              animate={{ opacity: 1, translateZ: 0 }}
+              exit={{ opacity: 0, translateZ: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm transform-gpu will-change-opacity"
               onClick={() => setMediaToRemove(null)}
             />
 
             {/* Modal Box */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 p-6 sm:p-8 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden z-10"
+              initial={{ opacity: 0, scale: 0.95, y: 10, translateZ: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0, translateZ: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10, translateZ: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 25,
+                mass: 0.8,
+              }}
+              className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 p-6 sm:p-8 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden z-10 transform-gpu will-change-transform"
             >
-              {/* Subtle Red Ambient Glow */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-red-500/20 blur-[50px] pointer-events-none" />
 
-              {/* Close X Button */}
               <button
                 onClick={() => setMediaToRemove(null)}
-                className="absolute top-6 right-6 p-2 bg-white/5 border border-white/10 backdrop-blur-xl rounded-full text-white/50 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all"
+                className="absolute top-6 right-6 p-2 bg-white/5 border border-white/10 backdrop-blur-xl rounded-full text-white/50 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-[transform,background-color,color] transform-gpu will-change-transform"
               >
                 <X size={16} strokeWidth={2.5} />
               </button>
@@ -517,13 +537,13 @@ const ContinueWatching = () => {
               <div className="flex gap-3 relative z-10">
                 <button
                   onClick={() => setMediaToRemove(null)}
-                  className="flex-1 px-4 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/10 backdrop-blur-md active:scale-95"
+                  className="flex-1 px-4 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors border border-white/10 backdrop-blur-md active:scale-95 transform-gpu"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmRemove}
-                  className="flex-1 px-4 py-3.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 font-bold transition-colors active:scale-95 flex items-center justify-center gap-2 transform-gpu"
                 >
                   <Trash2 size={18} />
                   Remove

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+
+import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import {
@@ -16,115 +17,109 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const TRAILER_DELAY_MS = 2800; // ms before video plays on hover
+const HERO_TRAILER_DELAY_MS = 3000;
 
-const getImageUrl = (path, size = "w1280") => {
-  if (!path) return "https://i.imgur.com/HIYYPtZ.png";
-  return `https://image.tmdb.org/t/p/${size}/${path}`;
-};
+// ─── Module-level trailer cache (shared across all cards) ─────────────────────
+const trailerCache = new Map(); // `${type}/${id}` → key | null
 
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).getFullYear();
-};
+async function resolveTrailer(type, id, signal) {
+  const cacheKey = `${type}/${id}`;
+  if (trailerCache.has(cacheKey)) return trailerCache.get(cacheKey);
 
-// --- MORE LIKE THIS CARD ---
-const MoreLikeThisCard = ({
-  item,
-  index,
-  isActive,
-  setActiveIndex,
-  onHover,
-}) => {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}`,
+      { signal },
+    );
+    const data = await res.json();
+    const trailer = data.results?.find(
+      (v) =>
+        v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"),
+    );
+    const key = trailer?.key ?? null;
+    trailerCache.set(cacheKey, key);
+    return key;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const getImageUrl = (path, size = "w1280") =>
+  path
+    ? `https://image.tmdb.org/t/p/${size}/${path}`
+    : "https://i.imgur.com/HIYYPtZ.png";
+
+const formatDate = (dateString) =>
+  dateString ? new Date(dateString).getFullYear() : "N/A";
+
+// ─── MoreLikeThisCard ─────────────────────────────────────────────────────────
+const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
   const [trailerKey, setTrailerKey] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
   const [playVideo, setPlayVideo] = useState(false);
-  const [hoverProgress, setHoverProgress] = useState(0);
 
-  // Track fetching to prevent loop
-  const hasFetchedTrailer = useRef(false);
+  const abortRef = useRef(null);
+  const timerRef = useRef(null);
 
   const type = item.media_type || (item.first_air_date ? "tv" : "movie");
   const posterUrl = getImageUrl(item.backdrop_path || item.poster_path, "w500");
 
-  // OPTIMIZED FETCH: Only run once per card when hovered.
+  // Fetch trailer only once per card, only when first hovered
   useEffect(() => {
-    if (!isActive || !API_KEY || hasFetchedTrailer.current) return;
-    let isMounted = true;
-    hasFetchedTrailer.current = true;
-
-    const fetchTrailer = async () => {
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/${type}/${item.id}/videos?api_key=${API_KEY}`,
-        );
-        const data = await res.json();
-        const trailer = data.results?.find(
-          (vid) =>
-            vid.site === "YouTube" &&
-            (vid.type === "Trailer" || vid.type === "Teaser"),
-        );
-        if (isMounted && trailer) setTrailerKey(trailer.key);
-      } catch (err) {
-        console.error("Error fetching trailer", err);
+    if (!isActive || trailerCache.has(`${type}/${item.id}`)) {
+      if (isActive) {
+        const cached = trailerCache.get(`${type}/${item.id}`);
+        if (cached && !trailerKey) setTrailerKey(cached);
       }
-    };
-    fetchTrailer();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isActive, item.id, type]); // trailerKey safely removed from dependencies
-
-  // --- PROGRESS BAR & TIMERS ---
-  useEffect(() => {
-    let delayTimer;
-    let progressInterval;
-
-    if (isActive) {
-      // Safely fill progress bar over 3 seconds and STOP updating state at 100
-      progressInterval = setInterval(() => {
-        setHoverProgress((p) => {
-          if (p >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return p + 100 / 60; // 60 ticks for 3s
-        });
-      }, 50);
-
-      delayTimer = setTimeout(() => {
-        setPlayVideo(true);
-      }, 3000);
-    } else {
-      setPlayVideo(false);
-      setHoverProgress(0);
+      return;
     }
 
+    abortRef.current = new AbortController();
+    resolveTrailer(type, item.id, abortRef.current.signal).then((key) => {
+      if (key) setTrailerKey(key);
+    });
+
+    return () => abortRef.current?.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
+
+  // Play timer — only while hovered
+  useEffect(() => {
+    if (!isActive) {
+      clearTimeout(timerRef.current);
+      setPlayVideo(false);
+      return;
+    }
+
+    timerRef.current = setTimeout(() => setPlayVideo(true), TRAILER_DELAY_MS);
+
     return () => {
-      clearTimeout(delayTimer);
-      if (progressInterval) clearInterval(progressInterval);
+      clearTimeout(timerRef.current);
     };
   }, [isActive]);
 
   return (
     <div
       onMouseEnter={() => onHover(index)}
-      onClick={() => setIsMuted(!isMuted)}
-      className={`relative aspect-[16/9] sm:aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-[#0a0a0a] cursor-pointer transition-all duration-500 ease-out transform-gpu border ${
+      onClick={() => setIsMuted((m) => !m)}
+      className={`relative aspect-[16/9] sm:aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-[#0a0a0a] cursor-pointer transition-[transform,box-shadow,border] duration-300 ease-out transform-gpu will-change-transform border ${
         isActive
-          ? "border-white/30 scale-105 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
-          : "scale-100 z-0 border-white/5"
+          ? "border-white/30 scale-105 -translate-y-1 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+          : "scale-100 translate-y-0 z-0 border-white/5"
       }`}
     >
       {playVideo && trailerKey ? (
         <div className="absolute inset-0 w-full h-full bg-black">
           <motion.iframe
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.8 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, translateZ: 0 }}
+            animate={{ opacity: 0.8, translateZ: 0 }}
+            transition={{ duration: 0.4 }}
             src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&playsinline=1`}
-            className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen"
+            className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen transform-gpu will-change-opacity"
             allow="autoplay; encrypted-media"
             title="Trailer"
           />
@@ -142,22 +137,17 @@ const MoreLikeThisCard = ({
           alt={item.title || item.name}
           fill
           sizes="(max-width: 640px) 50vw, 25vw"
-          className="object-cover transition-transform duration-700 opacity-80 group-hover:opacity-100"
+          className="object-cover transition-[transform,opacity] duration-500 ease-out opacity-80 transform-gpu will-change-[transform,opacity]"
         />
       )}
 
-      {/* Glassmorphic overlay for text */}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 ${isActive ? "opacity-100" : "opacity-0 sm:opacity-100"}`}
+        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 will-change-opacity ${isActive ? "opacity-100" : "opacity-0 sm:opacity-100"}`}
       >
         <div className="absolute bottom-0 p-4 w-full">
           <div className="flex items-center gap-2 mb-2">
             <span
-              className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
-                type === "tv"
-                  ? "bg-[#d0bcff] text-[#381e72]"
-                  : "bg-[#bceeff] text-[#001f2a]"
-              }`}
+              className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${type === "tv" ? "bg-[#d0bcff] text-[#381e72]" : "bg-[#bceeff] text-[#001f2a]"}`}
             >
               {type === "tv" ? "Series" : "Movie"}
             </span>
@@ -177,37 +167,38 @@ const MoreLikeThisCard = ({
         </div>
       </div>
 
-      {/* Hover Progress Bar */}
+      {/* GPU Accelerated Progress Bar using scaleX */}
       {isActive && !playVideo && trailerKey && (
         <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full z-20 overflow-hidden">
-          <div
-            className="h-full bg-white transition-all duration-75 ease-linear"
-            style={{ width: `${hoverProgress}%` }}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: TRAILER_DELAY_MS / 1000, ease: "linear" }}
+            style={{ originX: 0 }}
+            className="h-full bg-white transform-gpu will-change-transform"
           />
         </div>
       )}
     </div>
   );
-};
+});
+MoreLikeThisCard.displayName = "MoreLikeThisCard";
 
-// --- MORE LIKE THIS GRID ---
-const MoreLikeThisGrid = ({ items }) => {
+// ─── MoreLikeThisGrid ─────────────────────────────────────────────────────────
+const MoreLikeThisGrid = memo(({ items }) => {
   const [activeIndex, setActiveIndex] = useState(null);
-
   const handleHover = useCallback((idx) => setActiveIndex(idx), []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (items.length === 0) return;
+      if (!items.length) return;
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        setActiveIndex((prev) =>
-          prev === null ? 0 : (prev + 1) % items.length,
-        );
+        setActiveIndex((p) => (p === null ? 0 : (p + 1) % items.length));
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        setActiveIndex((prev) =>
-          prev === null ? 0 : (prev - 1 + items.length) % items.length,
+        setActiveIndex((p) =>
+          p === null ? 0 : (p - 1 + items.length) % items.length,
         );
       }
     };
@@ -215,7 +206,7 @@ const MoreLikeThisGrid = ({ items }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [items.length]);
 
-  if (items.length === 0)
+  if (!items.length)
     return (
       <div className="text-white/50 font-medium">No similar titles found.</div>
     );
@@ -227,43 +218,47 @@ const MoreLikeThisGrid = ({ items }) => {
     >
       {items.map((item, index) => (
         <MoreLikeThisCard
-          key={`${item.id}-${index}`}
+          key={item.id}
           item={item}
           index={index}
           isActive={activeIndex === index}
-          setActiveIndex={setActiveIndex}
           onHover={handleHover}
         />
       ))}
     </div>
   );
-};
+});
+MoreLikeThisGrid.displayName = "MoreLikeThisGrid";
 
-// --- MODAL COMPONENT ---
+// ─── MovieModal ───────────────────────────────────────────────────────────────
 const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
   const [mounted, setMounted] = useState(false);
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
   const [similar, setSimilar] = useState([]);
-
   const [heroTrailer, setHeroTrailer] = useState(null);
   const [playHeroVideo, setPlayHeroVideo] = useState(false);
   const [isHeroMuted, setIsHeroMuted] = useState(true);
-
-  const [isLoadingTV, setIsLoadingTV] = useState(false);
+  const [isLoadingTV, setIsLoadingTV] = useState(isTV);
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
+
+  const episodeAbortRef = useRef(null);
+  const heroTimerRef = useRef(null);
+
+  const type = isTV ? "tv" : "movie";
+  const title = isTV ? movie.name : movie.title;
+  const heroImage = getImageUrl(
+    movie.backdrop_path || movie.poster_path,
+    "w1280",
+  );
+
   const getLink = () => {
     if (isTV) return `/series/${movie.id}`;
     if (movie.release_date) return `/movie/${movie.id}`;
     return "#";
   };
-
-  const title = isTV ? movie.name : movie.title;
-  const heroImage = movie.backdrop_path
-    ? getImageUrl(movie.backdrop_path, "w1280")
-    : getImageUrl(movie.poster_path, "w500");
 
   useEffect(() => {
     setMounted(true);
@@ -275,91 +270,82 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 
   const fetchEpisodes = useCallback(
     async (seasonNum) => {
-      if (!API_KEY || !movie?.id) return;
+      episodeAbortRef.current?.abort();
+      episodeAbortRef.current = new AbortController();
       setIsLoadingEpisodes(true);
       try {
         const res = await fetch(
           `https://api.themoviedb.org/3/tv/${movie.id}/season/${seasonNum}?api_key=${API_KEY}`,
+          { signal: episodeAbortRef.current.signal },
         );
         const data = await res.json();
         setEpisodes(data.episodes || []);
-      } catch (error) {
-        console.error("Error fetching episodes:", error);
+      } catch (err) {
+        if (err.name !== "AbortError")
+          console.error("Episodes fetch error:", err);
       } finally {
         setIsLoadingEpisodes(false);
       }
     },
-    [movie?.id],
+    [movie.id],
   );
 
   useEffect(() => {
     if (!API_KEY || !movie?.id) return;
     let isMounted = true;
-    const type = isTV ? "tv" : "movie";
+    const abort = new AbortController();
+    const sig = abort.signal;
 
-    const fetchAllData = async () => {
+    const run = async () => {
       try {
-        const similarPromise = fetch(
-          `https://api.themoviedb.org/3/${type}/${movie.id}/similar?api_key=${API_KEY}&language=en-US&page=1`,
-        ).then((res) => res.json());
-        const videoPromise = fetch(
-          `https://api.themoviedb.org/3/${type}/${movie.id}/videos?api_key=${API_KEY}`,
-        ).then((res) => res.json());
-
-        let tvDetailsPromise = Promise.resolve(null);
-        if (isTV) {
-          setIsLoadingTV(true);
-          tvDetailsPromise = fetch(
-            `https://api.themoviedb.org/3/tv/${movie.id}?api_key=${API_KEY}`,
-          ).then((res) => res.json());
-        }
-
         const [similarData, videoData, tvData] = await Promise.all([
-          similarPromise,
-          videoPromise,
-          tvDetailsPromise,
+          fetch(
+            `https://api.themoviedb.org/3/${type}/${movie.id}/similar?api_key=${API_KEY}&language=en-US&page=1`,
+            { signal: sig },
+          ).then((r) => r.json()),
+          fetch(
+            `https://api.themoviedb.org/3/${type}/${movie.id}/videos?api_key=${API_KEY}`,
+            { signal: sig },
+          ).then((r) => r.json()),
+          isTV
+            ? fetch(
+                `https://api.themoviedb.org/3/tv/${movie.id}?api_key=${API_KEY}`,
+                { signal: sig },
+              ).then((r) => r.json())
+            : Promise.resolve(null),
         ]);
 
         if (!isMounted) return;
 
-        // Process Hero Trailer
         const trailer = videoData.results?.find(
-          (vid) => vid.site === "YouTube" && vid.type === "Trailer",
+          (v) => v.site === "YouTube" && v.type === "Trailer",
         );
         if (trailer) setHeroTrailer(trailer.key);
 
-        // Process Similar Movies safe-guard limits
         if (similarData?.results) {
-          let validSimilar = similarData.results.filter(
-            (item) => item.poster_path || item.backdrop_path,
-          );
-          if (validSimilar.length >= 8) {
-            validSimilar = validSimilar.slice(0, 8);
-          } else if (validSimilar.length > 0) {
-            const copy = [...validSimilar];
-            let safety = 0;
-            while (validSimilar.length < 8 && safety < 20) {
-              validSimilar.push(copy[validSimilar.length % copy.length]);
-              safety++;
-            }
-          }
-          setSimilar(validSimilar);
+          const deduped = Array.from(
+            new Map(
+              similarData.results
+                .filter((i) => i.poster_path || i.backdrop_path)
+                .map((i) => [i.id, i]),
+            ).values(),
+          ).slice(0, 8);
+          setSimilar(deduped);
         }
         setIsLoadingSimilar(false);
 
-        // Process TV
         if (isTV && tvData?.seasons) {
           const mainSeasons = tvData.seasons.filter((s) => s.season_number > 0);
           setSeasons(mainSeasons);
           if (mainSeasons.length > 0) {
-            const firstSeasonNum = mainSeasons[0].season_number;
-            setSelectedSeason(firstSeasonNum);
-            fetchEpisodes(firstSeasonNum);
+            const firstNum = mainSeasons[0].season_number;
+            setSelectedSeason(firstNum);
+            fetchEpisodes(firstNum);
           }
           setIsLoadingTV(false);
         }
-      } catch (error) {
-        console.error("Error fetching modal data:", error);
+      } catch (err) {
+        if (err.name !== "AbortError") console.error("Modal data error:", err);
         if (isMounted) {
           setIsLoadingSimilar(false);
           setIsLoadingTV(false);
@@ -367,51 +353,50 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
       }
     };
 
-    fetchAllData();
-
+    run();
     return () => {
       isMounted = false;
+      abort.abort();
     };
-  }, [isTV, movie?.id, fetchEpisodes]);
+  }, [isTV, movie?.id, fetchEpisodes, type]);
 
-  // Trigger Hero Trailer after 3 seconds of banner display
   useEffect(() => {
-    let timer;
-    if (heroTrailer) {
-      timer = setTimeout(() => {
-        setPlayHeroVideo(true);
-      }, 3000);
-    }
-    return () => clearTimeout(timer);
+    if (!heroTrailer) return;
+    heroTimerRef.current = setTimeout(
+      () => setPlayHeroVideo(true),
+      HERO_TRAILER_DELAY_MS,
+    );
+    return () => clearTimeout(heroTimerRef.current);
   }, [heroTrailer]);
 
   const handleSeasonChange = (e) => {
-    const newSeason = parseInt(e.target.value);
-    setSelectedSeason(newSeason);
-    fetchEpisodes(newSeason);
+    const num = parseInt(e.target.value);
+    setSelectedSeason(num);
+    fetchEpisodes(num);
   };
 
   if (!mounted) return null;
 
   const modalContent = (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex justify-center overflow-y-auto bg-black/60 backdrop-blur-md sm:p-6 md:p-12 p-0"
+      initial={{ opacity: 0, translateZ: 0 }}
+      animate={{ opacity: 1, translateZ: 0 }}
+      exit={{ opacity: 0, translateZ: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[99999] flex justify-center overflow-y-auto bg-black/60 backdrop-blur-md sm:p-6 md:p-12 p-0 will-change-opacity"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 50, opacity: 0, scale: 0.98 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        exit={{ y: 20, opacity: 0, scale: 0.98 }}
-        transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="relative w-full max-w-[1000px] bg-[#0a0a0a]/95 backdrop-blur-3xl sm:rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden h-fit my-auto"
+        initial={{ y: 50, opacity: 0, scale: 0.95, translateZ: 0 }}
+        animate={{ y: 0, opacity: 1, scale: 1, translateZ: 0 }}
+        exit={{ y: 20, opacity: 0, scale: 0.95, translateZ: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 400, mass: 0.8 }}
+        className="relative w-full max-w-[1000px] bg-[#0a0a0a]/95 backdrop-blur-3xl sm:rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden h-fit my-auto transform-gpu will-change-transform"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 z-50 p-3 bg-black/20 border border-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white hover:text-black hover:scale-110 transition-all duration-300"
+          className="absolute top-6 right-6 z-50 p-3 bg-black/20 border border-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white hover:text-black hover:scale-110 transition-[transform,background-color] duration-300 transform-gpu will-change-transform"
         >
           <X size={24} strokeWidth={2.5} />
         </button>
@@ -428,15 +413,16 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
 
           {heroTrailer && playHeroVideo && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
-              className="absolute inset-0 z-0 pointer-events-none"
+              initial={{ opacity: 0, translateZ: 0 }}
+              animate={{ opacity: 1, translateZ: 0 }}
+              transition={{ duration: 0.8 }}
+              className="absolute inset-0 z-0 pointer-events-none transform-gpu will-change-opacity"
             >
               <iframe
                 src={`https://www.youtube.com/embed/${heroTrailer}?autoplay=1&mute=${isHeroMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${heroTrailer}&playsinline=1`}
                 className="w-[150%] h-[150%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                 allow="autoplay; encrypted-media"
+                title="Hero Trailer"
               />
             </motion.div>
           )}
@@ -448,34 +434,31 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
             <h1 className="text-5xl sm:text-7xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl leading-none">
               {title}
             </h1>
-
             <div className="flex flex-wrap items-center gap-4">
               <Link href={getLink()}>
-                {" "}
-                <button className="group flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-extrabold text-lg hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                <button className="group flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-extrabold text-lg hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-[transform,background-color] duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] transform-gpu will-change-transform">
                   <Play
                     size={22}
-                    className="fill-black group-hover:scale-110 transition-transform"
-                  />{" "}
+                    className="fill-black group-hover:scale-110 transition-transform transform-gpu"
+                  />
                   Play
                 </button>
               </Link>
               {heroTrailer && (
                 <button
-                  onClick={() => setIsHeroMuted(!isHeroMuted)}
-                  className="flex items-center gap-3 bg-white/10 text-white px-8 py-3.5 rounded-full font-bold text-lg border border-white/20 hover:bg-white/20 hover:border-white/40 active:scale-95 transition-all duration-300 backdrop-blur-xl"
+                  onClick={() => setIsHeroMuted((m) => !m)}
+                  className="flex items-center gap-3 bg-white/10 text-white px-8 py-3.5 rounded-full font-bold text-lg border border-white/20 hover:bg-white/20 hover:border-white/40 active:scale-95 transition-[transform,background-color,border] duration-300 backdrop-blur-xl transform-gpu will-change-transform"
                 >
                   {isHeroMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
                 </button>
               )}
               <button
                 onClick={toggleFavorite}
-                className={`flex items-center gap-3 px-6 py-3.5 rounded-full font-bold text-lg border transition-all duration-300 backdrop-blur-xl active:scale-95
-                  ${
-                    isFavorite
-                      ? "bg-[#f3c0c2]/20 text-[#f3c0c2] border-[#f3c0c2]/50 hover:bg-[#f3c0c2]/30"
-                      : "bg-black/40 text-white border-white/20 hover:bg-white/10 hover:border-white/40"
-                  }`}
+                className={`flex items-center gap-3 px-6 py-3.5 rounded-full font-bold text-lg border transition-[transform,background-color,border] duration-300 backdrop-blur-xl active:scale-95 transform-gpu will-change-transform ${
+                  isFavorite
+                    ? "bg-[#f3c0c2]/20 text-[#f3c0c2] border-[#f3c0c2]/50 hover:bg-[#f3c0c2]/30"
+                    : "bg-black/40 text-white border-white/20 hover:bg-white/10 hover:border-white/40"
+                }`}
               >
                 {isFavorite ? (
                   <Heart size={22} strokeWidth={3} fill="#f3c0c2" />
@@ -529,7 +512,7 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
                   <select
                     value={selectedSeason}
                     onChange={handleSeasonChange}
-                    className="appearance-none bg-black/40 text-white border border-white/10 py-3 pl-6 pr-12 rounded-xl font-bold text-lg focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer backdrop-blur-md transition-all group-hover:bg-black/60"
+                    className="appearance-none bg-black/40 text-white border border-white/10 py-3 pl-6 pr-12 rounded-xl font-bold text-lg focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer backdrop-blur-md transition-colors group-hover:bg-black/60"
                   >
                     {seasons.map((s) => (
                       <option
@@ -559,16 +542,10 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
                 {episodes.map((ep) => (
                   <Link
-                    href={
-                      getLink() +
-                      `/season/${selectedSeason}/${ep.episode_number}`
-                    }
+                    href={`${getLink()}/season/${selectedSeason}/${ep.episode_number}`}
                     key={ep.id}
                   >
-                    <div
-                      key={ep.id}
-                      className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10"
-                    >
+                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-colors duration-300 group cursor-pointer border border-transparent hover:border-white/10">
                       <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
                         <Image
                           src={getImageUrl(
@@ -578,11 +555,10 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
                           alt={ep.name}
                           fill
                           sizes="200px"
-                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                          className="object-cover group-hover:scale-110 transition-[transform] duration-500 transform-gpu will-change-transform"
                         />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-black/50 p-3 rounded-full border border-white/20 backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 will-change-opacity">
+                          <div className="bg-black/50 p-3 rounded-full border border-white/20 backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-[transform] transform-gpu">
                             <Play size={20} className="fill-white text-white" />
                           </div>
                         </div>
@@ -622,10 +598,11 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
           </h3>
           {isLoadingSimilar ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
                   className="aspect-[2/3] bg-white/5 rounded-[1.5rem] animate-pulse"
+                  style={{ animationDelay: `${i * 40}ms` }}
                 />
               ))}
             </div>
@@ -640,8 +617,8 @@ const MovieModal = ({ movie, onClose, isFavorite, toggleFavorite, isTV }) => {
   return createPortal(modalContent, document.body);
 };
 
-// --- HOME CARD COMPONENT ---
-const HomeCard = ({ MovieCard }) => {
+// ─── HomeCard ─────────────────────────────────────────────────────────────────
+const HomeCard = memo(({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -650,40 +627,43 @@ const HomeCard = ({ MovieCard }) => {
   const isTV =
     MovieCard.media_type === "tv" || MovieCard.first_air_date !== undefined;
   const title = isTV ? MovieCard.name : MovieCard.title;
-
-  const getImagePath = () => {
-    if (MovieCard.poster_path)
-      return `https://image.tmdb.org/t/p/w500/${MovieCard.poster_path}`;
-    return "https://i.imgur.com/HIYYPtZ.png";
-  };
-
-  const handleFavoriteToggle = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (isFavorite) {
-      const updated = favorites.filter((item) => item.id !== MovieCard.id);
-      localStorage.setItem("favorites", JSON.stringify(updated));
-    } else {
-      favorites.push(MovieCard);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-    }
-    setIsFavorite(!isFavorite);
-  };
+  const posterSrc = MovieCard.poster_path
+    ? `https://image.tmdb.org/t/p/w500/${MovieCard.poster_path}`
+    : "https://i.imgur.com/HIYYPtZ.png";
 
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    setIsFavorite(favorites.some((item) => item.id === MovieCard.id));
+    try {
+      const favs = JSON.parse(localStorage.getItem("favorites")) || [];
+      setIsFavorite(favs.some((item) => item.id === MovieCard.id));
+    } catch {}
   }, [MovieCard.id]);
 
+  const handleFavoriteToggle = useCallback(
+    (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      try {
+        const favs = JSON.parse(localStorage.getItem("favorites")) || [];
+        const next = isFavorite
+          ? favs.filter((item) => item.id !== MovieCard.id)
+          : [...favs, MovieCard];
+        localStorage.setItem("favorites", JSON.stringify(next));
+        setIsFavorite(!isFavorite);
+      } catch {}
+    },
+    [isFavorite, MovieCard],
+  );
+
+  // Snappy GPU-accelerated framer motion configurations
   const containerVariants = {
-    rest: { scale: 1, y: 0 },
+    rest: { scale: 1, y: 0, translateZ: 0 },
     hover: {
-      scale: 1.02,
-      y: -5,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
+      scale: 1.03,
+      y: -8,
+      translateZ: 0,
+      transition: { type: "spring", stiffness: 400, damping: 25, mass: 0.8 },
     },
   };
 
@@ -691,22 +671,28 @@ const HomeCard = ({ MovieCard }) => {
     rest: {
       height: 0,
       opacity: 0,
-      transition: { duration: 0.2, when: "afterChildren" },
+      translateZ: 0,
+      transition: { duration: 0.2, ease: "easeOut", when: "afterChildren" },
     },
     hover: {
       height: "auto",
       opacity: 1,
+      translateZ: 0,
       transition: {
-        duration: 0.3,
-        staggerChildren: 0.1,
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+        mass: 0.8,
+        staggerChildren: 0.05,
+        delayChildren: 0.05,
         when: "beforeChildren",
       },
     },
   };
 
   const itemFade = {
-    rest: { opacity: 0, y: 10 },
-    hover: { opacity: 1, y: 0 },
+    rest: { opacity: 0, y: 10, translateZ: 0 },
+    hover: { opacity: 1, y: 0, translateZ: 0 },
   };
 
   return (
@@ -717,7 +703,7 @@ const HomeCard = ({ MovieCard }) => {
         whileHover="hover"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu cursor-pointer"
+        className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu will-change-transform cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <div
@@ -728,21 +714,18 @@ const HomeCard = ({ MovieCard }) => {
         >
           <div className="absolute inset-0 bg-neutral-900">
             <Image
-              src={getImagePath()}
+              src={posterSrc}
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className={`object-cover transition-all duration-700 ease-out ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} ${isHovered ? "scale-110" : "scale-100"}`}
+              className={`object-cover transition-[transform,filter,opacity] duration-500 ease-out transform-gpu will-change-[transform,filter,opacity] ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} ${isHovered ? "scale-110" : "scale-100"}`}
               onLoad={() => setImageLoaded(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 will-change-opacity" />
           </div>
 
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 p-2 z-10"
-            animate={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
-          >
-            <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/20">
+          <motion.div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+            <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/20 transform-gpu">
               <div className="px-4 pt-4 pb-2">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -763,41 +746,55 @@ const HomeCard = ({ MovieCard }) => {
                   {title}
                 </h3>
               </div>
-              <motion.div variants={contentStagger}>
+              <motion.div
+                variants={contentStagger}
+                className="transform-gpu will-change-[height,opacity]"
+              >
                 <div className="px-4 pb-4 flex flex-col gap-3">
                   <motion.p
                     variants={itemFade}
-                    className="text-xs text-neutral-300 line-clamp-3 leading-relaxed"
+                    className="text-xs text-neutral-300 line-clamp-3 leading-relaxed transform-gpu"
                   >
                     {MovieCard.overview || "No description available."}
                   </motion.p>
-                  <div className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2">
+                  <motion.div
+                    variants={itemFade}
+                    className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 transform-gpu"
+                  >
                     <Play size={16} className="fill-[#07210b]" />
                     <span>Watch Now</span>
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             </div>
           </motion.div>
         </div>
 
+        {/* Top bar */}
         <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
           <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
             {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
           </div>
           <motion.button
             onClick={handleFavoriteToggle}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{
+              scale: 1.1,
+              transition: { type: "spring", stiffness: 400, damping: 20 },
+            }}
             whileTap={{ scale: 0.85 }}
-            className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${isFavorite ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]" : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"}`}
+            className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-colors duration-300 transform-gpu will-change-transform ${
+              isFavorite
+                ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
+                : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+            }`}
           >
             <AnimatePresence mode="wait">
               {isFavorite ? (
                 <motion.div
                   key="liked"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
+                  initial={{ scale: 0, translateZ: 0 }}
+                  animate={{ scale: 1, translateZ: 0 }}
+                  exit={{ scale: 0, translateZ: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 15 }}
                 >
                   <Heart size={18} className="fill-[#690005]" />
@@ -805,9 +802,10 @@ const HomeCard = ({ MovieCard }) => {
               ) : (
                 <motion.div
                   key="unliked"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
+                  initial={{ scale: 0, translateZ: 0 }}
+                  animate={{ scale: 1, translateZ: 0 }}
+                  exit={{ scale: 0, translateZ: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
                 >
                   <Heart size={18} />
                 </motion.div>
@@ -830,6 +828,7 @@ const HomeCard = ({ MovieCard }) => {
       </AnimatePresence>
     </>
   );
-};
+});
+HomeCard.displayName = "HomeCard";
 
 export default HomeCard;
