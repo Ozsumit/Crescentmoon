@@ -227,7 +227,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
 // ==========================================
 export function StaticDeveloperFeedback() {
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-full max-w-3xl">
       {/* isPopup defaults to false, triggering original styles */}
       <FeedbackFormCore />
     </div>
