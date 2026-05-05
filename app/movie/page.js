@@ -1,11 +1,10 @@
-import TvDisplay from "@/components/display/TvDisplay";
-import TvClient from "./TvClient";
+import MoviesClient from "./MoviesClient";
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   const resp = await fetch(
-    `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`,
+    `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=1`,
     { cache: "no-store" },
   );
 
@@ -17,10 +16,10 @@ async function getData() {
   return data.results;
 }
 
-const Series = async () => {
-  const seriesData = await getData();
+const Movies = async () => {
+  const moviedata = await getData();
 
-  return <TvClient series={seriesData} />;
+  return <MoviesClient movies={moviedata} />;
 };
 
-export default Series;
+export default Movies;

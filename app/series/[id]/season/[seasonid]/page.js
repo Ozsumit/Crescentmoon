@@ -13,7 +13,7 @@ async function getData(id, seasonid) {
   try {
     const resp = await fetch(
       `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}?api_key=${apiKey}`,
-      { next: { revalidate: 3600 } } // Cache for 1 hour
+      { next: { revalidate: 3600 } }, // Cache for 1 hour
     );
 
     if (!resp.ok) {
@@ -21,7 +21,7 @@ async function getData(id, seasonid) {
     }
 
     const data = await resp.json();
-    return { data, id };
+    return { data };
   } catch (error) {
     console.error("Error fetching season data:", error);
     throw error;
@@ -45,13 +45,17 @@ const ErrorState = ({ error }) => (
 );
 
 const SeasonsDetailsPage = async ({ params }) => {
+  // 1. Unwrap params FIRST
+  const { id, seasonid } = await params;
+
   try {
-    // Validate params
-    if (!params?.id || !params?.seasonid) {
+    // 2. Validate using the unwrapped variables
+    if (!id || !seasonid) {
       throw new Error("Missing required URL parameters");
     }
 
-    const { data, id } = await getData(params.id, params.seasonid);
+    // 3. Call getData using the unwrapped variables
+    const { data } = await getData(id, seasonid);
 
     return (
       <Suspense fallback={<LoadingState />}>
@@ -67,8 +71,13 @@ export default SeasonsDetailsPage;
 
 // Generate metadata for the page
 export async function generateMetadata({ params }) {
+  // 1. Unwrap params FIRST
+  const { id, seasonid } = await params;
+
   try {
-    const { data } = await getData(params.id, params.seasonid);
+    // 2. Call getData using the unwrapped variables
+    const { data } = await getData(id, seasonid);
+
     return {
       title: `${data.name || "Season Details"} | Your App Name`,
       description: data.overview || "Season details page",
