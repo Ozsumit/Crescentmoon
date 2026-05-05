@@ -123,7 +123,7 @@ const Header = () => {
                         className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${
                           isActive
                             ? "text-white"
-                            : "text-neutral-500 group-hover:text-neutral-300"
+                            : "text-neutral-400 group-hover:text-neutral-300"
                         }`}
                       >
                         {link.label}

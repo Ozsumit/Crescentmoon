@@ -55,9 +55,10 @@ const AdBlocker = () => {
             };
           }
         } catch (error) {
-          console.warn(
-            "Cannot access iframe content due to cross-origin restrictions.",
-          );
+          console
+            .warn
+            // "Cannot access iframe content due to cross-origin restrictions.",
+            ();
         }
       });
     };
