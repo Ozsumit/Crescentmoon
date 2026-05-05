@@ -136,7 +136,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[0]);
   const [defaultServerName, setDefaultServerName] = useState("");
-  const [iframeSrc, setIframeSrc] = useState(null);
+  const [iframeSrc, setIframeSrc] = useState("");
 
   const [cast, setCast] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -281,10 +281,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   useEffect(() => {
     if (!isMounted) return;
-    const iframeSrc =
-      isMounted && selectedServer?.url && id
-        ? `${selectedServer.url}${id}${selectedServer.params ?? ""}`
-        : null;
+    const iframeSrc = setIframeSrc(
+      `${selectedServer.url}${id}${selectedServer.params}`,
+    );
   }, [selectedServer, id, isMounted]);
 
   // --- HANDLERS ---
