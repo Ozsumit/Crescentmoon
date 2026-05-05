@@ -60,7 +60,7 @@ export default function RootLayout({ children }) {
         <Header />
         <Analytics />
         <SpeedInsights />
-        <div className="mt-0">{children} </div>
+        <div className="mt-0 bg-neutral-950">{children} </div>
         <PopupDeveloperFeedback />
 
         {/* <AdBlocker /> */}
