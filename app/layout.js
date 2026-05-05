@@ -63,7 +63,7 @@ export default function RootLayout({ children }) {
         <div className="mt-0">{children} </div>
         <PopupDeveloperFeedback />
 
-        <AdBlocker />
+        {/* <AdBlocker /> */}
         <Footer />
         {/* <AppInstallPopup /> */}
       </body>
