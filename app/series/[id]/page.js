@@ -1,9 +1,9 @@
 import TvInfo from "@/components/info/TvInfo";
 
 export async function getData(id) {
-  const apiKey =process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const res = await fetch(
-    `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`
+    `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`,
   );
   let data = await res.json();
   let genreArr = [];
@@ -13,7 +13,7 @@ export async function getData(id) {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to Fetch data");
+    throw new Error("Failed to Fetch dadfta");
   }
 
   return { data, genreArr, id };
