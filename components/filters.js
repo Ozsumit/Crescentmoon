@@ -12,7 +12,6 @@ const AdBlocker = () => {
       /stretchedbystander\.com/i,
       /ad[sx]?\d*/i,
       /\.ads\./i,
-      /luckyforbet\.com/i
     ];
 
     // Block network requests
@@ -57,7 +56,7 @@ const AdBlocker = () => {
           }
         } catch (error) {
           console.warn(
-            "Cannot access iframe content due to cross-origin restrictions."
+            "Cannot access iframe content due to cross-origin restrictions.",
           );
         }
       });
@@ -74,7 +73,7 @@ const AdBlocker = () => {
 
     // Observe and block dynamically added iframes
     const observer = new MutationObserver(() => {
-      blockIframeActions();  // Reapply iframe blocking on any DOM change
+      blockIframeActions(); // Reapply iframe blocking on any DOM change
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
