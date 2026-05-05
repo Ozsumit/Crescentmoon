@@ -5,21 +5,27 @@ export async function getData(id) {
   const res = await fetch(
     `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`,
   );
-  let data = await res.json();
-  let genreArr = [];
 
-  data.genres.map((element) => {
-    genreArr.push(element.name);
-  });
-
+  // 1. Check for errors FIRST
   if (!res.ok) {
     throw new Error("Failed to Fetch dadfta");
   }
 
+  const data = await res.json();
+
+  // 2. Safely map genres
+  const genreArr = data.genres?.map((element) => element.name) || [];
+
   return { data, genreArr, id };
 }
+
 const TvDetail = async ({ params }) => {
-  let { data, genreArr, id } = await getData(params.id);
+  // 3. Unwrap params completely
+  const { id } = await params;
+
+  // 4. Use the unwrapped `id` here (NOT params.id)
+  const { data, genreArr } = await getData(id);
+
   return (
     <>
       <TvInfo TvDetail={data} genreArr={genreArr} id={id} />

@@ -100,9 +100,9 @@ const Header = () => {
         <div className="w-full h-16 md:h-20 flex items-stretch">
           {/* 1. BRANDING (Left) */}
           <div className="flex items-center px-6 md:px-10 border-r border-white/5 bg-gradient-to-r from-black/20 to-transparent">
-            <Link href="/" onClick={handleLogoClick} className="relative z-50">
+            <div href="/" onClick={handleLogoClick} className="relative z-50">
               <Logo />
-            </Link>
+            </div>
           </div>
 
           {/* 2. NAVIGATION (Center - Centered) */}

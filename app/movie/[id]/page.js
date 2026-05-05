@@ -3,7 +3,7 @@ import MovieInfo from "@/components/info/MovieInfo";
 export async function getData(id) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`
+    `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`,
   );
   let data = await res.json();
   let genreArr = [];
@@ -19,7 +19,9 @@ export async function getData(id) {
   return { data, genreArr, id };
 }
 const MovieDetail = async ({ params }) => {
-  let { data, genreArr, id } = await getData(params.id);
+  const { id } = await params; // ✅ unwrap params first
+
+  let { data, genreArr } = await getData(id);
   return (
     <>
       <MovieInfo MovieDetail={data} genreArr={genreArr} id={id} />

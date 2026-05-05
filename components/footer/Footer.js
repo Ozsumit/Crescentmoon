@@ -10,7 +10,7 @@ import {
   Clapperboard,
   PlayCircle,
 } from "lucide-react";
-import DeveloperFeedback from "@/components/feedback";
+import { StaticDeveloperFeedback } from "@/components/feedback";
 
 const Footer = () => {
   const [movieOfTheDay, setMovieOfTheDay] = useState(null);
@@ -99,7 +99,7 @@ const Footer = () => {
 
           {/* Inline Developer Feedback Form */}
           <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/[0.01]">
-            <DeveloperFeedback />
+            <StaticDeveloperFeedback />
           </div>
         </div>
 
