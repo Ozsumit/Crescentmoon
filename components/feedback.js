@@ -13,12 +13,12 @@ const TypeChip = ({ active, onClick, icon: Icon, label }) => (
     type="button"
     onClick={onClick}
     className={`
-      relative px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 flex-1 justify-center overflow-hidden border
+      relative px-2 sm:px-3 py-2.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 flex-1 justify-center overflow-hidden border min-h-[44px] sm:min-h-0
       ${active ? "border-white bg-white text-black" : "border-white/10 bg-transparent text-neutral-400 hover:bg-white/5"}
     `}
   >
-    <span className="relative z-10 flex items-center gap-1.5">
-      <Icon size={14} /> {label}
+    <span className="relative z-10 flex items-center gap-1.5 whitespace-nowrap">
+      <Icon size={14} className="shrink-0" /> {label}
     </span>
   </button>
 );
@@ -41,6 +41,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
     if (!formData.message.trim()) return;
 
     setIsSubmitting(true);
+    // Replace with actual API call
     const res = await submitFeedback(formData);
     setIsSubmitting(false);
 
@@ -65,8 +66,8 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
     : "bg-white/20";
 
   const successContainerClass = isPopup
-    ? "flex flex-col items-center justify-center py-10 text-center"
-    : "flex flex-col items-center justify-center py-10 text-center border border-white/10 rounded-2xl bg-white/5";
+    ? "flex flex-col items-center justify-center py-8 sm:py-10 text-center"
+    : "flex flex-col items-center justify-center py-8 sm:py-10 text-center border border-white/10 rounded-2xl bg-white/5";
 
   const focusBorderClass = isPopup
     ? "focus:border-[#c3f0c2]/40"
@@ -78,7 +79,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
 
   return (
     <>
-      <h3 className="text-xs font-mono text-neutral-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+      <h3 className="text-[11px] sm:text-xs font-mono text-neutral-500 uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2">
         <span
           className={`w-2 h-2 rounded-full animate-pulse ${pulseDotClass}`}
         ></span>
@@ -95,13 +96,13 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
               exit={{ opacity: 0, y: -10 }}
               className={successContainerClass}
             >
-              <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3 sm:mb-4">
                 <CheckCircle2 size={24} className="text-green-400" />
               </div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">
+              <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-1">
                 Transmission Sent
               </h3>
-              <p className="text-xs text-neutral-400">
+              <p className="text-[11px] sm:text-xs text-neutral-400">
                 Thank you. The developer has received your logs.
               </p>
             </motion.div>
@@ -112,10 +113,10 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onSubmit={handleSubmit}
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-3 sm:gap-4"
             >
               {/* Type Selector */}
-              <div className="flex gap-2 w-full">
+              <div className="flex gap-1.5 sm:gap-2 w-full">
                 <TypeChip
                   active={formData.type === "review"}
                   onClick={() => setFormData({ ...formData, type: "review" })}
@@ -153,7 +154,8 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                           onClick={() =>
                             setFormData({ ...formData, rating: star })
                           }
-                          className={`p-1.5 rounded-lg transition-all ${formData.rating >= star ? "text-yellow-400" : "text-neutral-600 hover:text-neutral-400"}`}
+                          // Increased padding for mobile touch targets
+                          className={`p-2 sm:p-1.5 rounded-lg transition-all ${formData.rating >= star ? "text-yellow-400" : "text-neutral-600 hover:text-neutral-400"}`}
                         >
                           <Star
                             size={18}
@@ -178,9 +180,10 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className={`w-full bg-white/5 border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all resize-none ${focusBorderClass}`}
+                  className={`w-full bg-white/5 border border-white/10 rounded-xl p-3 sm:p-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all resize-none ${focusBorderClass}`}
                 />
-                <div className="flex gap-2">
+                {/* Changed to flex-col on mobile, flex-row on larger screens */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <input
                     type="email"
                     placeholder="Email (optional)"
@@ -188,13 +191,13 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className={`flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all ${focusBorderClass}`}
+                    className={`flex-1 min-h-[44px] sm:min-h-0 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all ${focusBorderClass}`}
                   />
                   <button
                     type="submit"
                     disabled={isSubmitting || !formData.message.trim()}
                     className={`
-                      px-6 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all
+                      min-h-[44px] sm:min-h-0 py-3 sm:py-0 px-6 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all shrink-0
                       ${isSubmitting || !formData.message.trim() ? "bg-white/5 text-neutral-500 cursor-not-allowed" : submitBtnClass}
                     `}
                   >
@@ -209,7 +212,10 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                         className="w-4 h-4 border-2 border-black border-t-transparent rounded-full"
                       />
                     ) : (
-                      <Send size={16} />
+                      <>
+                        <Send size={16} />
+                        <span className="sm:hidden">Send</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -227,8 +233,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
 // ==========================================
 export function StaticDeveloperFeedback() {
   return (
-    <div className="w-full max-w-3xl">
-      {/* isPopup defaults to false, triggering original styles */}
+    <div className="w-full max-w-3xl px-4 sm:px-0">
       <FeedbackFormCore />
     </div>
   );
@@ -270,7 +275,8 @@ export function PopupDeveloperFeedback() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.9 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="fixed bottom-6 right-6 z-[9999] w-full max-w-[400px]"
+          // Mobile: bottom-4 left-4 right-4 | Desktop: bottom-6 right-6 w-400px
+          className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-[9999] sm:w-[400px]"
         >
           <motion.div
             animate={{ y: [0, -8, 0] }}
@@ -281,16 +287,16 @@ export function PopupDeveloperFeedback() {
             <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-[#c3f0c2]/60 via-teal-500/30 to-[#8bfca9]/60 opacity-70 blur-[4px] animate-pulse" />
 
             {/* Main Card Wrapper specific to the Popup */}
-            <div className="relative overflow-hidden bg-neutral-950/95 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]">
+            <div className="relative overflow-hidden bg-neutral-950/95 border border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]">
               <button
                 onClick={handleDismiss}
-                className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors z-20"
+                // Larger touch target for the close button
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 text-neutral-500 hover:text-white transition-colors z-20"
                 title="Dismiss for 24 hours"
               >
                 <X size={18} />
               </button>
 
-              {/* isPopup triggers the green glows and omits duplicate inner borders */}
               <FeedbackFormCore
                 isPopup={true}
                 onSuccessfulSubmit={() => {
