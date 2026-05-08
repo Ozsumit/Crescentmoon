@@ -15,9 +15,14 @@ export const metadata = {
   title: "Crescent moon",
   description: "When you are wanting more entertainment",
   icons: {
-    icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/apple-icon.png",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon256x256.png", sizes: "256x256", type: "image/png" },
+    ],
   },
 };
 
@@ -27,11 +32,18 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="apple-mobile-web-app-title" content="Cmoon" />
         <meta name="msvalidate.01" content="C94A436E9262EFD0C59B769DBCBF17F7" />
-        <script
-          defer
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="256x256"
+          href="/favicon256x256.png"
+        />
+
+        {/* Umami */}
+        <Script
           src="https://cloud.umami.is/script.js"
           data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"
-        ></script>
+        ></Script>
         <script
           data-goatcounter="https://sumit.goatcounter.com/count"
           async
