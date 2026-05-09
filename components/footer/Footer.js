@@ -41,10 +41,10 @@ const Footer = () => {
     {
       title: "Discover",
       links: [
-        { label: "Now Playing", href: "/movies" },
-        { label: "Trending TV", href: "/series" },
-        { label: "Top Rated", href: "/top-rated" },
-        { label: "Upcoming", href: "/upcoming" },
+        { label: "Now Playing", href: "/#movies" },
+        { label: "Trending TV", href: "/#series" },
+        { label: "Top Rated", href: "/#top-rated" },
+        { label: "Upcoming", href: "/#upcoming" },
       ],
     },
     {
@@ -59,9 +59,9 @@ const Footer = () => {
     {
       title: "Legal",
       links: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms of Use", href: "/terms" },
-        { label: "Cookie Policy", href: "/cookies" },
+        { label: "Privacy Policy", href: "/legal/privacy" },
+        { label: "Terms of Use", href: "/legal/terms" },
+        { label: "Cookie Policy", href: "/legal/cookies" },
       ],
     },
   ];
@@ -69,7 +69,7 @@ const Footer = () => {
   return (
     <footer className="w-full bg-black text-white border-t border-white/10 mt-20 relative overflow-hidden">
       {/* Massive Background Brand Text (Subtle) */}
-      <div className="absolute bottom-[-5vw] left-0 w-full select-none pointer-events-none opacity-[0.03] overflow-hidden leading-none">
+      <div className="absolute bottom-[-5vw] z-100 left-0 w-full select-none pointer-events-none opacity-[0.07] overflow-hidden leading-none">
         <h1 className="text-[25vw] font-black tracking-tighter text-white whitespace-nowrap">
           CRESCENT
         </h1>
@@ -104,7 +104,7 @@ const Footer = () => {
         </div>
 
         {/* --- ROW 2: LINKS & MOVIE PICK --- */}
-        <div className="grid grid-cols-1 md:grid-cols-12">
+        <div className="grid z-1 grid-cols-1 md:grid-cols-12">
           {/* Navigation Links (Takes up 8 columns) */}
           <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 border-b md:border-b-0 md:border-r border-white/10">
             {footerSections.map((section) => (

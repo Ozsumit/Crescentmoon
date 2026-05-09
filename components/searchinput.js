@@ -1,272 +1,464 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  Loader2,
+  Search,
+  Film,
+  Tv,
+  ArrowRight,
+  CornerDownLeft,
+  Calendar,
+  Star,
+  TrendingUp,
+  Sparkles,
+  Layers,
+} from "lucide-react";
+import { Dialog, DialogContent } from "@/components/dialog";
+import { motion, AnimatePresence } from "framer-motion";
 
-export function PlaceholdersAndVanishInput({
-  placeholders,
-  onChange,
-  onSubmit,
-}) {
-  const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
+const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-  const intervalRef = useRef(null);
-  const startAnimation = () => {
-    intervalRef.current = setInterval(() => {
-      setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-    }, 3000);
-  };
-  const handleVisibilityChange = () => {
-    if (document.visibilityState !== "visible" && intervalRef.current) {
-      clearInterval(intervalRef.current); // Clear the interval when the tab is not visible
-      intervalRef.current = null;
-    } else if (document.visibilityState === "visible") {
-      startAnimation(); // Restart the interval when the tab becomes visible
-    }
-  };
+// --- 1. UTILITY: PHONETIC GENERATOR ---
+const generatePhoneticVariations = (q) => {
+  const vars = new Set();
+  const lowerQ = q.toLowerCase();
+
+  // Common Romanized / Typo swaps
+  if (lowerQ.includes("i")) vars.add(lowerQ.replace(/i/g, "ee"));
+  if (lowerQ.includes("ee")) vars.add(lowerQ.replace(/ee/g, "i"));
+  if (lowerQ.includes("u")) vars.add(lowerQ.replace(/u/g, "oo"));
+  if (lowerQ.includes("oo")) vars.add(lowerQ.replace(/oo/g, "u"));
+  if (lowerQ.includes("v")) vars.add(lowerQ.replace(/v/g, "w"));
+  if (lowerQ.includes("w")) vars.add(lowerQ.replace(/w/g, "v"));
+  if (lowerQ.includes("ph")) vars.add(lowerQ.replace(/ph/g, "f"));
+  if (lowerQ.includes("f")) vars.add(lowerQ.replace(/f/g, "ph"));
+  if (lowerQ.includes("c")) vars.add(lowerQ.replace(/c/g, "k"));
+  if (lowerQ.includes("k")) vars.add(lowerQ.replace(/k/g, "c"));
+  if (lowerQ.includes("z")) vars.add(lowerQ.replace(/z/g, "s"));
+  if (lowerQ.includes("s")) vars.add(lowerQ.replace(/s/g, "z"));
+
+  // Limit permutations so we don't spam the API
+  return Array.from(vars)
+    .filter((v) => v !== lowerQ)
+    .slice(0, 4);
+};
+
+// --- 2. UTILITY: SMART TEXT HIGHLIGHTER ---
+const HighlightText = ({ text, highlight }) => {
+  if (!highlight || !highlight.trim()) return <>{text}</>;
+
+  // 1. Try EXACT phrase highlighting
+  const exactRegex = new RegExp(
+    `(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+    "gi",
+  );
+  if (exactRegex.test(text)) {
+    const parts = text.split(exactRegex);
+    return (
+      <span>
+        {parts.map((part, i) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <span
+              key={i}
+              className="text-white font-bold bg-indigo-500/20 px-0.5 rounded"
+            >
+              {part}
+            </span>
+          ) : (
+            <span key={i}>{part}</span>
+          ),
+        )}
+      </span>
+    );
+  }
+
+  // 2. Fallback: Word-by-word highlighting (ignores tiny words)
+  const words = highlight
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+  if (words.length === 0) return <>{text}</>;
+
+  const wordRegex = new RegExp(
+    `(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
+    "gi",
+  );
+  const parts = text.split(wordRegex);
+
+  return (
+    <span>
+      {parts.map((part, i) =>
+        words.some((w) => w.toLowerCase() === part.toLowerCase()) ? (
+          <span
+            key={i}
+            className="text-white font-bold bg-indigo-500/20 px-0.5 rounded"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+};
+
+// --- 3. RESULT ITEM ---
+const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
+  const mediaType = item.media_type === "movie" ? "MOVIE" : "SERIES";
+  const year =
+    item.release_date || item.first_air_date
+      ? new Date(item.release_date || item.first_air_date).getFullYear()
+      : "N/A";
+
+  const Icon = item.media_type === "movie" ? Film : Tv;
+  const title = item.title || item.name;
+
+  return (
+    <motion.div
+      layout="position"
+      onClick={onClick}
+      className={`group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors duration-200 z-10 ${
+        isSelected ? "text-white" : "text-neutral-400 hover:text-white"
+      }`}
+    >
+      {isSelected && (
+        <motion.div
+          layoutId="activeSearchItem"
+          className="absolute inset-0 bg-neutral-800/80 rounded-2xl -z-10 shadow-[0_0_20px_rgba(0,0,0,0.4)] border border-white/5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
+      )}
+
+      <div className="relative flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-neutral-900 shadow-sm ring-1 ring-white/10">
+        {item.poster_path ? (
+          <Image
+            src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            sizes="48px"
+          />
+        ) : (
+          <div className="flex items-center justify-center w-full h-full text-neutral-700">
+            <Icon size={20} />
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <h4
+            className={`text-base truncate ${isSelected ? "text-white" : "text-neutral-200"}`}
+          >
+            <HighlightText text={title} highlight={searchQuery} />
+          </h4>
+
+          {item.vote_average > 0 && (
+            <div className="flex items-center gap-1 text-[10px] font-mono bg-black/40 border border-white/5 px-1.5 py-0.5 rounded text-yellow-500 backdrop-blur-md">
+              <Star size={8} fill="currentColor" />
+              <span>{item.vote_average.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+          <span className="flex items-center gap-1.5">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                item.media_type === "movie" ? "bg-indigo-500" : "bg-rose-500"
+              } shadow-[0_0_8px_currentColor]`}
+            />
+            {mediaType}
+          </span>
+          <span className="w-px h-3 bg-white/10" />
+          <span className="flex items-center gap-1">
+            <Calendar size={10} />
+            {year}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className={`flex-shrink-0 transition-all duration-300 ${isSelected ? "opacity-100 translate-x-0 text-white" : "opacity-0 -translate-x-2"}`}
+      >
+        <ArrowRight size={18} />
+      </div>
+    </motion.div>
+  );
+};
+
+// --- 4. MAIN COMPONENT ---
+const QuickSearch = ({ open, onOpenChange }) => {
+  const [searchResults, setSearchResults] = useState([]);
+  const [trending, setTrending] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const cacheRef = useRef(new Map());
+  const debounceRef = useRef(null);
+  const scrollRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
-    startAnimation();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        ad;
+    if (scrollRef.current && selectedIndex >= 0) {
+      const listItems = scrollRef.current.children;
+      const activeItem = listItems[selectedIndex];
+      if (activeItem) {
+        activeItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (open && trending.length === 0) {
+      fetch(`https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const filtered = (data.results || []).filter(
+            (i) => i.media_type === "movie" || i.media_type === "tv",
+          );
+          setTrending(filtered.slice(0, 5));
+        })
+        .catch(() => {});
+    }
+  }, [open, trending.length]);
+
+  // --- OMNI-SEARCH ENGINE (Aggregates exact + phonetics instantly) ---
+  const fetchOmniSearch = async (query) => {
+    const fetchTMDB = async (q) => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q)}&page=1`,
+      );
+      return res.json();
     };
-  }, [placeholders]);
 
-  const canvasRef = useRef(null);
-  const newDataRef = useRef([]);
-  const inputRef = useRef(null);
-  const [value, setValue] = useState("");
-  const [animating, setAnimating] = useState(false);
+    const queriesToRun = new Set([query]);
 
-  const draw = useCallback(() => {
-    if (!inputRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    // Only apply permutations if query is > 2 chars to avoid single-letter spam
+    if (query.length > 2) {
+      // Add phonetic variations
+      generatePhoneticVariations(query).forEach((v) => queriesToRun.add(v));
 
-    canvas.width = 800;
-    canvas.height = 800;
-    ctx.clearRect(0, 0, 800, 800);
-    const computedStyles = getComputedStyle(inputRef.current);
-
-    const fontSize = parseFloat(computedStyles.getPropertyValue("font-size"));
-    ctx.font = `${fontSize * 2}px ${computedStyles.fontFamily}`;
-    ctx.fillStyle = "#FFF";
-    ctx.fillText(value, 16, 40);
-
-    const imageData = ctx.getImageData(0, 0, 800, 800);
-    const pixelData = imageData.data;
-    const newData = [];
-
-    for (let t = 0; t < 800; t++) {
-      let i = 4 * t * 800;
-      for (let n = 0; n < 800; n++) {
-        let e = i + 4 * n;
-        if (
-          pixelData[e] !== 0 &&
-          pixelData[e + 1] !== 0 &&
-          pixelData[e + 2] !== 0
-        ) {
-          newData.push({
-            x: n,
-            y: t,
-            color: [
-              pixelData[e],
-              pixelData[e + 1],
-              pixelData[e + 2],
-              pixelData[e + 3],
-            ],
-          });
-        }
+      // Add trailing typo fallback
+      if (query.includes(" ")) {
+        const splitQuery = query.split(" ");
+        splitQuery.pop();
+        const fallbackQuery = splitQuery.join(" ");
+        if (fallbackQuery.length > 2) queriesToRun.add(fallbackQuery);
       }
     }
 
-    newDataRef.current = newData.map(({ x, y, color }) => ({
-      x,
-      y,
-      r: 1,
-      color: `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`,
-    }));
-  }, [value]);
+    // Limit to max 5 concurrent queries to respect API limits
+    const queriesArray = Array.from(queriesToRun).slice(0, 5);
 
-  useEffect(() => {
-    draw();
-  }, [value, draw]);
+    // Fire all searches simultaneously
+    const responses = await Promise.all(
+      queriesArray.map((q) => fetchTMDB(q).catch(() => ({ results: [] }))),
+    );
 
-  const animate = (start) => {
-    const animateFrame = (pos = 0) => {
-      requestAnimationFrame(() => {
-        const newArr = [];
-        for (let i = 0; i < newDataRef.current.length; i++) {
-          const current = newDataRef.current[i];
-          if (current.x < pos) {
-            newArr.push(current);
-          } else {
-            if (current.r <= 0) {
-              current.r = 0;
-              continue;
-            }
-            current.x += Math.random() > 0.5 ? 1 : -1;
-            current.y += Math.random() > 0.5 ? 1 : -1;
-            current.r -= 0.05 * Math.random();
-            newArr.push(current);
+    const allResults = [];
+    const seenIds = new Set();
+
+    responses.forEach((res, index) => {
+      // index === 0 is our EXACT typed query. We give it a massive score boost so it stays at the top.
+      const isExactMatch = index === 0;
+
+      (res.results || []).forEach((item) => {
+        if (item.media_type === "movie" || item.media_type === "tv") {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            // Sorting Logic: Exact queries get +10000. Rest sorted by TMDB popularity.
+            item._sortScore =
+              (isExactMatch ? 10000 : 0) + (item.popularity || 0);
+            allResults.push(item);
           }
-        }
-        newDataRef.current = newArr;
-        const ctx = canvasRef.current?.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(pos, 0, 800, 800);
-          newDataRef.current.forEach((t) => {
-            const { x: n, y: i, r: s, color: color } = t;
-            if (n > pos) {
-              ctx.beginPath();
-              ctx.rect(n, i, s, s);
-              ctx.fillStyle = color;
-              ctx.strokeStyle = color;
-              ctx.stroke();
-            }
-          });
-        }
-        if (newDataRef.current.length > 0) {
-          animateFrame(pos - 8);
-        } else {
-          setValue("");
-          setAnimating(false);
         }
       });
-    };
-    animateFrame(start);
+    });
+
+    // Sort by custom score and return the top 8 (Shows exact matches first, then best phonetic matches below)
+    return allResults.sort((a, b) => b._sortScore - a._sortScore).slice(0, 8);
   };
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const q = searchTerm.trim();
+    if (!q) {
+      setSearchResults([]);
+      setIsLoading(false);
+      setSelectedIndex(0);
+      return;
+    }
+
+    if (cacheRef.current.has(q.toLowerCase())) {
+      setSearchResults(cacheRef.current.get(q.toLowerCase()));
+      setSelectedIndex(0);
+      return;
+    }
+
+    setIsLoading(true);
+    // 300ms debounce allows user to finish typing before firing the Promise.all burst
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const results = await fetchOmniSearch(q);
+        cacheRef.current.set(q.toLowerCase(), results);
+        setSearchResults(results);
+        setSelectedIndex(0);
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchTerm]);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !animating) {
-      vanishAndSubmit();
+    const list = searchTerm ? searchResults : trending;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % list.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + list.length) % list.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      handleSelect(list[selectedIndex]);
     }
   };
 
-  const vanishAndSubmit = () => {
-    setAnimating(true);
-    draw();
-
-    const value = inputRef.current?.value || "";
-    if (value && inputRef.current) {
-      const maxX = newDataRef.current.reduce(
-        (prev, current) => (current.x > prev ? current.x : prev),
-        0
-      );
-      animate(maxX);
-    }
+  const handleSelect = (item) => {
+    if (!item) return;
+    onOpenChange(false);
+    setSearchTerm("");
+    const href =
+      item.media_type === "tv" ? `/series/${item.id}` : `/movie/${item.id}`;
+    router.push(href);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    vanishAndSubmit();
-    onSubmit && onSubmit(e);
-  };
+  const currentList = searchTerm ? searchResults : trending;
+
   return (
-    <form
-      className={cn(
-        "w-full relative max-w-xl mx-auto bg-white dark:bg-zinc-800 h-12 rounded-full overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),_0px_1px_0px_0px_rgba(25,28,33,0.02),_0px_0px_0px_1px_rgba(25,28,33,0.08)] transition duration-200",
-        value && "bg-gray-50"
-      )}
-      onSubmit={handleSubmit}
-    >
-      hello
-      <canvas
-        className={cn(
-          "absolute pointer-events-none  text-base transform scale-50 top-[20%] left-2 sm:left-8 origin-top-left filter invert dark:invert-0 pr-20",
-          !animating ? "opacity-0" : "opacity-100"
-        )}
-        ref={canvasRef}
-      />
-      <input
-        onChange={(e) => {
-          if (!animating) {
-            setValue(e.target.value);
-            onChange && onChange(e);
-          }
-        }}
-        onKeyDown={handleKeyDown}
-        ref={inputRef}
-        value={value}
-        type="text"
-        className={cn(
-          "w-full relative text-sm sm:text-base z-50 border-none dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-10 pr-20",
-          animating && "text-transparent dark:text-transparent"
-        )}
-      />
-      <button
-        disabled={!value}
-        type="submit"
-        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-full disabled:bg-gray-100 bg-black dark:bg-zinc-900 dark:disabled:bg-zinc-800 transition duration-200 flex items-center justify-center"
-      >
-        <motion.svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-gray-300 h-4 w-4"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <motion.path
-            d="M5 12l14 0"
-            initial={{
-              strokeDasharray: "50%",
-              strokeDashoffset: "50%",
-            }}
-            animate={{
-              strokeDashoffset: value ? 0 : "50%",
-            }}
-            transition={{
-              duration: 0.3,
-              ease: "linear",
-            }}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="p-0 gap-0 w-full max-w-2xl bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] rounded-[24px] sm:rounded-[28px] overflow-hidden">
+        {/* --- HEADER --- */}
+        <div className="relative flex items-center h-16 sm:h-20 px-4 sm:px-6 border-b border-white/5 bg-white/[0.02]">
+          <Search
+            className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-300 ${isLoading ? "text-indigo-400" : "text-neutral-500"}`}
           />
-          <path d="M13 18l6 -6" />
-          <path d="M13 6l6 6" />
-        </motion.svg>
-      </button>
-      <div className="absolute inset-0 flex items-center rounded-full pointer-events-none">
-        <AnimatePresence mode="wait">
-          {!value && (
-            <motion.p
-              initial={{
-                y: 5,
-                opacity: 0,
-              }}
-              key={`current-placeholder-${currentPlaceholder}`}
-              animate={{
-                y: 0,
-                opacity: 1,
-              }}
-              exit={{
-                y: -15,
-                opacity: 0,
-              }}
-              transition={{
-                duration: 0.3,
-                ease: "linear",
-              }}
-              className="dark:text-zinc-500 text-sm sm:text-base font-normal text-neutral-500 pl-4 sm:pl-12 text-left w-[calc(100%-2rem)] truncate"
-            >
-              {placeholders[currentPlaceholder]}
-            </motion.p>
+
+          <input
+            className="flex-1 h-full bg-transparent border-none outline-none px-3 sm:px-4 text-lg sm:text-xl font-medium text-white placeholder-neutral-600 w-full"
+            placeholder="Search exact, phonetics, or misspellings..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            autoComplete="off"
+            spellCheck="false"
+          />
+
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+          ) : (
+            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-400">
+              ESC
+            </div>
           )}
-        </AnimatePresence>
-      </div>
-    </form>
+        </div>
+
+        {/* --- BODY --- */}
+        <div className="min-h-[300px] max-h-[60vh] sm:max-h-[500px] flex flex-col">
+          <div className="flex-1 overflow-y-auto p-2 sm:p-3" ref={scrollRef}>
+            {currentList.length > 0 ? (
+              <div className="grid gap-1">
+                <div className="px-3 py-2 text-[10px] font-mono font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                  {searchTerm ? (
+                    <>
+                      <Layers size={12} className="text-indigo-400" /> Exact &
+                      Phonetic Matches
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp size={12} className="text-rose-400" />{" "}
+                      Trending Today
+                    </>
+                  )}
+                  <div className="h-px bg-white/5 flex-1" />
+                </div>
+
+                <AnimatePresence mode="popLayout">
+                  {currentList.map((item, index) => (
+                    <SearchResultItem
+                      key={item.id}
+                      item={item}
+                      searchQuery={searchTerm}
+                      isSelected={index === selectedIndex}
+                      onClick={() => handleSelect(item)}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              !isLoading &&
+              searchTerm && (
+                <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-3 py-10">
+                  <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
+                    <Search size={28} className="text-neutral-600" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-neutral-400 mb-1">
+                      No matching records found
+                    </p>
+                    <p className="text-xs text-neutral-600 max-w-[250px]">
+                      We checked exact matches, phonetics, and misspellings, but
+                      couldn't decode{" "}
+                      <span className="text-neutral-300 font-semibold">
+                        "{searchTerm}"
+                      </span>
+                      .
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* --- FOOTER --- */}
+        <div className="h-10 sm:h-12 bg-neutral-950/80 border-t border-white/5 flex items-center justify-between px-4 sm:px-6 text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+          <div className="flex items-center gap-4">
+            {searchTerm && <span>{currentList.length} Results</span>}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden md:flex items-center gap-1.5">
+              <span className="flex gap-0.5">
+                <ArrowRight size={10} className="-rotate-90" />
+                <ArrowRight size={10} className="rotate-90" />
+              </span>
+              <span>NAVIGATE</span>
+            </span>
+            <div className="w-px h-3 bg-white/10 hidden md:block" />
+            <span className="hidden sm:flex items-center gap-1.5">
+              <CornerDownLeft size={10} />
+              <span>OPEN</span>
+            </span>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
+
+export default QuickSearch;

@@ -8,7 +8,7 @@ import React from "react";
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
-    `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`
+    `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`,
   );
 
   if (!resp.ok) {
@@ -23,7 +23,7 @@ const Series = async () => {
   const data = await getData();
   return (
     <>
-      <div className=" h-auto pt-20">
+      <div className=" bg-[#f9F9F9] h-auto pt-20">
         <AboutUs />
       </div>
     </>
