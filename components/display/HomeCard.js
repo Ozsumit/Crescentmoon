@@ -3,16 +3,7 @@ import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import {
-  Heart,
-  Star,
-  Play,
-  Plus,
-  X,
-  ChevronDown,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Heart, Star, Play, Plus, X, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -164,7 +155,7 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
         </div>
       </div>
 
-      {/* Hover Progress Bar - Now using framer-motion instead of setinterval */}
+      {/* Hover Progress Bar */}
       {isActive && !playVideo && trailerKey && (
         <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full z-20 overflow-hidden">
           <motion.div
@@ -386,11 +377,10 @@ const MovieModalComponent = ({
     return () => clearTimeout(timer);
   }, [heroTrailer]);
 
-  const handleSeasonChange = (e) => {
-    const newSeason = parseInt(e.target.value);
-    setSelectedSeason(newSeason);
-    // Don't pass abort signal on manual change so it completes safely
-    fetchEpisodes(newSeason);
+  const handleSeasonChange = (seasonNum) => {
+    if (seasonNum === selectedSeason) return; // Ignore if already selected
+    setSelectedSeason(seasonNum);
+    fetchEpisodes(seasonNum);
   };
 
   if (!mounted) return null;
@@ -505,7 +495,7 @@ const MovieModalComponent = ({
                 {isLoadingTV
                   ? "..."
                   : isTV && seasons.length > 0
-                    ? `${seasons.length} Seasons`
+                    ? `${seasons.length} Season${seasons.length > 1 ? "s" : ""}`
                     : "HD"}
               </span>
             </div>
@@ -523,37 +513,38 @@ const MovieModalComponent = ({
 
         {isTV && (
           <div className="px-8 md:px-12 py-10 border-b border-white/5 bg-white/[0.02]">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-3xl font-bold text-white tracking-tight">
-                Episodes
+            <div className="mb-6">
+              <h3 className="text-3xl font-bold text-white tracking-tight mb-6">
+                Episodes{" "}
+                {seasons.length === 1 && (
+                  <span className="text-white/60 text-2xl">
+                    ({seasons[0]?.name})
+                  </span>
+                )}
               </h3>
-              {!isLoadingTV && seasons.length > 0 && (
-                <div className="relative group">
-                  <select
-                    value={selectedSeason}
-                    onChange={handleSeasonChange}
-                    className="appearance-none bg-black/40 text-white border border-white/10 py-3 pl-6 pr-12 rounded-xl font-bold text-lg focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer backdrop-blur-md transition-all group-hover:bg-black/60"
-                  >
-                    {seasons.map((s) => (
-                      <option
-                        key={s.season_number}
-                        value={s.season_number}
-                        className="bg-[#111]"
-                      >
-                        {s.name} ({s.episode_count} Episodes)
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={20}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none group-hover:text-white transition-colors"
-                  />
+
+              {/* Horizontal Scrollable Tabs shown ONLY if more than 1 season */}
+              {!isLoadingTV && seasons.length > 1 && (
+                <div className="flex items-center gap-3 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {seasons.map((s) => (
+                    <button
+                      key={s.season_number}
+                      onClick={() => handleSeasonChange(s.season_number)}
+                      className={`whitespace-nowrap px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 snap-start border ${
+                        selectedSeason === s.season_number
+                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                          : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
             {isLoadingTV || isLoadingEpisodes ? (
-              <div className="animate-pulse space-y-4">
+              <div className="animate-pulse space-y-4 mt-2">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="h-28 bg-white/5 rounded-2xl w-full" />
                 ))}

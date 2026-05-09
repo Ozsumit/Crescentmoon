@@ -1,10 +1,11 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import EpisodeInfo from "@/components/info/EpisodeInfo";
 
-// Function to fetch episode details from the TMDB API
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
+
+/**
+ * ✅ Fetch Episode Data
+ */
 async function fetchEpisodeData(id, seasonid, epid) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -12,85 +13,196 @@ async function fetchEpisodeData(id, seasonid, epid) {
     throw new Error("Missing required parameters");
   }
 
+  const [seriesResp, seasonResp, episodeResp] = await Promise.all([
+    fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`, {
+      next: { revalidate: 3600 },
+    }),
+
+    fetch(
+      `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}?api_key=${apiKey}`,
+      {
+        next: { revalidate: 3600 },
+      },
+    ),
+
+    fetch(
+      `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}/episode/${epid}?api_key=${apiKey}&append_to_response=credits,videos`,
+      {
+        next: { revalidate: 3600 },
+      },
+    ),
+  ]);
+
+  if (!seriesResp.ok || !seasonResp.ok || !episodeResp.ok) {
+    throw new Error("Failed to fetch data");
+  }
+
+  const [seriesData, seasonData, episodeData] = await Promise.all([
+    seriesResp.json(),
+    seasonResp.json(),
+    episodeResp.json(),
+  ]);
+
+  return { seriesData, seasonData, episodeData };
+}
+
+/**
+ * ✅ Dynamic SEO Metadata
+ */
+export async function generateMetadata({ params }) {
+  const { id, seasonid, epid } = params;
+
   try {
-    const [seriesResp, seasonResp, episodeResp] = await Promise.all([
-      fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`),
-      fetch(
-        `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}?api_key=${apiKey}`
-      ),
-      fetch(
-        `https://api.themoviedb.org/3/tv/${id}/season/${seasonid}/episode/${epid}?api_key=${apiKey}`
-      ),
-    ]);
+    const { seriesData, episodeData } = await fetchEpisodeData(
+      id,
+      seasonid,
+      epid,
+    );
 
-    if (!seriesResp.ok || !seasonResp.ok || !episodeResp.ok) {
-      throw new Error("Failed to fetch data");
-    }
+    const title = `${episodeData.name} - ${seriesData.name} | Cmoon`;
 
-    const seriesData = await seriesResp.json();
-    const seasonData = await seasonResp.json();
-    const episodeData = await episodeResp.json();
+    const description =
+      episodeData.overview?.slice(0, 155) ||
+      `Watch ${episodeData.name} from ${seriesData.name} online in HD quality on Cmoon.`;
 
-    return { seriesData, seasonData, episodeData };
+    const image = episodeData.still_path
+      ? `https://image.tmdb.org/t/p/w780${episodeData.still_path}`
+      : `${BASE_URL}/og-banner.jpg`;
+
+    return {
+      title,
+      description,
+
+      keywords: [
+        episodeData.name,
+        seriesData.name,
+        `Season ${seasonid}`,
+        `Episode ${epid}`,
+        "watch episodes online",
+        "HD streaming",
+        "Cmoon",
+      ],
+
+      alternates: {
+        canonical: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+      },
+
+      openGraph: {
+        title,
+        description,
+        url: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+        siteName: "Cmoon",
+        type: "video.episode",
+
+        images: [
+          {
+            url: image,
+            width: 1280,
+            height: 720,
+            alt: episodeData.name,
+          },
+        ],
+      },
+
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [image],
+      },
+
+      robots: {
+        index: true,
+        follow: true,
+      },
+    };
   } catch (error) {
-    console.error("Error fetching episode data:", error);
-    throw error;
+    return {
+      title: "Episode Details | Cmoon",
+      description: "Watch TV episodes online on Cmoon.",
+    };
   }
 }
 
-export default function EpisodeDetailsPage() {
-  const { id, seasonid, epid } = useParams(); // Access dynamic route parameters
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+/**
+ * ✅ JSON-LD Structured Data
+ */
+function generateEpisodeSchema(episodeData, seriesData, id, seasonid, epid) {
+  return {
+    "@context": "https://schema.org",
 
-  useEffect(() => {
-    const getData = async () => {
-      setIsLoading(true);
-      setError(null);
+    "@type": "TVEpisode",
 
-      if (!id || !seasonid || !epid) {
-        setError("Missing parameters in the URL.");
-        setIsLoading(false);
-        return;
-      }
+    name: episodeData.name,
 
-      try {
-        const episodeData = await fetchEpisodeData(id, seasonid, epid);
-        setData(episodeData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    description: episodeData.overview,
 
-    getData();
-  }, [id, seasonid, epid]);
+    episodeNumber: Number(epid),
 
-  if (isLoading) {
-    return <div className="p-4">Loading episode details...</div>;
-  }
+    partOfSeason: {
+      "@type": "TVSeason",
+      seasonNumber: Number(seasonid),
+    },
 
-  if (error) {
+    partOfSeries: {
+      "@type": "TVSeries",
+      name: seriesData.name,
+    },
+
+    image: episodeData.still_path
+      ? `https://image.tmdb.org/t/p/w780${episodeData.still_path}`
+      : undefined,
+
+    datePublished: episodeData.air_date,
+
+    url: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+  };
+}
+
+/**
+ * ✅ Episode Details Page
+ */
+export default async function EpisodeDetailsPage({ params }) {
+  const { id, seasonid, epid } = params;
+
+  try {
+    const data = await fetchEpisodeData(id, seasonid, epid);
+
+    const jsonLd = generateEpisodeSchema(
+      data.episodeData,
+      data.seriesData,
+      id,
+      seasonid,
+      epid,
+    );
+
     return (
-      <div className="p-4 text-red-500">
-        <h1>Error Loading Episode Details</h1>
-        <p>{error}</p>
+      <>
+        {/* ✅ Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd),
+          }}
+        />
+
+        <div className="p-4">
+          <EpisodeInfo
+            episodeDetails={data.episodeData}
+            seriesId={id}
+            seasonData={data.seasonData}
+            seriesData={data.seriesData}
+          />
+        </div>
+      </>
+    );
+  } catch (error) {
+    return (
+      <div className="min-h-screen bg-neutral-950 p-4 text-red-500">
+        <h1 className="text-xl font-semibold">Error Loading Episode Details</h1>
+
+        <p>{error.message}</p>
       </div>
     );
   }
-
-  return data ? (
-    <div className="p-4">
-      <EpisodeInfo
-        episodeDetails={data.episodeData}
-        seriesId={id}
-        seasonData={data.seasonData}
-        seriesData={data.seriesData}
-      />
-    </div>
-  ) : (
-    <div>No data available</div>
-  );
 }
