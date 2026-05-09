@@ -281,7 +281,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
 
   useEffect(() => {
     if (!isMounted) return;
-    setIframeSrc(`${selectedServer.url}${id}${selectedServer.params || ""}`);
+    const iframeSrc = setIframeSrc(
+      `${selectedServer.url}${id}${selectedServer.params}`,
+    );
   }, [selectedServer, id, isMounted]);
 
   // --- HANDLERS ---

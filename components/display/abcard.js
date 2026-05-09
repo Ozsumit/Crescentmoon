@@ -8,10 +8,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "/components/ui/card";
-import { Button } from "/components/ui/button";
-import { Label } from "/components/ui/label";
-import { Tab, Tabs, TabList, TabPanel } from "/components/ui/tabs";
+} from "../../../../../../components/ui/card";
+import { Button } from "../../../../../../components/ui/button";
+import { Label } from "../../../../../../components/ui/label";
+import {
+  Tab,
+  Tabs,
+  TabList,
+  TabPanel,
+} from "../../../../../../components/ui/tabs";
 
 function BookDetails() {
   const { id } = useParams();
