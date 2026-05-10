@@ -1,4 +1,4 @@
-import DeveloperFeedback from "@/components/feedback";
+import { StaticDeveloperFeedback } from "@/components/feedback";
 
 export default function HomePage() {
   return (
@@ -6,7 +6,7 @@ export default function HomePage() {
       {/* Your other page content goes here */}
 
       {/* Render the component inside the return statement */}
-      <DeveloperFeedback />
+      <StaticDeveloperFeedback />
     </main>
   );
 }

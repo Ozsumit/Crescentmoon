@@ -10,6 +10,29 @@ import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
 import AdblockerModal from "@/components/adblockmodel";
 
+export const metadata = {
+  title: "Cmoon - Watch Movies & TV Shows Online",
+  description:
+    "Stream movies and TV shows online in HD quality on Cmoon. Fast, responsive and entertainment-focused streaming platform.",
+  openGraph: {
+    title: "Cmoon - Watch Movies & TV Shows Online",
+    description:
+      "Watch movies, TV shows and anime online in HD quality on Cmoon.",
+    url: "https://cmoon.sumit.info.np",
+    siteName: "Cmoon",
+    images: [
+      {
+        url: "https://cmoon.sumit.info.np/og-banner.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Cmoon",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+};
+
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
@@ -34,6 +57,7 @@ export default async function Home() {
   const data = await getData();
   return (
     <div className=" m-0 bg-[rgb(7,8,9)] h-auto">
+      <h1 className="sr-only">Cmoon - Watch Movies & TV Shows Online</h1>
     {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}

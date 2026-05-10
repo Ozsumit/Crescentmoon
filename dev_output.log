@@ -1,0 +1,126 @@
+
+> crescentmoondl@0.1.0 dev
+> next dev
+
+- ready started server on 0.0.0.0:3000, url: http://localhost:3000
+- [33mwarn[39m [1mYou have enabled experimental feature (serverActions) in next.config.js.[22m
+- [33mwarn[39m Experimental features are not covered by semver, and may cause unexpected or broken application behavior. Use at your own risk.
+
+(node:74683) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///app/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+- [35mevent[39m compiled client and server successfully in 309 ms (20 modules)
+- [36mwait[39m compiling...
+- [35mevent[39m compiled client and server successfully in 185 ms (20 modules)
+(node:74542) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///app/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/etc/credstore'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/etc/credstore.encrypted'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/opt/containerd'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/home/ubuntu'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/root/.launchpadlib'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/root/.ssh'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/containerd'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/docker'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/run/sudo'
+Watchpack Error (watcher): Error: EACCES: permission denied, watch '/tmp/systemd-private-368a2f928fdb4f8189931ac81a2e3759-systemd-logind.service-WPO75P'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/etc/credstore'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/etc/credstore.encrypted'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/opt/containerd'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/home/ubuntu'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/root/.launchpadlib'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/root/.ssh'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/containerd'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/docker'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/run/sudo'
+Watchpack Error (initial scan): Error: EACCES: permission denied, scandir '/tmp/systemd-private-368a2f928fdb4f8189931ac81a2e3759-systemd-logind.service-WPO75P'
+(node:74542) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+- [36mwait[39m compiling /middleware (client and server)...
+- [35mevent[39m compiled successfully in 330 ms (44 modules)
+(node:75051) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///app/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+- [36mwait[39m compiling /page (client and server)...
+(node:74683) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+[1m[33mwarn[39m[22m - The class `ease-[cubic-bezier(0.25,1,0.5,1)]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `ease-&lsqb;cubic-bezier(0.25,1,0.5,1)&rsqb;` to silence this warning.
+- [35mevent[39m compiled client and server successfully in 16.4s (3169 modules)
+- [36mwait[39m compiling...
+- [35mevent[39m compiled successfully in 1142 ms (2302 modules)
+(node:75050) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///app/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /app/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Error: 401 Unauthorized
+- [31merror[39m app/page.js (45:10) @ getData
+- [31merror[39m Error: Pussycat API error
+    at getData (./app/page.js:56:15)
+    at async Home (./app/page.js:67:18)
+[0m [90m 43 | [39m  [36mif[39m ([33m![39mresp[33m.[39mok) {[0m
+[0m [90m 44 | [39m    console[33m.[39merror([32m`Error: ${resp.status} ${resp.statusText}`[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 45 | [39m    [36mthrow[39m [36mnew[39m [33mError[39m([32m"Pussycat API error"[39m)[33m;[39m[0m
+[0m [90m    | [39m         [31m[1m^[22m[39m[0m
+[0m [90m 46 | [39m  }[0m
+[0m [90m 47 | [39m  [36mconst[39m data [33m=[39m [36mawait[39m resp[33m.[39mjson()[33m;[39m[0m
+[0m [90m 48 | [39m  [36mif[39m ([33m![39mdata[33m.[39mresults) {[0m
+- [31merror[39m app/page.js (45:10) @ getData
+- [31merror[39m Error: Pussycat API error
+    at getData (./app/page.js:56:15)
+    at async Home (./app/page.js:67:18)
+digest: "3107224271"
+[0m [90m 43 | [39m  [36mif[39m ([33m![39mresp[33m.[39mok) {[0m
+[0m [90m 44 | [39m    console[33m.[39merror([32m`Error: ${resp.status} ${resp.statusText}`[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 45 | [39m    [36mthrow[39m [36mnew[39m [33mError[39m([32m"Pussycat API error"[39m)[33m;[39m[0m
+[0m [90m    | [39m         [31m[1m^[22m[39m[0m
+[0m [90m 46 | [39m  }[0m
+[0m [90m 47 | [39m  [36mconst[39m data [33m=[39m [36mawait[39m resp[33m.[39mjson()[33m;[39m[0m
+[0m [90m 48 | [39m  [36mif[39m ([33m![39mdata[33m.[39mresults) {[0m
+
+-  [90m┌[39m [36mGET[39m / 200 in [31m2045ms[39m
+   [90m│[39m
+   [90m└────[39m [36mGET[39m https://api.themoviedb.o../3/trending/all/day?language=en-US&.. 401 in [32m414ms[39m (cache: [33mMISS[39m)
+
+- [36mwait[39m compiling /search/page (client and server)...
+- [35mevent[39m compiled client and server successfully in 3.8s (3093 modules)
+- [33mwarn[39m Fast Refresh had to perform a full reload due to a runtime error.
+Error: 401 Unauthorized
+- [31merror[39m app/page.js (45:10) @ getData
+- [31merror[39m Error: Pussycat API error
+    at getData (./app/page.js:56:15)
+    at async Home (./app/page.js:67:18)
+[0m [90m 43 | [39m  [36mif[39m ([33m![39mresp[33m.[39mok) {[0m
+[0m [90m 44 | [39m    console[33m.[39merror([32m`Error: ${resp.status} ${resp.statusText}`[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 45 | [39m    [36mthrow[39m [36mnew[39m [33mError[39m([32m"Pussycat API error"[39m)[33m;[39m[0m
+[0m [90m    | [39m         [31m[1m^[22m[39m[0m
+[0m [90m 46 | [39m  }[0m
+[0m [90m 47 | [39m  [36mconst[39m data [33m=[39m [36mawait[39m resp[33m.[39mjson()[33m;[39m[0m
+[0m [90m 48 | [39m  [36mif[39m ([33m![39mdata[33m.[39mresults) {[0m
+
+-  [90m┌[39m [36mGET[39m /?_rsc=21d2751 200 in [33m1028ms[39m
+   [90m│[39m
+   [90m└────[39m [36mGET[39m https://api.themoviedb.o../3/trending/all/day?language=en-US&.. 401 in [32m454ms[39m (cache: [33mMISS[39m)
+
+Error: 401 Unauthorized
+- [31merror[39m app/page.js (45:10) @ getData
+- [31merror[39m Error: Pussycat API error
+    at getData (./app/page.js:56:15)
+    at async Home (./app/page.js:67:18)
+[0m [90m 43 | [39m  [36mif[39m ([33m![39mresp[33m.[39mok) {[0m
+[0m [90m 44 | [39m    console[33m.[39merror([32m`Error: ${resp.status} ${resp.statusText}`[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 45 | [39m    [36mthrow[39m [36mnew[39m [33mError[39m([32m"Pussycat API error"[39m)[33m;[39m[0m
+[0m [90m    | [39m         [31m[1m^[22m[39m[0m
+[0m [90m 46 | [39m  }[0m
+[0m [90m 47 | [39m  [36mconst[39m data [33m=[39m [36mawait[39m resp[33m.[39mjson()[33m;[39m[0m
+[0m [90m 48 | [39m  [36mif[39m ([33m![39mdata[33m.[39mresults) {[0m
+
+-  [90m┌[39m [36mGET[39m /?_rsc=21d2751 200 in [32m135ms[39m
+   [90m│[39m
+   [90m└────[39m [36mGET[39m https://api.themoviedb.o../3/trending/all/day?language=en-US&.. 401 in [32m98ms[39m (cache: [33mMISS[39m)
