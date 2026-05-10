@@ -76,12 +76,6 @@ const Header = () => {
     { href: "/", label: "Home", icon: Home },
     { href: "/movie", label: "Movies", icon: Film },
     { href: "/series", label: "Series", icon: Tv },
-    {
-      href: "https://omega-v1.vercel.app/",
-      label: "Anime(α)",
-      icon: JapaneseYen,
-      external: true,
-    },
   ];
 
   return (

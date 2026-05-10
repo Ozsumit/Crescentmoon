@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PopupDeveloperFeedback } from "@/components/feedback";
 import Script from "next/script";
+import CookieConsent from "@/components/cookies";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -169,7 +170,7 @@ export default function RootLayout({ children }) {
         <SpeedInsights />
 
         <main>{children}</main>
-
+        <CookieConsent />
         <PopupDeveloperFeedback />
 
         {/* <AdBlocker /> */}

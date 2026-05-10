@@ -249,10 +249,7 @@ export function PopupDeveloperFeedback() {
     const lastDismissed = localStorage.getItem("feedback_dismissed");
     const feedbackSubmitted = localStorage.getItem("feedback_submitted");
 
-    // Don't show if they already submitted feedback via either form
     if (feedbackSubmitted) return;
-
-    // Check if clicked "X" in the last 24 hours
     if (lastDismissed) {
       const oneDayInMs = 24 * 60 * 60 * 1000;
       if (Date.now() - parseInt(lastDismissed) < oneDayInMs) return;
@@ -271,40 +268,41 @@ export function PopupDeveloperFeedback() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.9 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          // Mobile: bottom-4 left-4 right-4 | Desktop: bottom-6 right-6 w-400px
-          className="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:left-auto sm:right-6 z-[9999] sm:w-[400px]"
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed bottom-4 left-4 right-4 sm:bottom-8 sm:right-8 z-[9999] sm:max-w-md w-11/12"
         >
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="relative w-full"
-          >
-            {/* Pulsating Colored Glow Effect */}
-            <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-[#c3f0c2]/60 via-teal-500/30 to-[#8bfca9]/60 opacity-70 blur-[4px] animate-pulse" />
-
-            {/* Main Card Wrapper specific to the Popup */}
-            <div className="relative overflow-hidden bg-neutral-950/95 border border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]">
+          {/* 
+            Swiss Style Container: 
+            Thick borders, deep corners, solid off-set shadow 
+          */}
+          <div className="bg-neutral-950 border-4 border-white rounded-[2rem] shadow-[0px_0px_0px_0px_rgba(255,255,255,1)] p-6 sm:p-8 flex flex-col gap-6 relative">
+            {/* Header Area */}
+            <div className="flex items-start justify-between">
+              <h2 className="text-3xl font-black uppercase tracking-tighter leading-none text-white">
+                Feedback
+                <br />
+                Loop.
+              </h2>
               <button
                 onClick={handleDismiss}
-                // Larger touch target for the close button
-                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 text-neutral-500 hover:text-white transition-colors z-20"
-                title="Dismiss for 24 hours"
+                className="w-10 h-10 flex items-center justify-center bg-white text-black rounded-full hover:bg-neutral-200 transition-colors"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
-
-              <FeedbackFormCore
-                isPopup={true}
-                onSuccessfulSubmit={() => {
-                  setTimeout(() => setIsVisible(false), 3000);
-                }}
-              />
             </div>
-          </motion.div>
+
+            {/* Passing isPopup={true} to your existing Core logic 
+                (The Core logic uses this to style the buttons/layout) */}
+            <FeedbackFormCore
+              isPopup={true}
+              onSuccessfulSubmit={() => {
+                setTimeout(() => setIsVisible(false), 3000);
+              }}
+            />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
