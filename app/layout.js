@@ -89,7 +89,7 @@ export const metadata = {
 
     images: [
       {
-        url: `${BASE_URL}/og-banner.jpg`,
+        url: `${BASE_URL}/apple-icon.png`,
         width: 1200,
         height: 630,
         alt: "Cmoon",
@@ -102,7 +102,7 @@ export const metadata = {
     title: "Cmoon - Watch Movies & TV Shows Online",
     description:
       "Watch movies, TV shows and anime online in HD quality on Cmoon.",
-    images: [`${BASE_URL}/og-banner.jpg`],
+    images: [`${BASE_URL}/apple-icon.png`],
   },
 
   appleWebApp: {
