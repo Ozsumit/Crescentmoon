@@ -723,7 +723,7 @@ const HomeCard = memo(({ MovieCard }) => {
           <div className="absolute inset-0 bg-neutral-900">
             <Image
               src={getImagePath()}
-              alt={title}
+              alt={`${title} poster`}
               fill
               loading="lazy"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
