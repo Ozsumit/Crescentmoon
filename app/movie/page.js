@@ -1,5 +1,7 @@
 import MoviesClient from "./MoviesClient";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
+
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -15,6 +17,24 @@ async function getData() {
   const data = await resp.json();
   return data.results;
 }
+
+export const metadata = {
+  title: "Movies - Watch Online in HD | Cmoon",
+  description: "Explore and watch the latest popular movies online in HD quality on Cmoon. Fast and responsive movie streaming.",
+  keywords: ["watch movies online", "stream movies", "HD movies", "Cmoon", "popular movies"],
+  openGraph: {
+    title: "Movies - Watch Online in HD | Cmoon",
+    description: "Explore and watch the latest popular movies online in HD quality on Cmoon.",
+    url: `${BASE_URL}/movie`,
+    siteName: "Cmoon",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Movies - Watch Online in HD | Cmoon",
+    description: "Explore and watch the latest popular movies online in HD quality on Cmoon.",
+  },
+};
 
 const Movies = async () => {
   const moviedata = await getData();
