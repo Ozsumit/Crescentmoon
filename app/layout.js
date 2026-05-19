@@ -2,7 +2,6 @@ import Header from "@/components/navbar/Header";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import Footer from "@/components/footer/Footer";
-import AdBlocker from "@/components/filters";
 import AppInstallPopup from "@/components/app-installpopup";
 import SnowButton from "@/components/snowbutton";
 import { Analytics } from "@vercel/analytics/react";
