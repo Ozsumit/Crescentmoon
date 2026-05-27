@@ -40,6 +40,9 @@ model VideoSource {
   icon        String?  // icon name from lucide
   features    Json?    // Array of strings
   description String?
+
+  download    Boolean  @default(false)
+  parseUrl    Boolean  @default(false)
   paramStyle  String   @default("query") // "query", "path-slash", "path-hyphen-mapi"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

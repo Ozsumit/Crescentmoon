@@ -1,25 +1,264 @@
 "use client";
+
 import React, { useState } from "react";
+
 import {
   Plus,
   Trash2,
   Edit2,
   Save,
   X,
-  ChevronUp,
-  ChevronDown,
   Eye,
   EyeOff,
   Video,
   Tv,
-  ExternalLink,
-  Database
+  Database,
 } from "lucide-react";
-import { saveVideoSource, deleteVideoSource, seedVideoSources } from "./action";
+
+import { saveVideoSource, deleteVideoSource } from "./action";
+
+const defaultMovieSources = [
+  {
+    name: "vidking",
+    url: "https://www.vidking.net/embed/movie/",
+    params: "?color=c3f0c2&icons=default&autoplay=true&nextbutton=true",
+    icon: "Crown",
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
+    type: "movie",
+    priority: 100,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "VidLink",
+    url: "https://vidlink.pro/movie/",
+    params:
+      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
+    icon: "Play",
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
+    type: "movie",
+    priority: 95,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "VidAPI",
+    url: "https://vaplayer.ru/embed/movie/",
+    params: "?skin=cinematic",
+    icon: "Webhook",
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
+    type: "movie",
+    priority: 90,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "VidSrc",
+    url: "https://v2.vidsrc.me/embed/movie/",
+    params: "?multiLang=true",
+    icon: "Languages",
+    features: ["Multi-Language"],
+    description: "Good source for non-English audio.",
+    type: "movie",
+    priority: 85,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "MoviesAPI",
+    url: "https://moviesapi.club/movie/",
+    params: "?multiLang=true",
+    icon: "List",
+    features: ["Multi-Language", "Fast"],
+    description: "A reliable alternative with good subtitle support.",
+    type: "movie",
+    priority: 80,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "videasy",
+    url: "https://player.videasy.net/movie/",
+    params: "?multiLang=true",
+    icon: "Clapperboard",
+    features: ["Multi-sub", "Clean UI"],
+    description: "Features a clean player with multiple subtitle choices.",
+    type: "movie",
+    priority: 75,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "Vidsrc 2",
+    url: "https://vidsrc.net/embed/movie/",
+    params: "?multiLang=true",
+    icon: "Server",
+    features: ["Multi-Language", "Backup"],
+    description: "A secondary backup source for language options.",
+    type: "movie",
+    priority: 70,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "VidSrc 3",
+    url: "https://vidsrc.icu/embed/movie/",
+    params: "?multiLang=true",
+    icon: "Languages",
+    features: ["Multi-Language", "Backup"],
+    description: "Alternative source for subtitles.",
+    type: "movie",
+    priority: 65,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "VidSrc 4",
+    url: "https://player.vidsrc.co/embed/movie/",
+    params:
+      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
+    icon: "Clapperboard",
+    features: [],
+    download: true,
+    description: "A reliable classic player.",
+    type: "movie",
+    priority: 60,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "2Embed",
+    url: "https://2embed.cc/embed/movie/",
+    icon: "Film",
+    features: ["Ads"],
+    params: "?multiLang=true",
+    description: "May have more pop-up ads.",
+    type: "movie",
+    priority: 55,
+    active: true,
+    paramStyle: "query",
+  },
+  {
+    name: "Binge",
+    url: "https://vidbinge.dev/embed/movie/",
+    icon: "Zap",
+    features: ["Fast"],
+    parseUrl: true,
+    description: "Quick-loading, lightweight player.",
+    type: "movie",
+    priority: 50,
+    active: true,
+    paramStyle: "query",
+  },
+];
+
+const DEFAULT_TV_SOURCES = [
+  {
+    name: "vidking",
+    url: "https://www.vidking.net/embed/tv/",
+    paramStyle: "path-slash",
+    icon: "Crown",
+    features: ["Recommended", "Fast"],
+    description: "Fast loading with a modern player.",
+    type: "tv",
+    priority: 100,
+    active: true,
+    params: "",
+  },
+  {
+    name: "VidLink",
+    url: "https://vidlink.pro/tv/",
+    paramStyle: "path-slash",
+    icon: "Play",
+    features: ["Recommended"],
+    description: "Fast loading with a modern player.",
+    type: "tv",
+    priority: 95,
+    active: true,
+    params: "",
+  },
+  {
+    name: "VidAPI",
+    url: "https://vaplayer.ru/embed/tv/",
+    paramStyle: "path-slash",
+    icon: "Webhook",
+    features: ["Recommended"],
+    description: "Fast loading with a modern player.",
+    type: "tv",
+    priority: 90,
+    active: true,
+    params: "",
+  },
+  {
+    name: "VidSrc",
+    url: "https://v2.vidsrc.me/embed/tv/",
+    paramStyle: "path-slash",
+    icon: "Languages",
+    features: ["Multi-Language"],
+    description: "Good for non-English audio.",
+    type: "tv",
+    priority: 85,
+    active: true,
+    params: "",
+  },
+  {
+    name: "MoviesAPI",
+    url: "https://moviesapi.club/tv/",
+    paramStyle: "path-hyphen-mapi",
+    icon: "List",
+    features: ["Multi-Language"],
+    description: "Reliable alternative.",
+    type: "tv",
+    priority: 80,
+    active: true,
+    params: "",
+  },
+  {
+    name: "videasy",
+    url: "https://player.videasy.net/tv/",
+    paramStyle: "path-slash",
+    icon: "Clapperboard",
+    features: ["Multi-sub"],
+    description: "Clean player with subtitle choices.",
+    type: "tv",
+    priority: 75,
+    active: true,
+    params: "",
+  },
+  {
+    name: "Vidsrc 2",
+    url: "https://vidsrc.to/embed/tv/",
+    paramStyle: "path-slash",
+    icon: "Server",
+    features: ["Backup"],
+    description: "Secondary backup source.",
+    type: "tv",
+    priority: 70,
+    active: true,
+    params: "",
+  },
+  {
+    name: "2Embed",
+    url: "https://2embed.cc/embed/tv/",
+    paramStyle: "path-slash",
+    icon: "ShieldAlert",
+    features: ["Ads"],
+    description: "Adblocker is highly recommended.",
+    type: "tv",
+    priority: 65,
+    active: true,
+    params: "",
+  },
+];
 
 const SourceManagement = ({ initialSources }) => {
-  const [sources, setSources] = useState(initialSources);
+  const [sources] = useState(initialSources || []);
+
   const [editingId, setEditingId] = useState(null);
+
   const [isAdding, setIsAdding] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -32,27 +271,8 @@ const SourceManagement = ({ initialSources }) => {
     icon: "Play",
     features: "",
     description: "",
-    paramStyle: "query"
+    paramStyle: "query",
   });
-
-  const handleEdit = (source) => {
-    setEditingId(source.id);
-    setFormData({
-      ...source,
-      features: Array.isArray(source.features) ? source.features.join(", ") : (source.features || ""),
-      params: source.params || "",
-      icon: source.icon || "Play",
-      description: source.description || "",
-      paramStyle: source.paramStyle || "query"
-    });
-    setIsAdding(false);
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setIsAdding(false);
-    resetForm();
-  };
 
   const resetForm = () => {
     setFormData({
@@ -65,256 +285,372 @@ const SourceManagement = ({ initialSources }) => {
       icon: "Play",
       features: "",
       description: "",
-      paramStyle: "query"
+      paramStyle: "query",
     });
+  };
+
+  const handleEdit = (source) => {
+    setEditingId(source.id);
+
+    setFormData({
+      ...source,
+      features: Array.isArray(source.features)
+        ? source.features.join(", ")
+        : source.features || "",
+    });
+
+    setIsAdding(false);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setIsAdding(false);
+    resetForm();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const dataToSave = {
-      ...formData,
-      priority: parseInt(formData.priority),
-      features: formData.features.split(",").map(f => f.trim()).filter(f => f !== ""),
-      id: editingId
-    };
 
-    await saveVideoSource(dataToSave);
-    // In a real app we'd refresh the data, but since it's a server action with revalidatePath,
-    // and we are using client state, we might need to manually update or rely on the prop update.
-    // For simplicity, let's assume the user will refresh or we can update local state if we had a return value.
+    await saveVideoSource({
+      ...formData,
+      priority: Number(formData.priority),
+      features: formData.features
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean),
+      id: editingId,
+    });
+
     window.location.reload();
   };
 
   const handleDelete = async (id) => {
-    if (confirm("Are you sure you want to delete this source?")) {
-      await deleteVideoSource(id);
-      window.location.reload();
-    }
-  };
+    const confirmed = confirm("Delete this source?");
 
-  const handleSeed = async () => {
-    if (confirm("This will add default video sources if they don't exist. Continue?")) {
-      await seedVideoSources();
-      window.location.reload();
-    }
+    if (!confirmed) return;
+
+    await deleteVideoSource(id);
+
+    window.location.reload();
   };
 
   const handleToggleActive = async (source) => {
     await saveVideoSource({
       ...source,
-      active: !source.active
+      active: !source.active,
     });
+
     window.location.reload();
+  };
+
+  const handleSeed = async () => {
+    const confirmed = confirm("Seed all movie and TV sources?");
+
+    if (!confirmed) return;
+
+    try {
+      const allSources = [...defaultMovieSources, ...DEFAULT_TV_SOURCES];
+
+      for (const source of allSources) {
+        await saveVideoSource({
+          ...source,
+          id: undefined,
+        });
+      }
+
+      alert("All sources seeded successfully!");
+
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to seed sources");
+    }
   };
 
   return (
     <section className="mt-12">
       <header className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Video Sources</h2>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Video Sources
+          </h2>
+
+          <p className="text-neutral-500 text-sm mt-1">
+            Manage movie & TV providers
+          </p>
+        </div>
+
         <div className="flex gap-3">
-          <button
+          {/* <button
             onClick={handleSeed}
             className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all"
-            title="Seed default sources"
           >
-            <Database size={18} /> Seed Defaults
-          </button>
+            <Database size={18} />
+            Seed Defaults
+          </button> */}
+
           <button
-            onClick={() => { setIsAdding(true); setEditingId(null); resetForm(); }}
+            onClick={() => {
+              setIsAdding(true);
+              setEditingId(null);
+              resetForm();
+            }}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all"
           >
-            <Plus size={18} /> Add Source
+            <Plus size={18} />
+            Add Source
           </button>
         </div>
       </header>
 
       {(isAdding || editingId) && (
         <div className="bg-white rounded-[2rem] p-8 shadow-2xl mb-12 text-neutral-900">
-          <h3 className="text-xl font-bold mb-6">{editingId ? "Edit Source" : "Add New Source"}</h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Name</label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="e.g. VidSrc"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Type</label>
-              <select
-                value={formData.type}
-                onChange={e => setFormData({...formData, type: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-              >
-                <option value="movie">Movie</option>
-                <option value="tv">TV Series</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Base URL</label>
-              <input
-                type="text"
-                required
-                value={formData.url}
-                onChange={e => setFormData({...formData, url: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="https://vidsrc.me/embed/movie/"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Default Params</label>
-              <input
-                type="text"
-                value={formData.params}
-                onChange={e => setFormData({...formData, params: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="?autoplay=1"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Param Style</label>
-              <select
-                value={formData.paramStyle}
-                onChange={e => setFormData({...formData, paramStyle: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-              >
-                <option value="query">Query (?id=123)</option>
-                <option value="path-slash">Path Slash (/123/1/1)</option>
-                <option value="path-hyphen-mapi">Path Hyphen MAPI (123-1-1)</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Priority (Higher = First)</label>
-              <input
-                type="number"
-                value={formData.priority}
-                onChange={e => setFormData({...formData, priority: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Icon Name (Lucide)</label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={e => setFormData({...formData, icon: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="Play, Crown, Zap, etc."
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Features (comma separated)</label>
-              <input
-                type="text"
-                value={formData.features}
-                onChange={e => setFormData({...formData, features: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="Recommended, Fast, Multi-Language"
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Description</label>
-              <textarea
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                className="bg-neutral-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="Brief description of the source"
-              />
-            </div>
+          <h3 className="text-xl font-bold mb-6">
+            {editingId ? "Edit Source" : "Add New Source"}
+          </h3>
+
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <input
+              type="text"
+              placeholder="Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  name: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            />
+
+            <select
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  type: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            >
+              <option value="movie">Movie</option>
+
+              <option value="tv">TV</option>
+            </select>
+
+            <input
+              type="text"
+              placeholder="URL"
+              value={formData.url}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  url: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3 md:col-span-2"
+            />
+
+            <input
+              type="text"
+              placeholder="Params"
+              value={formData.params}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  params: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            />
+
+            <select
+              value={formData.paramStyle}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  paramStyle: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            >
+              <option value="query">Query</option>
+
+              <option value="path-slash">Path Slash</option>
+
+              <option value="path-hyphen-mapi">Path Hyphen MAPI</option>
+            </select>
+
+            <input
+              type="number"
+              placeholder="Priority"
+              value={formData.priority}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  priority: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            />
+
+            <input
+              type="text"
+              placeholder="Icon"
+              value={formData.icon}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  icon: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3"
+            />
+
+            <input
+              type="text"
+              placeholder="Features"
+              value={formData.features}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  features: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3 md:col-span-2"
+            />
+
+            <textarea
+              placeholder="Description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+              className="bg-neutral-100 rounded-xl px-4 py-3 md:col-span-2"
+            />
+
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                id="active"
                 checked={formData.active}
-                onChange={e => setFormData({...formData, active: e.target.checked})}
-                className="w-5 h-5 accent-indigo-600"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    active: e.target.checked,
+                  })
+                }
               />
-              <label htmlFor="active" className="text-sm font-bold">Active</label>
+
+              <span>Active</span>
             </div>
-            <div className="md:col-span-2 flex gap-4 mt-4">
+
+            <div className="md:col-span-2 flex gap-4">
               <button
                 type="submit"
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all"
+                className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold"
               >
-                <Save size={18} /> Save Source
+                <Save size={18} />
+                Save
               </button>
+
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex items-center gap-2 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 px-6 py-3 rounded-xl font-bold transition-all"
+                className="flex items-center gap-2 bg-neutral-200 text-neutral-700 px-6 py-3 rounded-xl font-bold"
               >
-                <X size={18} /> Cancel
+                <X size={18} />
+                Cancel
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden mb-12">
+      <div className="bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="text-neutral-400 text-[11px] uppercase tracking-[0.2em]">
-              <th className="pb-6 font-semibold">Priority</th>
-              <th className="pb-6 font-semibold">Source</th>
-              <th className="pb-6 font-semibold">Type</th>
-              <th className="pb-6 font-semibold">Status</th>
-              <th className="pb-6 font-semibold text-right">Actions</th>
+              <th className="pb-6">Priority</th>
+
+              <th className="pb-6">Source</th>
+
+              <th className="pb-6">Type</th>
+
+              <th className="pb-6">Status</th>
+
+              <th className="pb-6 text-right">Actions</th>
             </tr>
           </thead>
+
           <tbody className="text-neutral-900">
             {sources.map((s) => (
-              <tr key={s.id} className="group border-t border-neutral-100 hover:bg-neutral-50 transition-colors">
-                <td className="py-6 font-bold text-neutral-400">
-                  #{s.priority}
-                </td>
+              <tr
+                key={s.id}
+                className="border-t border-neutral-100 hover:bg-neutral-50"
+              >
+                <td className="py-6">#{s.priority}</td>
+
                 <td className="py-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-500">
-                      {s.type === "movie" ? <Video size={16} /> : <Tv size={16} />}
+                    <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                      {s.type === "movie" ? (
+                        <Video size={16} />
+                      ) : (
+                        <Tv size={16} />
+                      )}
                     </div>
+
                     <div>
-                      <div className="text-sm font-bold">{s.name}</div>
-                      <div className="text-[10px] text-neutral-400 max-w-[200px] truncate">{s.url}</div>
+                      <div className="font-bold text-sm">{s.name}</div>
+
+                      <div className="text-[10px] text-neutral-400 truncate max-w-[240px]">
+                        {s.url}
+                      </div>
                     </div>
                   </div>
                 </td>
+
                 <td className="py-6">
-                  <span className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full ${
-                    s.type === "movie" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
-                  }`}>
+                  <span className="text-[10px] uppercase font-bold">
                     {s.type}
                   </span>
                 </td>
+
                 <td className="py-6">
-                  <button onClick={() => handleToggleActive(s)} className="flex items-center gap-1">
+                  <button onClick={() => handleToggleActive(s)}>
                     {s.active ? (
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-                        <Eye size={14} /> Active
+                      <span className="flex items-center gap-1 text-emerald-600 text-xs font-bold">
+                        <Eye size={14} />
+                        Active
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 uppercase tracking-wider">
-                        <EyeOff size={14} /> Inactive
+                      <span className="flex items-center gap-1 text-rose-500 text-xs font-bold">
+                        <EyeOff size={14} />
+                        Inactive
                       </span>
                     )}
                   </button>
                 </td>
+
                 <td className="py-6 text-right">
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => handleEdit(s)}
-                      className="p-2 hover:bg-indigo-50 text-neutral-400 hover:text-indigo-600 rounded-lg transition-colors"
-                      title="Edit"
+                      className="p-2 hover:bg-indigo-50 rounded-lg"
                     >
                       <Edit2 size={16} />
                     </button>
+
                     <button
                       onClick={() => handleDelete(s.id)}
-                      className="p-2 hover:bg-rose-50 text-neutral-400 hover:text-rose-600 rounded-lg transition-colors"
-                      title="Delete"
+                      className="p-2 hover:bg-rose-50 rounded-lg"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -322,13 +658,6 @@ const SourceManagement = ({ initialSources }) => {
                 </td>
               </tr>
             ))}
-            {sources.length === 0 && (
-              <tr>
-                <td colSpan="5" className="py-12 text-center text-neutral-400 font-medium">
-                  No video sources configured.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>

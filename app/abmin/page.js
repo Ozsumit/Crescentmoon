@@ -1,4 +1,5 @@
 import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
+
 import DeleteButton from "./deletebutton";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import SourceManagement from "./SourceManagement";
@@ -15,6 +16,7 @@ export default async function AdminPage() {
           <h1 className="text-4xl font-extrabold tracking-tighter mb-2">
             Admin Panel
           </h1>
+
           <p className="text-neutral-500 font-medium">
             Project management & analytics
           </p>
@@ -24,7 +26,7 @@ export default async function AdminPage() {
 
         <SourceManagement initialSources={videoSources} />
 
-        <header className="mb-8">
+        <header className="mb-8 mt-12">
           <h2 className="text-2xl font-bold tracking-tight">User Feedback</h2>
         </header>
 
@@ -33,11 +35,15 @@ export default async function AdminPage() {
             <thead>
               <tr className="text-neutral-400 text-[11px] uppercase tracking-[0.2em]">
                 <th className="pb-6 font-semibold">Type</th>
+
                 <th className="pb-6 font-semibold">Email</th>
+
                 <th className="pb-6 font-semibold">Message</th>
+
                 <th className="pb-6 font-semibold text-right">Action</th>
               </tr>
             </thead>
+
             <tbody className="text-neutral-900">
               {feedbacks.map((f) => (
                 <tr
@@ -49,17 +55,31 @@ export default async function AdminPage() {
                       {f.type}
                     </span>
                   </td>
+
                   <td className="py-6 text-sm font-medium opacity-70">
                     {f.email || "—"}
                   </td>
+
                   <td className="py-6 text-sm max-w-sm truncate">
                     {f.message}
                   </td>
+
                   <td className="py-6 text-right">
                     <DeleteButton id={f.id} />
                   </td>
                 </tr>
               ))}
+
+              {feedbacks.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="py-12 text-center text-neutral-400"
+                  >
+                    No feedback found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>
