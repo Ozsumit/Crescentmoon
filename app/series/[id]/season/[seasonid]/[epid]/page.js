@@ -1,4 +1,5 @@
 import EpisodeInfo from "@/components/info/EpisodeInfo";
+import { getVideoSources } from "@/app/abmin/action";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
@@ -166,7 +167,10 @@ export default async function EpisodeDetailsPage({ params }) {
   const { id, seasonid, epid } = params;
 
   try {
-    const data = await fetchEpisodeData(id, seasonid, epid);
+    const [data, videoSources] = await Promise.all([
+      fetchEpisodeData(id, seasonid, epid),
+      getVideoSources("tv"),
+    ]);
 
     const jsonLd = generateEpisodeSchema(
       data.episodeData,
@@ -192,6 +196,7 @@ export default async function EpisodeDetailsPage({ params }) {
             seriesId={id}
             seasonData={data.seasonData}
             seriesData={data.seriesData}
+            videoSources={videoSources}
           />
         </div>
       </>

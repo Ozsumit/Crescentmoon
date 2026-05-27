@@ -160,6 +160,37 @@ function generateHistory(rawData, timeframe, now) {
   }));
 }
 
+export async function getVideoSources(type) {
+  return await prisma.videoSource.findMany({
+    where: type ? { type } : {},
+    orderBy: {
+      priority: "desc",
+    },
+  });
+}
+
+export async function saveVideoSource(data) {
+  const { id, ...rest } = data;
+  if (id) {
+    await prisma.videoSource.update({
+      where: { id },
+      data: rest,
+    });
+  } else {
+    await prisma.videoSource.create({
+      data: rest,
+    });
+  }
+  revalidatePath("/abmin");
+}
+
+export async function deleteVideoSource(id) {
+  await prisma.videoSource.delete({
+    where: { id },
+  });
+  revalidatePath("/abmin");
+}
+
 export async function getAnalyticsData() {
   const now = new Date();
 
