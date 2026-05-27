@@ -2,6 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { formatInTimeZone } from "date-fns-tz";
+
+const TIMEZONE = process.env.ANALYTICS_TIMEZONE || "Asia/Kathmandu";
 
 export async function getFeedback() {
   return await prisma.feedback.findMany({
@@ -43,10 +46,8 @@ export async function trackPageView(path, visitorId) {
 }
 
 /**
- * Better timestamp formatting
- * + stable chronological labels
- * + avoids duplicate labels
- * + improves charts dramatically
+ * Generates chart history with
+ * timezone-safe bucket grouping
  */
 function generateHistory(rawData, timeframe, now) {
   const buckets = [];
@@ -67,78 +68,53 @@ function generateHistory(rawData, timeframe, now) {
 
   /**
    * 24 HOURS
-   * hourly labels
-   * ex: 1 AM, 2 AM
    */
   if (timeframe === "24h") {
     for (let i = 23; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 60 * 60 * 1000);
 
-      d.setMinutes(0, 0, 0);
+      const key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd-HH");
 
-      const key = d.toISOString();
-
-      const label = d.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        hour12: true,
-      });
+      const label = formatInTimeZone(d, TIMEZONE, "h a");
 
       createBucket(key, label, d.getTime());
     }
   } else if (timeframe === "7d") {
     /**
      * 7 DAYS
-     * ex: Mon 27
      */
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
 
-      d.setHours(0, 0, 0, 0);
+      const key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd");
 
-      const key = d.toISOString();
-
-      const label = d.toLocaleDateString("en-US", {
-        weekday: "short",
-        day: "numeric",
-      });
+      const label = formatInTimeZone(d, TIMEZONE, "EEE d");
 
       createBucket(key, label, d.getTime());
     }
   } else if (timeframe === "30d") {
     /**
      * 30 DAYS
-     * ex: May 21
      */
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
 
-      d.setHours(0, 0, 0, 0);
+      const key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd");
 
-      const key = d.toISOString();
-
-      const label = d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
+      const label = formatInTimeZone(d, TIMEZONE, "MMM d");
 
       createBucket(key, label, d.getTime());
     }
   } else if (timeframe === "1y") {
     /**
      * 1 YEAR
-     * ex: Jan 2026
      */
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
 
-      d.setHours(0, 0, 0, 0);
+      const key = formatInTimeZone(d, TIMEZONE, "yyyy-MM");
 
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-
-      const label = d.toLocaleDateString("en-US", {
-        month: "short",
-        year: "2-digit",
-      });
+      const label = formatInTimeZone(d, TIMEZONE, "MMM yy");
 
       createBucket(key, label, d.getTime());
     }
@@ -153,16 +129,13 @@ function generateHistory(rawData, timeframe, now) {
     let key;
 
     if (timeframe === "24h") {
-      d.setMinutes(0, 0, 0);
-      key = d.toISOString();
+      key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd-HH");
     } else if (timeframe === "7d") {
-      d.setHours(0, 0, 0, 0);
-      key = d.toISOString();
+      key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd");
     } else if (timeframe === "30d") {
-      d.setHours(0, 0, 0, 0);
-      key = d.toISOString();
+      key = formatInTimeZone(d, TIMEZONE, "yyyy-MM-dd");
     } else if (timeframe === "1y") {
-      key = `${d.getFullYear()}-${d.getMonth()}`;
+      key = formatInTimeZone(d, TIMEZONE, "yyyy-MM");
     }
 
     if (map.has(key)) {
@@ -287,7 +260,7 @@ export async function getAnalyticsData() {
         })),
 
         /**
-         * CLEAN HISTORY
+         * CHART HISTORY
          */
         history: generateHistory(rawTimelineData, key, now),
       };
