@@ -12,9 +12,10 @@ import {
   EyeOff,
   Video,
   Tv,
-  ExternalLink
+  ExternalLink,
+  Database
 } from "lucide-react";
-import { saveVideoSource, deleteVideoSource } from "./action";
+import { saveVideoSource, deleteVideoSource, seedVideoSources } from "./action";
 
 const SourceManagement = ({ initialSources }) => {
   const [sources, setSources] = useState(initialSources);
@@ -91,6 +92,13 @@ const SourceManagement = ({ initialSources }) => {
     }
   };
 
+  const handleSeed = async () => {
+    if (confirm("This will add default video sources if they don't exist. Continue?")) {
+      await seedVideoSources();
+      window.location.reload();
+    }
+  };
+
   const handleToggleActive = async (source) => {
     await saveVideoSource({
       ...source,
@@ -103,12 +111,21 @@ const SourceManagement = ({ initialSources }) => {
     <section className="mt-12">
       <header className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold tracking-tight text-white">Video Sources</h2>
-        <button
-          onClick={() => { setIsAdding(true); setEditingId(null); resetForm(); }}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all"
-        >
-          <Plus size={18} /> Add Source
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleSeed}
+            className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all"
+            title="Seed default sources"
+          >
+            <Database size={18} /> Seed Defaults
+          </button>
+          <button
+            onClick={() => { setIsAdding(true); setEditingId(null); resetForm(); }}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all"
+          >
+            <Plus size={18} /> Add Source
+          </button>
+        </div>
       </header>
 
       {(isAdding || editingId) && (

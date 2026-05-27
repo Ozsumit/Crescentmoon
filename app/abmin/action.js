@@ -191,6 +191,114 @@ export async function deleteVideoSource(id) {
   revalidatePath("/abmin");
 }
 
+export async function seedVideoSources() {
+  const movieSources = [
+    {
+      name: "vidking",
+      url: "https://www.vidking.net/embed/movie/",
+      params: "?color=c3f0c2&icons=default&autoplay=true&nextbutton=true",
+      icon: "Crown",
+      features: ["Recommended", "Fast"],
+      description: "Fast loading with a modern player.",
+      type: "movie",
+      priority: 100,
+    },
+    {
+      name: "VidLink",
+      url: "https://vidlink.pro/movie/",
+      params:
+        "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
+      icon: "Play",
+      features: ["Recommended", "Fast"],
+      description: "Fast loading with a modern player.",
+      type: "movie",
+      priority: 90,
+    },
+    {
+      name: "VidAPI",
+      url: "https://vaplayer.ru/embed/movie/",
+      params: "?skin=cinematic",
+      icon: "Webhook",
+      features: ["Recommended", "Fast"],
+      description: "Fast loading with a modern player.",
+      type: "movie",
+      priority: 80,
+    },
+    {
+      name: "VidSrc",
+      url: "https://v2.vidsrc.me/embed/movie/",
+      params: "?multiLang=true",
+      icon: "Languages",
+      features: ["Multi-Language"],
+      description: "Good source for non-English audio.",
+      type: "movie",
+      priority: 70,
+    },
+  ];
+
+  const tvSources = [
+    {
+      name: "vidking",
+      url: "https://www.vidking.net/embed/tv/",
+      paramStyle: "path-slash",
+      icon: "Crown",
+      features: ["Recommended", "Fast"],
+      description: "Fast loading with a modern player.",
+      type: "tv",
+      priority: 100,
+    },
+    {
+      name: "VidLink",
+      url: "https://vidlink.pro/tv/",
+      paramStyle: "path-slash",
+      icon: "Play",
+      features: ["Recommended"],
+      description: "Fast loading with a modern player.",
+      type: "tv",
+      priority: 90,
+    },
+    {
+      name: "VidAPI",
+      url: "https://vaplayer.ru/embed/tv/",
+      paramStyle: "path-slash",
+      icon: "Webhook",
+      features: ["Recommended"],
+      description: "Fast loading with a modern player.",
+      type: "tv",
+      priority: 80,
+    },
+    {
+      name: "VidSrc",
+      url: "https://v2.vidsrc.me/embed/tv/",
+      paramStyle: "path-slash",
+      icon: "Languages",
+      features: ["Multi-Language"],
+      description: "Good for non-English audio.",
+      type: "tv",
+      priority: 70,
+    },
+  ];
+
+  const allSources = [...movieSources, ...tvSources];
+
+  for (const source of allSources) {
+    const exists = await prisma.videoSource.findFirst({
+      where: {
+        name: source.name,
+        type: source.type,
+      },
+    });
+
+    if (!exists) {
+      await prisma.videoSource.create({
+        data: source,
+      });
+    }
+  }
+
+  revalidatePath("/abmin");
+}
+
 export async function getAnalyticsData() {
   const now = new Date();
 
