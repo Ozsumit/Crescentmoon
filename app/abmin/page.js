@@ -1,19 +1,27 @@
-import { getFeedback } from "./action";
+import { getFeedback, getAnalyticsData } from "./action";
 import DeleteButton from "./deletebutton";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 
 export default async function AdminPage() {
   const feedbacks = await getFeedback();
+  const analyticsData = await getAnalyticsData();
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white p-6 md:p-12">
       <div className="max-w-5xl pt-24 mx-auto">
         <header className="mb-12">
           <h1 className="text-4xl font-extrabold tracking-tighter mb-2">
-            Feedback
+            Admin Panel
           </h1>
           <p className="text-neutral-500 font-medium">
-            Internal review console
+            Project management & analytics
           </p>
+        </header>
+
+        <AnalyticsDashboard data={analyticsData} />
+
+        <header className="mb-8">
+          <h2 className="text-2xl font-bold tracking-tight">User Feedback</h2>
         </header>
 
         <section className="bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden">
