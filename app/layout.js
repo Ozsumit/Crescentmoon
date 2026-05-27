@@ -8,6 +8,7 @@ import SnowButton from "@/components/snowbutton";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PopupDeveloperFeedback } from "@/components/feedback";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import Script from "next/script";
 import CookieConsent from "@/components/cookies";
 
@@ -165,6 +166,7 @@ export default function RootLayout({ children }) {
         className={`${inter.className} bg-neutral-950 text-white antialiased`}
       >
         <Header />
+        <AnalyticsTracker />
 
         <Analytics />
         <SpeedInsights />
