@@ -1,4 +1,5 @@
 import MovieInfo from "@/components/info/MovieInfo";
+import { getVideoSources } from "@/app/abmin/action";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
@@ -136,7 +137,10 @@ function generateMovieSchema(data, id) {
 const MovieDetail = async ({ params }) => {
   const { id } = params;
 
-  const { data, genreArr } = await getData(id);
+  const [{ data, genreArr }, videoSources] = await Promise.all([
+    getData(id),
+    getVideoSources("movie"),
+  ]);
 
   const jsonLd = generateMovieSchema(data, id);
 
@@ -150,7 +154,12 @@ const MovieDetail = async ({ params }) => {
         }}
       />
 
-      <MovieInfo MovieDetail={data} genreArr={genreArr} id={id} />
+      <MovieInfo
+        MovieDetail={data}
+        genreArr={genreArr}
+        id={id}
+        videoSources={videoSources}
+      />
     </>
   );
 };

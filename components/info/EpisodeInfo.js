@@ -22,13 +22,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- CONSTANTS ---
-const TV_SOURCES = [
+// --- CONSTANTS & HELPERS ---
+const DEFAULT_TV_SOURCES = [
   {
     name: "vidking",
     url: "https://www.vidking.net/embed/tv/",
     paramStyle: "path-slash",
-    icon: <Crown className="w-4 h-4" />,
+    icon: "Crown",
     features: ["Recommended", "Fast"],
     description: "Fast loading with a modern player.",
   },
@@ -36,7 +36,7 @@ const TV_SOURCES = [
     name: "VidLink",
     url: "https://vidlink.pro/tv/",
     paramStyle: "path-slash",
-    icon: <Play className="w-4 h-4" />,
+    icon: "Play",
     features: ["Recommended"],
     description: "Fast loading with a modern player.",
   },
@@ -44,7 +44,7 @@ const TV_SOURCES = [
     name: "VidAPI",
     url: "https://vaplayer.ru/embed/tv/",
     paramStyle: "path-slash",
-    icon: <Webhook className="w-4 h-4" />,
+    icon: "Webhook",
     features: ["Recommended"],
     description: "Fast loading with a modern player.",
   },
@@ -52,7 +52,7 @@ const TV_SOURCES = [
     name: "VidSrc",
     url: "https://v2.vidsrc.me/embed/tv/",
     paramStyle: "path-slash",
-    icon: <Languages className="w-4 h-4" />,
+    icon: "Languages",
     features: ["Multi-Language"],
     description: "Good for non-English audio.",
   },
@@ -60,7 +60,7 @@ const TV_SOURCES = [
     name: "MoviesAPI",
     url: "https://moviesapi.club/tv/",
     paramStyle: "path-hyphen-mapi",
-    icon: <List className="w-4 h-4" />,
+    icon: "List",
     features: ["Multi-Language"],
     description: "Reliable alternative.",
   },
@@ -68,7 +68,7 @@ const TV_SOURCES = [
     name: "videasy",
     url: "https://player.videasy.net/tv/",
     paramStyle: "path-slash",
-    icon: <Clapperboard className="w-4 h-4" />,
+    icon: "Clapperboard",
     features: ["Multi-sub"],
     description: "Clean player with subtitle choices.",
   },
@@ -76,7 +76,7 @@ const TV_SOURCES = [
     name: "Vidsrc 2",
     url: "https://vidsrc.to/embed/tv/",
     paramStyle: "path-slash",
-    icon: <Server className="w-4 h-4" />,
+    icon: "Server",
     features: ["Backup"],
     description: "Secondary backup source.",
   },
@@ -84,17 +84,30 @@ const TV_SOURCES = [
     name: "2Embed",
     url: "https://2embed.cc/embed/tv/",
     paramStyle: "path-slash",
-    icon: <ShieldAlert className="w-4 h-4" />,
+    icon: "ShieldAlert",
     features: ["Ads"],
     description: "Adblocker is highly recommended.",
   },
 ];
 
+const getIcon = (iconName, props = { className: "w-4 h-4" }) => {
+  const icons = {
+    Play, Star, Clock, Calendar, Server, Heart, Share2, Film, Languages,
+    Check, Crown, Webhook, Clapperboard, ShieldAlert, List, X, Info, ChevronRight
+  };
+  const IconComponent = icons[iconName] || Play;
+  return <IconComponent {...props} />;
+};
+
 // --- MAIN COMPONENT ---
 
-const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
+const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSources = [] }) => {
+  const sources = videoSources.length > 0
+    ? videoSources.filter(s => s.active)
+    : DEFAULT_TV_SOURCES;
+
   const [isMounted, setIsMounted] = useState(false);
-  const [selectedServer, setSelectedServer] = useState(TV_SOURCES[0]);
+  const [selectedServer, setSelectedServer] = useState(sources[0]);
   const [defaultServerName, setDefaultServerName] = useState("");
   const [selectedSeason, setSelectedSeason] = useState(seasonData);
   const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
@@ -122,11 +135,11 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
     if (savedDefault) setDefaultServerName(savedDefault);
 
     const initialServerName =
-      savedSession || savedDefault || TV_SOURCES[0].name;
+      savedSession || savedDefault || sources[0].name;
     const initialServer =
-      TV_SOURCES.find((s) => s.name === initialServerName) || TV_SOURCES[0];
+      sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
-  }, []);
+  }, [sources]);
 
   // Scroll to active episode on load
   useEffect(() => {
@@ -440,7 +453,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                 </h3>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar snap-x">
-                {TV_SOURCES.map((s) => {
+                {sources.map((s) => {
                   const isActive = selectedServer.name === s.name;
                   const isDefault = s.name === defaultServerName;
                   return (
@@ -462,7 +475,7 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData }) => {
                             isActive ? "text-indigo-400" : "text-neutral-500"
                           }
                         >
-                          {s.icon}
+                          {typeof s.icon === 'string' ? getIcon(s.icon) : s.icon}
                         </span>
                         <span
                           className={`text-sm font-bold ${isActive ? "text-white" : "text-neutral-300"}`}

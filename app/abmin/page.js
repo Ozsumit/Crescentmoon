@@ -1,10 +1,12 @@
-import { getFeedback, getAnalyticsData } from "./action";
+import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
 import DeleteButton from "./deletebutton";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import SourceManagement from "./SourceManagement";
 
 export default async function AdminPage() {
   const feedbacks = await getFeedback();
   const analyticsData = await getAnalyticsData();
+  const videoSources = await getVideoSources();
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white p-6 md:p-12">
@@ -19,6 +21,8 @@ export default async function AdminPage() {
         </header>
 
         <AnalyticsDashboard data={analyticsData} />
+
+        <SourceManagement initialSources={videoSources} />
 
         <header className="mb-8">
           <h2 className="text-2xl font-bold tracking-tight">User Feedback</h2>
