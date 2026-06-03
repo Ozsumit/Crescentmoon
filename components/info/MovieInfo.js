@@ -22,105 +22,26 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- CONSTANTS & HELPERS ---
-const DEFAULT_VIDEO_SOURCES = [
-  {
-    name: "vidking",
-    url: "https://www.vidking.net/embed/movie/",
-    params: "?color=c3f0c2&icons=default&autoplay=true&nextbutton=true",
-    icon: "Crown",
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidLink",
-    url: "https://vidlink.pro/movie/",
-    params:
-      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
-    icon: "Play",
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidAPI",
-    url: "https://vaplayer.ru/embed/movie/",
-    params: "?skin=cinematic",
-    icon: "Webhook",
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidSrc",
-    url: "https://v2.vidsrc.me/embed/movie/",
-    params: "?multiLang=true",
-    icon: "Languages",
-    features: ["Multi-Language"],
-    description: "Good source for non-English audio.",
-  },
-  {
-    name: "MoviesAPI",
-    url: "https://moviesapi.club/movie/",
-    params: "?multiLang=true",
-    icon: "List",
-    features: ["Multi-Language", "Fast"],
-    description: "A reliable alternative with good subtitle support.",
-  },
-  {
-    name: "videasy",
-    url: "https://player.videasy.net/movie/",
-    params: "?multiLang=true",
-    icon: "Clapperboard",
-    features: ["Multi-sub", "Clean UI"],
-    description: "Features a clean player with multiple subtitle choices.",
-  },
-  {
-    name: "Vidsrc 2",
-    url: "https://vidsrc.net/embed/movie/",
-    params: "?multiLang=true",
-    icon: "Server",
-    features: ["Multi-Language", "Backup"],
-    description: "A secondary backup source for language options.",
-  },
-  {
-    name: "VidSrc 3",
-    url: "https://vidsrc.icu/embed/movie/",
-    params: "?multiLang=true",
-    icon: "Languages",
-    features: ["Multi-Language", "Backup"],
-    description: "Alternative source for subtitles.",
-  },
-  {
-    name: "VidSrc 4",
-    url: "https://player.vidsrc.co/embed/movie/",
-    params:
-      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
-    icon: "Clapperboard",
-    features: [],
-    download: true,
-    description: "A reliable classic player.",
-  },
-  {
-    name: "2Embed",
-    url: "https://2embed.cc/embed/movie/",
-    icon: "Film",
-    features: ["Ads"],
-    params: "?multiLang=true",
-    description: "May have more pop-up ads.",
-  },
-  {
-    name: "Binge",
-    url: "https://vidbinge.dev/embed/movie/",
-    icon: "Zap",
-    features: ["Fast"],
-    parseUrl: true,
-    description: "Quick-loading, lightweight player.",
-  },
-];
-
 const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
   const icons = {
-    Play, Star, Clock, Calendar, Server, Heart, Share2, Film, List,
-    Clapperboard, Zap, Languages, Check, Webhook, ShieldAlert, X, Crown, Settings2
+    Play,
+    Star,
+    Clock,
+    Calendar,
+    Server,
+    Heart,
+    Share2,
+    Film,
+    List,
+    Clapperboard,
+    Zap,
+    Languages,
+    Check,
+    Webhook,
+    ShieldAlert,
+    X,
+    Crown,
+    Settings2,
   };
   const IconComponent = icons[iconName] || Play;
   return <IconComponent {...props} />;
@@ -142,10 +63,9 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
 // --- MAIN COMPONENT ---
 
 const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
-  const activeSources = videoSources.filter(s => s.active);
-  const sources = activeSources.length > 0
-    ? activeSources
-    : DEFAULT_VIDEO_SOURCES;
+  const activeSources = videoSources.filter((s) => s.active);
+  const sources =
+    activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
 
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(sources[0]);
@@ -173,11 +93,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
 
     if (savedDefault) setDefaultServerName(savedDefault);
 
-    const initialServerName =
-      savedSession || savedDefault || sources[0].name;
+    const initialServerName = savedSession || savedDefault || sources[0].name;
     const initialServer =
-      sources.find((s) => s.name === initialServerName) ||
-      sources[0];
+      sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
   }, [sources]);
 
@@ -445,7 +363,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                 <div className="flex items-start justify-between relative z-10 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 shrink-0 shadow-inner">
-                      {typeof selectedServer.icon === 'string' ? getIcon(selectedServer.icon) : selectedServer.icon}
+                      {typeof selectedServer.icon === "string"
+                        ? getIcon(selectedServer.icon)
+                        : selectedServer.icon}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -519,7 +439,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                           <div
                             className={`shrink-0 transition-colors ${active ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-400"}`}
                           >
-                            {typeof s.icon === 'string' ? getIcon(s.icon) : s.icon}
+                            {typeof s.icon === "string"
+                              ? getIcon(s.icon)
+                              : s.icon}
                           </div>
                           <span
                             className={`text-[11px] font-semibold truncate transition-colors ${active ? "text-indigo-100" : "text-neutral-400 group-hover:text-neutral-200"}`}

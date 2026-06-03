@@ -10,10 +10,10 @@ export default async function AdminPage() {
   const videoSources = await getVideoSources();
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white p-6 md:p-12">
+    <main className="min-h-screen bg-neutral-100 text-white p-6 md:p-12">
       <div className="max-w-5xl pt-24 mx-auto">
         <header className="mb-12">
-          <h1 className="text-4xl font-extrabold tracking-tighter mb-2">
+          <h1 className="text-4xl text-slate-800 font-extrabold tracking-tighter mb-2">
             Admin Panel
           </h1>
 
@@ -27,7 +27,9 @@ export default async function AdminPage() {
         <SourceManagement initialSources={videoSources} />
 
         <header className="mb-8 mt-12">
-          <h2 className="text-2xl font-bold tracking-tight">User Feedback</h2>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+            User Feedback
+          </h2>
         </header>
 
         <section className="bg-white rounded-[2rem] p-8 shadow-2xl overflow-hidden">
