@@ -1,5 +1,6 @@
 import Header from "@/components/navbar/Header";
 import "./globals.css";
+import { PostHogProvider } from "./providers";
 import { Inter } from "next/font/google";
 import Footer from "@/components/footer/Footer";
 import AdBlocker from "@/components/filters";
@@ -165,22 +166,24 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.className} bg-neutral-950 text-white antialiased`}
       >
-        <Header />
-        <AnalyticsTracker />
+        <PostHogProvider>
+          <Header />
+          <AnalyticsTracker />
 
-        <Analytics />
-        <SpeedInsights />
+          <Analytics />
+          <SpeedInsights />
 
-        <main>{children}</main>
-        <CookieConsent />
-        <PopupDeveloperFeedback />
+          <main>{children}</main>
+          <CookieConsent />
+          <PopupDeveloperFeedback />
 
-        {/* <AdBlocker /> */}
-        {/* <AppInstallPopup /> */}
+          {/* <AdBlocker /> */}
+          {/* <AppInstallPopup /> */}
 
-        <Footer />
+          <Footer />
 
-        {/* <SnowButton /> */}
+          {/* <SnowButton /> */}
+        </PostHogProvider>
       </body>
     </html>
   );

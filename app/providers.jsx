@@ -7,9 +7,12 @@ import PostHogPageView from "./PostHogPageview";
 
 export function PostHogProvider({ children }) {
   useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, {
+      api_host: "/ingest",
+      ui_host: "https://us.posthog.com",
       capture_pageview: false, // Disable automatic pageview capture, as we capture manually
+      capture_exceptions: true,
+      defaults: "2026-01-30",
     });
   }, []);
 

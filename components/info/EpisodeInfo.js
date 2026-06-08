@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePostHog } from "posthog-js/react";
 
 // --- CONSTANTS & HELPERS ---
 const DEFAULT_TV_SOURCES = [
@@ -102,6 +103,7 @@ const getIcon = (iconName, props = { className: "w-4 h-4" }) => {
 // --- MAIN COMPONENT ---
 
 const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSources = [] }) => {
+  const posthog = usePostHog();
   const sources = videoSources.length > 0
     ? videoSources.filter(s => s.active)
     : DEFAULT_TV_SOURCES;
@@ -139,6 +141,14 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSo
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
+
+    posthog?.capture("episode_viewed", {
+      series_id: seriesId,
+      series_title: seriesData?.name,
+      season_number: episodeDetails?.season_number,
+      episode_number: episodeDetails?.episode_number,
+      episode_title: episodeDetails?.name,
+    });
   }, [sources]);
 
   // Scroll to active episode on load
@@ -283,6 +293,14 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSo
   const handleServerChange = (server) => {
     setSelectedServer(server);
     sessionStorage.setItem("sessionTvServerName", server.name);
+    posthog?.capture("video_source_changed", {
+      media_type: "tv",
+      series_id: seriesId,
+      series_title: seriesData?.name,
+      season_number: selectedEpisode?.season_number,
+      episode_number: selectedEpisode?.episode_number,
+      source_name: server.name,
+    });
   };
 
   const handleSetDefault = (serverName) => {
@@ -332,9 +350,19 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSo
         JSON.stringify(favs.filter((i) => i.id !== seriesData.id)),
       );
       setToast("Removed from Library");
+      posthog?.capture("content_unfavorited", {
+        media_type: "tv",
+        series_id: seriesData.id,
+        series_title: seriesData.name,
+      });
     } else {
       localStorage.setItem("favorites", JSON.stringify([...favs, seriesData]));
       setToast("Added to Library");
+      posthog?.capture("content_favorited", {
+        media_type: "tv",
+        series_id: seriesData.id,
+        series_title: seriesData.name,
+      });
     }
     setIsFavorite(!isFavorite);
     setTimeout(() => setToast(null), 3000);
@@ -344,6 +372,13 @@ const EpisodeInfo = ({ episodeDetails, seriesId, seasonData, seriesData, videoSo
     navigator.clipboard.writeText(window.location.href);
     setToast("Link copied to clipboard");
     setTimeout(() => setToast(null), 3000);
+    posthog?.capture("content_shared", {
+      media_type: "tv",
+      series_id: seriesData.id,
+      series_title: seriesData.name,
+      season_number: selectedEpisode?.season_number,
+      episode_number: selectedEpisode?.episode_number,
+    });
   };
 
   const dismissAd = () => {

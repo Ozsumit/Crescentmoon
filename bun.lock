@@ -49,6 +49,7 @@
         "pg": "^8.20.0",
         "postcss": "^8.4.24",
         "posthog-js": "^1.214.0",
+        "posthog-node": "^5.36.4",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-element-to-jsx-string": "^15.0.0",
@@ -207,6 +208,10 @@
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
     "@popperjs/core": ["@popperjs/core@2.11.8", "", {}, "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A=="],
+
+    "@posthog/core": ["@posthog/core@1.30.10", "", { "dependencies": { "@posthog/types": "1.382.0" } }, "sha512-R7Z5jDB3ugwfSujMmRd5osPPR6L6BqfcaSNcYOekzRMZ4Jklq74p05xByP09EnUvKXb5czI+RQVCITTWRWuFXw=="],
+
+    "@posthog/types": ["@posthog/types@1.382.0", "", {}, "sha512-iK4OcSgvtmS9FZ9EUpvwlRZmHCLXaZ3+6dbRjkE7q9LL0zHLewxJH84H6uGvCw8aGzxs5rIliZqPHgimTcQEaw=="],
 
     "@prisma/adapter-neon": ["@prisma/adapter-neon@7.8.0", "", { "dependencies": { "@neondatabase/serverless": ">0.6.0 <2", "@prisma/driver-adapter-utils": "7.8.0", "postgres-array": "3.0.4" } }, "sha512-9MoOjRuY53sQNyji87u1NivsK0tIacoUE3PqTxdG95b7ORn1pzwribH2z83j4Vh3eb9nQ/UC+MTfVW7jCFnXlA=="],
 
@@ -955,6 +960,8 @@
     "postgres-interval": ["postgres-interval@1.2.0", "", { "dependencies": { "xtend": "^4.0.0" } }, "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ=="],
 
     "posthog-js": ["posthog-js@1.214.0", "", { "dependencies": { "core-js": "^3.38.1", "fflate": "^0.4.8", "preact": "^10.19.3", "web-vitals": "^4.2.0" } }, "sha512-zJpTAB/85wkr2YtpeH6K/JLeenVRoFnyA4pj8Yern3sGkLj1bRao4AzFJuTvY5IduDRUIkKup5pr5NxjZ0QPnw=="],
+
+    "posthog-node": ["posthog-node@5.36.4", "", { "dependencies": { "@posthog/core": "1.30.10" }, "peerDependencies": { "rxjs": "^7.0.0" }, "optionalPeers": ["rxjs"] }, "sha512-N+1WiypMHf3SO3NNoXTUFRzX98TuM5w4bDCm8RenYPf0rvX6r8v+yH6IzL1g/Me+wWA5+sfE1JZ6kGV6pWTZyQ=="],
 
     "preact": ["preact@10.25.4", "", {}, "sha512-jLdZDb+Q+odkHJ+MpW/9U5cODzqnB+fy2EiHSZES7ldV5LK7yjlVzTp7R8Xy6W6y75kfK8iWYtFVH7lvjwrCMA=="],
 
