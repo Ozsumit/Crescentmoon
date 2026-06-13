@@ -1,25 +1,17 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from "date-fns-tz";
 
 const TIMEZONE = process.env.ANALYTICS_TIMEZONE || "Asia/Kathmandu";
 
 export async function getFeedback() {
-  return await prisma.feedback.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  return await sql`SELECT * FROM "Feedback" ORDER BY "createdAt" DESC`;
 }
 
 export async function deleteFeedback(id) {
-  await prisma.feedback.delete({
-    where: {
-      id,
-    },
-  });
+  await sql`DELETE FROM "Feedback" WHERE id = ${id}`;
 
   revalidatePath("/abmin");
 }
@@ -36,13 +28,11 @@ export async function trackPageView(path, visitorId, host = "") {
       return { success: true, skipped: "Localhost excluded" };
     }
 
-    await prisma.pageView.create({
-      data: {
-        path,
-        visitorId,
-        host, // Ensure your Prisma schema has a 'host' string field (optional or default "")
-      },
-    });
+    const id = crypto.randomUUID();
+    await sql`
+      INSERT INTO "PageView" (id, path, "visitorId", "createdAt")
+      VALUES (${id}, ${path}, ${visitorId}, NOW())
+    `;
 
     return { success: true };
   } catch (error) {
@@ -152,21 +142,12 @@ export async function getAnalyticsData() {
        * 1. FETCH RAW TIMELINE DATA FIRST
        * We fetch the path and visitorId along with createdAt.
        */
-      const rawTimelineData = await prisma.pageView.findMany({
-        where: {
-          createdAt: {
-            gte: date,
-          },
-        },
-        select: {
-          createdAt: true,
-          visitorId: true,
-          path: true, // Added path so we can calculate top pages in-memory
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-      });
+      const rawTimelineData = await sql`
+        SELECT "createdAt", "visitorId", path
+        FROM "PageView"
+        WHERE "createdAt" >= ${date.toISOString()}
+        ORDER BY "createdAt" ASC
+      `;
 
       /**
        * 2. FILTER LOCALHOST IN-MEMORY
@@ -225,24 +206,47 @@ export async function getAnalyticsData() {
 }
 // Keeping your video source code intact below...
 export async function getVideoSources(type) {
-  return await prisma.videoSource.findMany({
-    where: type ? { type } : {},
-    orderBy: { priority: "desc" },
-  });
+  if (type) {
+    return await sql`SELECT * FROM "VideoSource" WHERE type = ${type} ORDER BY priority DESC`;
+  }
+  return await sql`SELECT * FROM "VideoSource" ORDER BY priority DESC`;
 }
 
 export async function saveVideoSource(data) {
   const { id, ...rest } = data;
   if (id) {
-    await prisma.videoSource.update({ where: { id }, data: rest });
+    await sql`
+      UPDATE "VideoSource" 
+      SET 
+        active = ${rest.active},
+        description = ${rest.description || null},
+        download = ${rest.download},
+        features = ${JSON.stringify(rest.features)}::jsonb,
+        icon = ${rest.icon || null},
+        name = ${rest.name},
+        params = ${rest.params || null},
+        "paramStyle" = ${rest.paramStyle || null},
+        "parseUrl" = ${rest.parseUrl},
+        priority = ${rest.priority},
+        type = ${rest.type},
+        url = ${rest.url},
+        "updatedAt" = NOW()
+      WHERE id = ${id}
+    `;
   } else {
-    await prisma.videoSource.create({ data: rest });
+    const newId = crypto.randomUUID();
+    await sql`
+      INSERT INTO "VideoSource" (id, active, "createdAt", description, download, features, icon, name, params, "paramStyle", "parseUrl", priority, type, "updatedAt", url)
+      VALUES (
+        ${newId}, ${rest.active}, NOW(), ${rest.description || null}, ${rest.download}, ${JSON.stringify(rest.features)}::jsonb, ${rest.icon || null}, ${rest.name}, ${rest.params || null}, ${rest.paramStyle || null}, ${rest.parseUrl}, ${rest.priority}, ${rest.type}, NOW(), ${rest.url}
+      )
+    `;
   }
   revalidatePath("/abmin");
 }
 
 export async function deleteVideoSource(id) {
-  await prisma.videoSource.delete({ where: { id } });
+  await sql`DELETE FROM "VideoSource" WHERE id = ${id}`;
   revalidatePath("/abmin");
 }
 
@@ -498,12 +502,16 @@ export async function seedVideoSources() {
   const allSources = [...movieSources, ...tvSources];
 
   for (const source of allSources) {
-    const exists = await prisma.videoSource.findFirst({
-      where: { name: source.name, type: source.type },
-    });
+    const exists = await sql`SELECT id FROM "VideoSource" WHERE name = ${source.name} AND type = ${source.type} LIMIT 1`;
 
-    if (!exists) {
-      await prisma.videoSource.create({ data: source });
+    if (exists.length === 0) {
+      const newId = crypto.randomUUID();
+      await sql`
+        INSERT INTO "VideoSource" (id, active, "createdAt", description, download, features, icon, name, params, "paramStyle", "parseUrl", priority, type, "updatedAt", url)
+        VALUES (
+          ${newId}, true, NOW(), ${source.description || null}, false, ${JSON.stringify(source.features)}::jsonb, ${source.icon || null}, ${source.name}, ${source.params || null}, ${source.paramStyle || null}, false, ${source.priority}, ${source.type}, NOW(), ${source.url}
+        )
+      `;
     }
   }
 

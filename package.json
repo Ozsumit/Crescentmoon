@@ -4,15 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
- "build": "next build",
-  "build:cf": "prisma generate && opennextjs-cloudflare build",
+    "build": "next build",
+    "build:cf": "prisma generate && opennextjs-cloudflare build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
-
   "dependencies": {
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
@@ -71,6 +70,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.9",
     "@opennextjs/cloudflare": "^1.19.11",
     "@swc/cli": "^0.3.5",
     "@swc/core": "^1.3.107",

@@ -8,10 +8,12 @@ import Footer from "@/components/footer/Footer";
 // import SnowButton from "@/components/snowbutton";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { PopupDeveloperFeedback } from "@/components/feedback";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import Script from "next/script";
-import CookieConsent from "@/components/cookies";
+import dynamic from "next/dynamic";
+
+const CookieConsent = dynamic(() => import("@/components/cookies"));
+const PopupDeveloperFeedback = dynamic(() => import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback));
 
 const inter = Inter({
   subsets: ["latin"],

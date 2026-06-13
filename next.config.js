@@ -1,3 +1,5 @@
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingIncludes: {
@@ -6,7 +8,15 @@ const nextConfig = {
       "./node_modules/pg-cloudflare/esm/**",
     ],
   },
-  serverExternalPackages: ["@prisma/client", ".prisma/client"],
+  experimental: {
+    // Optimizes package parsing to drop unused exports automatically
+    optimizePackageImports: [
+      "@lucide/react",
+      "lucide-react",
+      "@headlessui/react",
+    ],
+  },
+  
   images: {
     domains: [
       "image.tmdb.org",
@@ -66,4 +76,6 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(nextConfig);

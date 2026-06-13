@@ -1,7 +1,8 @@
 import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
+import dynamic from "next/dynamic";
 
 import DeleteButton from "./deletebutton";
-import AnalyticsDashboard from "./AnalyticsDashboard";
+const AnalyticsDashboard = dynamic(() => import("./AnalyticsDashboard"));
 import SourceManagement from "./SourceManagement";
 
 export default async function AdminPage() {

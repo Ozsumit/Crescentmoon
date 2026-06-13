@@ -1,4 +1,6 @@
-import TvInfo from "@/components/info/TvInfo";
+import dynamic from "next/dynamic";
+
+const TvInfo = dynamic(() => import("@/components/info/TvInfo"));
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";

@@ -1,5 +1,7 @@
-import MovieInfo from "@/components/info/MovieInfo";
 import { getVideoSources } from "@/app/abmin/action";
+import dynamic from "next/dynamic";
+
+const MovieInfo = dynamic(() => import("@/components/info/MovieInfo"));
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
