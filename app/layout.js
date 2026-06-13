@@ -5,7 +5,7 @@ import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
 
 const PopupDeveloperFeedback = dynamic(() =>
-  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback)
+  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
 );
 
 const BASE_URL = "https://cmoon.sumit.info.np";
@@ -133,6 +133,13 @@ export default function RootLayout({ children }) {
         {/* Umami */}
 
         {/* Structured Data */}
+        {/* <!-- Cloudflare Web Analytics --> */}
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "de022bcad822493286b101c58245c2b9"}'
+        ></script>
+        {/* <!-- End Cloudflare Web Analytics --> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
