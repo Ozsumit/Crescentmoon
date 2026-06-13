@@ -1,7 +1,9 @@
+export const runtime = "edge";
 import MovieDisplay from "@/components/display/MovieDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
 import MoviesTitle from "@/components/title/MoviesTitle";
+
 
 export async function getData(pageid) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

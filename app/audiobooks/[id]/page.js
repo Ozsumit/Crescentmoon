@@ -1,6 +1,8 @@
+export const runtime = "edge";
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import {
+
   Download,
   Book,
   ChevronLeft,

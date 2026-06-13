@@ -1,4 +1,6 @@
+export const runtime = "edge";
 import { StaticDeveloperFeedback } from "@/components/feedback";
+
 
 export default function HomePage() {
   return (

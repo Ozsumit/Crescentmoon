@@ -1,6 +1,8 @@
+export const runtime = "edge";
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");

@@ -1,7 +1,9 @@
+export const runtime = "edge";
 "use client";
 import ThemeWrapper from "@/components/themewrappr";
 import { Github, Twitter, Mail } from "lucide-react";
 import Image from "next/image";
+
 
 export default function TheTeam() {
   return (

@@ -1,9 +1,11 @@
+export const runtime = "edge";
 import AboutUs from "@/components/about";
 import TvDisplay from "@/components/display/TvDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
 import TvTitle from "@/components/title/TvTitle";
 import React from "react";
+
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

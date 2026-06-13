@@ -1,3 +1,4 @@
+export const runtime = "edge";
 // "use client";
 import SpotlightCarousel from "@/components/display/carausel";
 import HomeDisplay from "@/components/display/HomeDisplay";
@@ -9,6 +10,7 @@ import "slick-carousel/slick/slick-theme.css";
 import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
 import AdblockerModal from "@/components/adblockmodel";
+
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

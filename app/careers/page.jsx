@@ -1,6 +1,8 @@
+export const runtime = "edge";
 "use client";
 import ThemeWrapper from "@/components/themewrappr";
 import { ArrowRight } from "lucide-react";
+
 
 export default function Careers() {
   return (

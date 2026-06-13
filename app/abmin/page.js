@@ -1,8 +1,10 @@
+export const runtime = "edge";
 import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
 
 import DeleteButton from "./deletebutton";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import SourceManagement from "./SourceManagement";
+
 
 export default async function AdminPage() {
   const feedbacks = await getFeedback();

@@ -1,6 +1,8 @@
+export const runtime = "edge";
 "use client";
 import ThemeWrapper from "@/components/themewrappr";
 import { Download, Image as ImageIcon } from "lucide-react";
+
 
 export default function PressKit() {
   return (
