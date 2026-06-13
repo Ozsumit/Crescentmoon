@@ -1,9 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add this block to enable Server Actions
-  experimental: {
-    serverActions: true,
+  outputFileTracingIncludes: {
+    "**/*": [
+      "./node_modules/pg-cloudflare/dist/**",
+      "./node_modules/pg-cloudflare/esm/**",
+    ],
   },
+  serverExternalPackages: ["@prisma/client", ".prisma/client"],
   images: {
     domains: [
       "image.tmdb.org",
