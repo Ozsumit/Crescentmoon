@@ -14,7 +14,6 @@ import {
   AlignJustify,
   Archive,
 } from "lucide-react";
-import html2canvas from "html2canvas";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Assuming you have this component, or replace with your own
@@ -35,6 +34,7 @@ const FavoriteDisplay = ({
     if (favoriteContainerRef.current) {
       setIsSaving(true);
       try {
+        const html2canvas = (await import("html2canvas")).default;
         const canvas = await html2canvas(favoriteContainerRef.current, {
           scale: 2,
           useCORS: true,

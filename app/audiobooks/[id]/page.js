@@ -10,7 +10,6 @@ import {
   Moon,
   X,
 } from "lucide-react";
-import DOMPurify from 'isomorphic-dompurify';
 
 export default function BookDetail({ params }) {
   const [book, setBook] = useState(null);
@@ -93,6 +92,7 @@ export default function BookDetail({ params }) {
         if (!response.ok) throw new Error("Failed to fetch book content");
         
         let html = await response.text();
+        const DOMPurify = (await import('dompurify')).default;
         html = DOMPurify.sanitize(html);
         
         const tempDiv = document.createElement('div');
