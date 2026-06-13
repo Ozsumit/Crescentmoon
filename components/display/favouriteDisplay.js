@@ -34,7 +34,16 @@ const FavoriteDisplay = ({
     if (favoriteContainerRef.current) {
       setIsSaving(true);
       try {
-        const html2canvas = (await import("html2canvas")).default;
+        if (!window.html2canvas) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+            script.onload = () => resolve();
+            script.onerror = (err) => reject(err);
+            document.head.appendChild(script);
+          });
+        }
+        const html2canvas = window.html2canvas;
         const canvas = await html2canvas(favoriteContainerRef.current, {
           scale: 2,
           useCORS: true,
