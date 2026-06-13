@@ -1,5 +1,5 @@
 import EpisodeInfo from "@/components/info/EpisodeInfo";
-import { getVideoSources } from "@/app/abmin/action";
+import { getVideoSources } from "@/lib/video-sources";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";

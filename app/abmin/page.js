@@ -1,12 +1,10 @@
 import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
 
-import DeleteButton from "./deletebutton";
-import AnalyticsDashboard from "./AnalyticsDashboard";
 import SourceManagement from "./SourceManagement";
 
 export default async function AdminPage() {
   const feedbacks = await getFeedback();
-  const analyticsData = await getAnalyticsData();
+
   const videoSources = await getVideoSources();
 
   return (
@@ -21,8 +19,6 @@ export default async function AdminPage() {
             Project management & analytics
           </p>
         </header>
-
-        <AnalyticsDashboard data={analyticsData} />
 
         <SourceManagement initialSources={videoSources} />
 
@@ -66,9 +62,7 @@ export default async function AdminPage() {
                     {f.message}
                   </td>
 
-                  <td className="py-6 text-right">
-                    <DeleteButton id={f.id} />
-                  </td>
+                  <td className="py-6 text-right"></td>
                 </tr>
               ))}
 

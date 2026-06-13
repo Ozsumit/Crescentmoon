@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -24,8 +25,11 @@ import {
 
 // --- PLACEHOLDERS ---
 import Logo from "./Logo";
-import QuickSearch from "../searchbar";
 // --------------------
+
+const QuickSearch = dynamic(() => import("../searchbar"), {
+  ssr: false,
+});
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -254,10 +258,12 @@ const Header = () => {
         </AnimatePresence>
       </motion.header>
 
-      <QuickSearch
-        open={isQuickSearchOpen}
-        onOpenChange={setIsQuickSearchOpen}
-      />
+      {isQuickSearchOpen && (
+        <QuickSearch
+          open={isQuickSearchOpen}
+          onOpenChange={setIsQuickSearchOpen}
+        />
+      )}
     </>
   );
 };

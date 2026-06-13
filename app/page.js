@@ -4,8 +4,6 @@ import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
 import Title from "@/components/title/Title";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
 import AdblockerModal from "@/components/adblockmodel";

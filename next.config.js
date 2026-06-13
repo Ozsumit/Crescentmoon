@@ -1,17 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add this block to enable Server Actions
-  experimental: {
-    serverActions: true,
-  },
   images: {
-    domains: [
-      "image.tmdb.org",
-      "imgur.com",
-      "arc.io",
-      "cdn.mos.cms.futurecdn.net",
-      "i.imgur.com",
-      "via.placeholder.com",
+    unoptimized: true, // Prevents Cloudflare Worker resource errors when loading images
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+      },
+      {
+        protocol: "https",
+        hostname: "imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "arc.io",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.mos.cms.futurecdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
     ],
   },
   env: {
@@ -46,4 +61,6 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
+
+import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());

@@ -1,22 +1,12 @@
 import Header from "@/components/navbar/Header";
 import "./globals.css";
-import { Inter } from "next/font/google";
+import dynamic from "next/dynamic";
 import Footer from "@/components/footer/Footer";
-import AdBlocker from "@/components/filters";
-import AppInstallPopup from "@/components/app-installpopup";
-import SnowButton from "@/components/snowbutton";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { PopupDeveloperFeedback } from "@/components/feedback";
-import AnalyticsTracker from "@/components/AnalyticsTracker";
-import Script from "next/script";
 import CookieConsent from "@/components/cookies";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap", // Better CLS + SEO
-  preload: true,
-});
+const PopupDeveloperFeedback = dynamic(() =>
+  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback)
+);
 
 const BASE_URL = "https://cmoon.sumit.info.np";
 
@@ -162,25 +152,14 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body
-        className={`${inter.className} bg-neutral-950 text-white antialiased`}
-      >
+      <body className="bg-neutral-950 text-white antialiased">
         <Header />
-        <AnalyticsTracker />
-
-        <Analytics />
-        <SpeedInsights />
 
         <main>{children}</main>
         <CookieConsent />
         <PopupDeveloperFeedback />
 
-        {/* <AdBlocker /> */}
-        {/* <AppInstallPopup /> */}
-
         <Footer />
-
-        {/* <SnowButton /> */}
       </body>
     </html>
   );
