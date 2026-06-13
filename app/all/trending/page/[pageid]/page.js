@@ -1,8 +1,10 @@
+export const runtime = "edge";
 import SpotlightCarousel from "@/components/display/carausel";
 import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
 import Title from "@/components/title/Title";
+
 
 export async function getData(pageid) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

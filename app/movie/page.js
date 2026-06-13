@@ -1,4 +1,6 @@
+export const runtime = "edge";
 import MoviesClient from "./MoviesClient";
+
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

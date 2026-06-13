@@ -1,5 +1,7 @@
+export const runtime = "edge";
 import TvDisplay from "@/components/display/TvDisplay";
 import TvClient from "./TvClient";
+
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

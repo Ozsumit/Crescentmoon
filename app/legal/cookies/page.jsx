@@ -1,4 +1,6 @@
+export const runtime = "edge";
 import LegalLayout from "../LegalLayout";
+
 
 export default function CookiePolicy() {
   return (

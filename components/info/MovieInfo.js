@@ -21,6 +21,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePostHog } from "posthog-js/react";
 
 const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
   const icons = {
@@ -63,6 +64,7 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
 // --- MAIN COMPONENT ---
 
 const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
+  const posthog = usePostHog();
   const activeSources = videoSources.filter((s) => s.active);
   const sources =
     activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
@@ -97,6 +99,14 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
+
+    posthog?.capture("movie_viewed", {
+      movie_id: MovieDetail.id,
+      movie_title: MovieDetail.title,
+      release_year: MovieDetail.release_date?.split("-")[0],
+      genres: genreArr,
+      rating: MovieDetail.vote_average,
+    });
   }, [sources]);
 
   // --- DATA FETCHING & PROGRESS TRACKING ---
@@ -236,6 +246,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   const handleServerChange = (server) => {
     setSelectedServer(server);
     sessionStorage.setItem("sessionServerName", server.name);
+    posthog?.capture("video_source_changed", {
+      media_type: "movie",
+      movie_id: MovieDetail.id,
+      movie_title: MovieDetail.title,
+      source_name: server.name,
+    });
   };
 
   const handleSetDefault = (serverName) => {
@@ -253,9 +269,19 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
         JSON.stringify(favs.filter((i) => i.id !== id)),
       );
       setToast("Removed from Library");
+      posthog?.capture("content_unfavorited", {
+        media_type: "movie",
+        movie_id: MovieDetail.id,
+        movie_title: MovieDetail.title,
+      });
     } else {
       localStorage.setItem("favorites", JSON.stringify([...favs, MovieDetail]));
       setToast("Added to Library");
+      posthog?.capture("content_favorited", {
+        media_type: "movie",
+        movie_id: MovieDetail.id,
+        movie_title: MovieDetail.title,
+      });
     }
     setIsFavorite(!isFavorite);
     setTimeout(() => setToast(null), 3000);
@@ -265,6 +291,11 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
     navigator.clipboard.writeText(window.location.href);
     setToast("Link copied to clipboard");
     setTimeout(() => setToast(null), 3000);
+    posthog?.capture("content_shared", {
+      media_type: "movie",
+      movie_id: MovieDetail.id,
+      movie_title: MovieDetail.title,
+    });
   };
 
   const dismissAd = () => {

@@ -1,4 +1,6 @@
+export const runtime = "edge";
 import TvInfo from "@/components/info/TvInfo";
+
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";

@@ -1,5 +1,7 @@
+export const runtime = "edge";
 import EpisodeInfo from "@/components/info/EpisodeInfo";
 import { getVideoSources } from "@/app/abmin/action";
+
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";

@@ -1,4 +1,3 @@
-export const runtime = "edge";
 import Header from "@/components/navbar/Header";
 import "./globals.css";
 import { PostHogProvider } from "./providers";

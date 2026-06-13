@@ -1,3 +1,4 @@
+export const runtime = "edge";
 "use client";
 import AnimeDisplay from "@/components/display/animedisplay";
 import MovieDisplay from "@/components/display/MovieDisplay";
@@ -7,6 +8,7 @@ import SearchBar from "@/components/searchbar/SearchBar";
 import MoviesTitle from "@/components/title/MoviesTitle";
 import React, { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
+
 const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;

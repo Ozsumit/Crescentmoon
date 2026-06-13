@@ -1,5 +1,7 @@
+export const runtime = "edge";
 import SeasonInfo from "@/components/info/SeasonDetails";
 import React, { Suspense } from "react";
+
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";

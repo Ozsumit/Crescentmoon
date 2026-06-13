@@ -1,8 +1,10 @@
+export const runtime = "edge";
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import {
+
   ArrowLeft,
   Calendar,
   Star,
