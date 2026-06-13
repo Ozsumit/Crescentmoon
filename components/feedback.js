@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Star, Bug, Lightbulb, CheckCircle2, X } from "lucide-react";
 import { submitFeedback } from "../action"; // Adjust path as needed
+import posthog from "posthog-js";
 
 // ==========================================
 // 1. SHARED MICRO COMPONENTS
@@ -49,6 +50,10 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
       setSuccess(true);
       // Save to localStorage so popup never bothers them again
       localStorage.setItem("feedback_submitted", "true");
+
+      if (formData.email) {
+        posthog.identify(formData.email, { email: formData.email });
+      }
 
       if (onSuccessfulSubmit) onSuccessfulSubmit();
 

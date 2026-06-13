@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+.open-next/
 
 # production
 /build
@@ -23,6 +24,7 @@
 # misc
 .DS_Store
 *.pem
+.open/
 
 # debug
 npm-debug.log*
@@ -42,3 +44,4 @@ next-env.d.ts
 /lib/generated/prisma
 
 /lib/generated/prisma
+.env.local

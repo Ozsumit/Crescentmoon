@@ -6,11 +6,13 @@ import { Loader2, Search as SearchIcon, Film, Tv, Info } from "lucide-react"; //
 import SearchDisplay from "@/components/display/SearchDisplay";
 import SearchBar from "@/components/searchbar/SearchBar";
 import SearchTitle from "@/components/title/SearchTitle"; // Assuming this is a simple title
+import { usePostHog } from "posthog-js/react";
 
 const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 // A wrapper component is needed for Suspense when using useSearchParams
 const SearchPageContent = () => {
+  const posthog = usePostHog();
   const searchParams = useSearchParams();
   const initialQueryFromUrl = searchParams.get("q") || "";
 
@@ -131,6 +133,9 @@ const SearchPageContent = () => {
   const handleExplicitSearch = () => {
     setExplicitSearchTriggered(true);
     fetchSearchResults(searchTerm);
+    if (searchTerm.trim()) {
+      posthog?.capture("content_searched", { query: searchTerm.trim() });
+    }
   };
 
   return (

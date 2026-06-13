@@ -1,36 +1,6 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import styled from "styled-components";
-
-// Styled Components
-const VideoContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  background-color: #000;
-`;
-
-const Video = styled.video`
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-`;
-
-const Button = styled.button`
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: none;
-  margin-right: 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  background-color: #007bff;
-  color: white;
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
 
 const Player = ({ src, skipTimes = [], autoSkip = false }) => {
   const videoRef = useRef(null);
@@ -67,13 +37,23 @@ const Player = ({ src, skipTimes = [], autoSkip = false }) => {
   };
 
   return (
-    <VideoContainer>
-      <Video ref={videoRef} controls onTimeUpdate={handleTimeUpdate}>
+    <div className="flex justify-center items-center h-full bg-black">
+      <video
+        ref={videoRef}
+        controls
+        onTimeUpdate={handleTimeUpdate}
+        className="w-full h-auto max-w-full"
+      >
         <source src={src} type="video/mp4" />
         Your browser does not support the video tag.
-      </Video>
-      <Button onClick={handlePlayPause}>Play/Pause</Button>
-    </VideoContainer>
+      </video>
+      <button
+        onClick={handlePlayPause}
+        className="p-2 text-base border-none mr-2 rounded cursor-pointer bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+      >
+        Play/Pause
+      </button>
+    </div>
   );
 };
 

@@ -1,9 +1,22 @@
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add this block to enable Server Actions
-  experimental: {
-    serverActions: true,
+  outputFileTracingIncludes: {
+    "**/*": [
+      "./node_modules/pg-cloudflare/dist/**",
+      "./node_modules/pg-cloudflare/esm/**",
+    ],
   },
+  experimental: {
+    // Optimizes package parsing to drop unused exports automatically
+    optimizePackageImports: [
+      "@lucide/react",
+      "lucide-react",
+      "@headlessui/react",
+    ],
+  },
+  
   images: {
     domains: [
       "image.tmdb.org",
@@ -17,6 +30,23 @@ const nextConfig = {
   env: {
     API_KEY: process.env.NEXT_PUBLIC_TMDB_API_KEY,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/array/:path*",
+        destination: "https://us-assets.i.posthog.com/array/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
+    ];
+  },
+  skipTrailingSlashRedirect: true,
   async headers() {
     return [
       {
@@ -46,4 +76,6 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(nextConfig);
