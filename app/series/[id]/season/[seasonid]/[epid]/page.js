@@ -51,7 +51,9 @@ async function fetchEpisodeData(id, seasonid, epid) {
  * ✅ Dynamic SEO Metadata
  */
 export async function generateMetadata({ params }) {
-  const { id, seasonid, epid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid, epid } = resolvedParams;
 
   try {
     const { seriesData, episodeData } = await fetchEpisodeData(
@@ -164,7 +166,9 @@ function generateEpisodeSchema(episodeData, seriesData, id, seasonid, epid) {
  * ✅ Episode Details Page
  */
 export default async function EpisodeDetailsPage({ params }) {
-  const { id, seasonid, epid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid, epid } = resolvedParams;
 
   try {
     const [data, videoSources] = await Promise.all([
