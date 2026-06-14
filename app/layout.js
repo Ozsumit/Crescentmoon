@@ -134,15 +134,19 @@ export default function RootLayout({ children }) {
 
         {/* Structured Data */}
         {/* <!-- Cloudflare Web Analytics --> */}
-        {/* <!-- Google tag (gtag.js) --> */}
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9B1XNB1F0D"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-9B1XNB1F0D"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
 
-  gtag('config', 'G-9B1XNB1F0D');
-</script>
+            gtag('config', 'G-9B1XNB1F0D');
+          `}
+        </Script>
         <script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
