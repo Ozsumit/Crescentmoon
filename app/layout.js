@@ -1,5 +1,6 @@
 import Header from "@/components/navbar/Header";
 import "./globals.css";
+import Script from "next/script"; // <--- Make sure this line is here!
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
