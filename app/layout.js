@@ -134,6 +134,15 @@ export default function RootLayout({ children }) {
 
         {/* Structured Data */}
         {/* <!-- Cloudflare Web Analytics --> */}
+        {/* <!-- Google tag (gtag.js) --> */}
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9B1XNB1F0D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9B1XNB1F0D');
+</script>
         <script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
