@@ -66,16 +66,6 @@ const Footer = () => {
     },
   ];
 
-  const socialLinks = [
-    { icon: Github, href: "https://github.com/ozsumit" },
-    { icon: Instagram, href: "https://instagram.com/sumitp._" },
-    { icon: Facebook, href: "https://facebook.com/ozsumit" },
-    { icon: Mail, href: "mailto:hello@sumit.info.np" },
-    { icon: (props) => <span {...props}>𝕏</span>, href: "https://x.com/ozsumit" },
-    { icon: (props) => <span {...props}>in</span>, href: "https://linkedin.com/in/ozsumit" },
-    { icon: (props) => <span {...props}>F</span>, href: "https://figma.com/@ozsumit" },
-  ];
-
   return (
     <footer className="w-full bg-black text-white border-t border-white/10 mt-20 relative overflow-hidden">
       {/* Massive Background Brand Text (Subtle) */}
@@ -191,15 +181,13 @@ const Footer = () => {
             © {currentYear} VASS INC. / OMEGA
           </div>
           <div className="flex items-center gap-6">
-            {socialLinks.map((social, i) => (
+            {[Github, Instagram, Facebook, Mail].map((Icon, i) => (
               <a
                 key={i}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#"
                 className="text-neutral-500 hover:text-white transition-colors hover:-translate-y-1 duration-300"
               >
-                <social.icon size={20} />
+                <Icon size={20} />
               </a>
             ))}
           </div>

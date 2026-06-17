@@ -8,12 +8,6 @@ import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
 import AdblockerModal from "@/components/adblockmodel";
 
-export const metadata = {
-  title: "Sumit Pokhrel | Front-End Developer & UI/UX Designer",
-  description:
-    "Official portfolio of Sumit Pokhrel, a front-end developer and UI/UX designer based in Kathmandu, specializing in React, Next.js, and WebGL.",
-};
-
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
@@ -38,7 +32,6 @@ export default async function Home() {
   const data = await getData();
   return (
     <div className=" m-0 bg-[rgb(7,8,9)] h-auto">
-    <h1 className="sr-only">Sumit Pokhrel</h1>
     {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
