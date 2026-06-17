@@ -115,7 +115,13 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Theme Color */}
+
         <meta name="theme-color" content="#000000" />
+
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-1069983810172301"
+        ></meta>
 
         {/* Apple */}
         <meta name="apple-mobile-web-app-title" content="Cmoon" />
@@ -135,6 +141,20 @@ export default function RootLayout({ children }) {
 
         {/* Structured Data */}
         {/* <!-- Cloudflare Web Analytics --> */}
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"
+        ></script>
+        <Script id="clarity-script" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "x8f0e4qaxu");
+          `}
+        </Script>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-9B1XNB1F0D"
           strategy="afterInteractive"

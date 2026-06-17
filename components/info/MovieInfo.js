@@ -19,6 +19,7 @@ import {
   X,
   Crown,
   Settings2,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -42,10 +43,22 @@ const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
     X,
     Crown,
     Settings2,
+    Download,
   };
   const IconComponent = icons[iconName] || Play;
   return <IconComponent {...props} />;
 };
+
+// --- DEFAULT VIDEO SOURCES IF NONE PROVIDED ---
+const DEFAULT_VIDEO_SOURCES = [
+  {
+    name: "Server 1",
+    url: "https://vidsrc.me/embed/movie/",
+    paramStyle: "path-slash",
+    features: ["HD", "Multi-Sub"],
+    description: "Primary fast streaming node",
+  },
+];
 
 // --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
@@ -79,6 +92,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [showAdPopup, setShowAdPopup] = useState(false);
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
   const lastSavedTime = useRef(0);
 
@@ -334,23 +348,29 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-3 gap-3 mb-8">
               <button
                 onClick={toggleFav}
-                className={`h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all shadow-lg ${
+                className={`h-12 rounded-xl flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${
                   isFavorite
                     ? "bg-rose-500 text-white shadow-rose-500/20"
                     : "bg-white text-black hover:bg-neutral-200"
                 }`}
               >
-                <Heart size={16} className={isFavorite ? "fill-current" : ""} />{" "}
+                <Heart size={14} className={isFavorite ? "fill-current" : ""} />{" "}
                 {isFavorite ? "Saved" : "Save"}
               </button>
               <button
                 onClick={share}
-                className="h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all text-white"
+                className="h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all text-white"
               >
-                <Share2 size={16} /> Share
+                <Share2 size={14} /> Share
+              </button>
+              <button
+                onClick={() => setShowDownloadPopup(true)}
+                className="h-12 rounded-xl border border-indigo-600 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all text-white shadow-lg shadow-indigo-600/20"
+              >
+                <Download size={14} /> Download
               </button>
             </div>
 
@@ -702,6 +722,56 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                 <X size={14} />
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* DOWNLOAD PORTAL MODAL */}
+        {showDownloadPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl h-[80vh] bg-[#0c0c0c] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                    <Download size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-white uppercase tracking-wider">
+                      Download Options
+                    </h3>
+                    <p className="text-[10px] text-neutral-400">
+                      Access download links via VidVault
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDownloadPopup(false)}
+                  className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Iframe Body */}
+              <div className="flex-1 bg-[#050505] relative">
+                <iframe
+                  src={`https://vidvault.ru/movie/${id}`}
+                  className="w-full h-full absolute inset-0 z-10 border-0"
+                  allowFullScreen
+                  title="Download Portal"
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
