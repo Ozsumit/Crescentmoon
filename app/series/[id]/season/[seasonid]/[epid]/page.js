@@ -87,13 +87,13 @@ export async function generateMetadata({ params }) {
       ],
 
       alternates: {
-        canonical: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+        canonical: `${BASE_URL}/series/${id}/season/${seasonid}/${epid}`,
       },
 
       openGraph: {
         title,
         description,
-        url: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+        url: `${BASE_URL}/series/${id}/season/${seasonid}/${epid}`,
         siteName: "Cmoon",
         type: "video.episode",
 

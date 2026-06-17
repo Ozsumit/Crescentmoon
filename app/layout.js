@@ -212,6 +212,25 @@ export default function RootLayout({ children }) {
             ]),
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const url = new URL(window.location.href);
+                // Check if the query parameter key exists or if the exact string isn't in the search section
+                if (!url.search.includes('if-down-use-movie.sumit.info.np')) {
+                  // If there are already other query params, append with '&', otherwise '?'
+                  const separator = url.search ? '&' : '?';
+                  window.history.replaceState(
+                    null, 
+                    '', 
+                    url.pathname + url.search + separator + 'if-down-use-movie.sumit.info.np' + url.hash
+                  );
+                }
+              })();
+            `,
+          }}
+        />
       </head>
 
       <body className="bg-neutral-950 text-white antialiased">
