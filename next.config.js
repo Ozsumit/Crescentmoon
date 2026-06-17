@@ -60,7 +60,16 @@ const nextConfig = {
     ];
   },
 };
+// Check if we are running on Vercel
+const isVercel = process.env.VERCEL === "1" || process.env.NOW_BUILDER === "1";
+
+// Only initialize OpenNext-Cloudflare hooks if we are NOT on Vercel
+if (!isVercel) {
+  try {
+    require("@opennextjs/cloudflare").initOpenNextCloudflareForDev();
+  } catch (e) {
+    // Graceful fallback if dependency is missing or architecture fails
+  }
+}
 
 module.exports = nextConfig;
-
-import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());
