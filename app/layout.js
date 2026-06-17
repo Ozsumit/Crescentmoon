@@ -177,18 +177,39 @@ export default function RootLayout({ children }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              name: "Cmoon",
-              alternateName: "Crescent Moon",
-              url: BASE_URL,
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${BASE_URL}/search/{search_term_string}`,
-                "query-input": "required name=search_term_string",
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "Cmoon",
+                alternateName: "Crescent Moon",
+                url: BASE_URL,
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: `${BASE_URL}/search/{search_term_string}`,
+                  "query-input": "required name=search_term_string",
+                },
               },
-            }),
+              {
+                "@context": "https://schema.org",
+                "@type": "Person",
+                name: "Sumit Pokhrel",
+                url: "https://sumit.info.np",
+                jobTitle: "Front-End Developer & UI/UX Designer",
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Kathmandu",
+                  addressCountry: "Nepal",
+                },
+                sameAs: [
+                  "https://github.com/ozsumit",
+                  "https://linkedin.com/in/ozsumit",
+                  "https://x.com/ozsumit",
+                  "https://instagram.com/sumitp._",
+                  "https://figma.com/@ozsumit",
+                ],
+              },
+            ]),
           }}
         />
       </head>
