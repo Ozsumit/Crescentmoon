@@ -10,11 +10,11 @@ import {
   Tv,
   Search,
   Heart,
-  JapaneseYen,
   Menu,
   X,
   ArrowRight,
   ExternalLink,
+  AlertCircle, // Imported for the notice layout
 } from "lucide-react";
 import {
   motion,
@@ -36,6 +36,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
+  const [showDomainNotice, setShowDomainNotice] = useState(true);
 
   const pathname = usePathname();
   const { scrollY } = useScroll();
@@ -94,17 +95,62 @@ const Header = () => {
             : "bg-black/98 backdrop-blur-md border-transparent"
         }`}
       >
+        {/* --- ALTERNATE DOMAIN NOTICE TOP BANNER --- */}
+        <AnimatePresence>
+          {showDomainNotice && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-neutral-900 border-b border-white/5 overflow-hidden"
+            >
+              <div className="w-full max-w-[1400px] mx-auto px-6 h-9 flex items-center justify-between text-[11px] tracking-wider font-mono text-neutral-400">
+                <div className="flex items-center gap-2 mx-auto sm:mx-0">
+                  <AlertCircle
+                    size={12}
+                    className="text-neutral-500 animate-pulse"
+                  />
+                  <span>
+                    NOTICE:{" "}
+                    <span className="text-neutral-200">
+                      Bookmark our alternate domains
+                    </span>{" "}
+                    if main site gets down temporarily.
+                  </span>
+                </div>
+                {/* Optional Actionable Links & Close Button */}
+                <div className="hidden sm:flex items-center gap-4">
+                  <Link
+                    href="/legal/domains"
+                    className="text-white hover:underline flex items-center gap-1 font-bold text-[10px] uppercase"
+                  >
+                    View Mirrors <ExternalLink size={10} />
+                  </Link>
+                  <button
+                    onClick={() => setShowDomainNotice(false)}
+                    className="text-neutral-500 hover:text-white transition-colors ml-2"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* SWISS GRID LAYOUT */}
         <div className="w-full h-16 md:h-20 flex items-stretch">
           {/* 1. BRANDING (Left) */}
           <div className="flex items-center px-6 md:px-10 border-r border-white/5 bg-gradient-to-r from-black/20 to-transparent">
-            <div href="/" onClick={handleLogoClick} className="relative z-50">
+            <div
+              onClick={handleLogoClick}
+              className="relative z-50 cursor-pointer"
+            >
               <Logo />
             </div>
           </div>
 
           {/* 2. NAVIGATION (Center - Centered) */}
-          {/* Added 'justify-center' to center the nav block */}
           <div className="hidden xl:flex flex-1 items-center justify-center">
             <nav className="flex items-center gap-10">
               {navLinks.map((link) => {
@@ -113,7 +159,6 @@ const Header = () => {
                   <Link
                     key={link.href}
                     href={link.href}
-                    target={link.external ? "_blank" : undefined}
                     className="group relative py-2"
                   >
                     <div className="flex items-center gap-2">
@@ -126,12 +171,6 @@ const Header = () => {
                       >
                         {link.label}
                       </span>
-                      {link.external && (
-                        <ExternalLink
-                          size={10}
-                          className="text-neutral-600 -mt-1"
-                        />
-                      )}
                     </div>
 
                     {/* Active Line Indicator */}
@@ -146,7 +185,7 @@ const Header = () => {
             </nav>
           </div>
 
-          {/* Spacer for Mobile (pushes actions right when nav is hidden) */}
+          {/* Spacer for Mobile */}
           <div className="xl:hidden flex-1" />
 
           {/* 3. ACTIONS (Right) */}
