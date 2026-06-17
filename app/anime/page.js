@@ -11,7 +11,12 @@ const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
-    `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=1`
+    `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=1`,
+    {
+      next: {
+        revalidate: 3600, // Cache for 1 hour
+      },
+    }
   );
 
   if (!resp.ok) {
