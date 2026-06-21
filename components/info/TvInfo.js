@@ -235,12 +235,21 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
     setIsFavorite(!isFavorite);
   };
 
-  const handleShare = async () => {
+  const handleShare = async (platform) => {
+    const url = window.location.href;
+    const text = `Watching ${TvDetail.name} on Cmoon!`;
+
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      showNotification("Link copied to clipboard");
+      if (platform === "twitter") {
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, "_blank");
+      } else if (platform === "whatsapp") {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, "_blank");
+      } else {
+        await navigator.clipboard.writeText(url);
+        showNotification("Link copied to clipboard");
+      }
     } catch (err) {
-      showNotification("Failed to copy link");
+      showNotification("Failed to share link");
     }
   };
 
@@ -298,6 +307,7 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
             transition={{ duration: 1.5 }}
             src={backdropPath}
             className="w-full h-full object-cover"
+            alt={`${TvDetail.name} background`}
           />
         </div>
 
@@ -356,15 +366,21 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
                     </span>
                   </button>
 
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-white/10 bg-transparent text-white hover:bg-white/5 hover:border-white/30 transition-all"
-                  >
-                    <Share2 size={18} />
-                    <span className="font-bold text-sm tracking-wide">
-                      SHARE
-                    </span>
-                  </button>
+                  <div className="relative group/share">
+                    <button
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-white/10 bg-transparent text-white hover:bg-white/5 hover:border-white/30 transition-all"
+                    >
+                      <Share2 size={18} />
+                      <span className="font-bold text-sm tracking-wide">
+                        SHARE
+                      </span>
+                    </button>
+                    <div className="absolute bottom-full left-0 mb-2 hidden group-hover/share:flex flex-col bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 min-w-[150px]">
+                      <button onClick={() => handleShare("copy")} className="px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors border-b border-white/5">Copy Link</button>
+                      <button onClick={() => handleShare("twitter")} className="px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors border-b border-white/5">Twitter</button>
+                      <button onClick={() => handleShare("whatsapp")} className="px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors">WhatsApp</button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Quick Stats */}
