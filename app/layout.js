@@ -5,9 +5,9 @@ import dynamic from "next/dynamic";
 import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
 
-const PopupDeveloperFeedback = dynamic(() =>
-  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
-);
+// const PopupDeveloperFeedback = dynamic(() =>
+//   import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
+// );
 
 const BASE_URL = "https://cmoon.sumit.info.np";
 
