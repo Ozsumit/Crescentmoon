@@ -22,6 +22,8 @@ import {
   Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useSettingsStore from "@/components/settings-store";
+import { MOVIE_SERVERS as DEFAULT_VIDEO_SOURCES } from "@/lib/config";
 
 const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
   const icons = {
@@ -49,16 +51,6 @@ const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
   return <IconComponent {...props} />;
 };
 
-// --- DEFAULT VIDEO SOURCES IF NONE PROVIDED ---
-const DEFAULT_VIDEO_SOURCES = [
-  {
-    name: "Server 1",
-    url: "https://vidsrc.me/embed/movie/",
-    paramStyle: "path-slash",
-    features: ["HD", "Multi-Sub"],
-    description: "Primary fast streaming node",
-  },
-];
 
 // --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
@@ -80,6 +72,8 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   const sources =
     activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
 
+  const { defaultMovieServer, showAdNotice } = useSettingsStore();
+
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(sources[0]);
   const [defaultServerName, setDefaultServerName] = useState("");
@@ -100,9 +94,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   useEffect(() => {
     setIsMounted(true);
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
-    if (dismissed !== "true") setShowAdPopup(true);
+    if (dismissed !== "true" && showAdNotice) setShowAdPopup(true);
 
-    const savedDefault = localStorage.getItem("defaultServerName");
+    const savedDefault = defaultMovieServer;
     const savedSession = sessionStorage.getItem("sessionServerName");
 
     if (savedDefault) setDefaultServerName(savedDefault);
@@ -111,7 +105,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
-  }, [sources]);
+  }, [sources, defaultMovieServer, showAdNotice]);
 
   // --- DATA FETCHING & PROGRESS TRACKING ---
   useEffect(() => {

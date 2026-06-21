@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, A11y } from "swiper/modules";
+import useSettingsStore from "@/components/settings-store";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -49,6 +50,8 @@ const GlassMediaCard = ({
   isFavorite,
   handleFavoriteToggle,
   onRemoveClick,
+  shouldConfirmRemove,
+  confirmRemove,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -211,7 +214,11 @@ const GlassMediaCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onRemoveClick(media);
+            if (shouldConfirmRemove) {
+              onRemoveClick(media);
+            } else {
+              confirmRemove(media);
+            }
           }}
           className="pointer-events-auto bg-black/40 backdrop-blur-md text-white/70 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300"
         >
@@ -265,6 +272,7 @@ const ContinueWatching = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewAll, setViewAll] = useState(false);
   const [mediaToRemove, setMediaToRemove] = useState(null);
+  const { confirmRemove: shouldConfirmRemove } = useSettingsStore();
 
   useEffect(() => {
     const loadStoredData = () => {
@@ -293,16 +301,17 @@ const ContinueWatching = () => {
     return () => window.removeEventListener("storage", loadStoredData);
   }, []);
 
-  const confirmRemove = () => {
-    if (!mediaToRemove) return;
+  const confirmRemove = (mediaItemOverride) => {
+    const itemToRemove = mediaItemOverride || mediaToRemove;
+    if (!itemToRemove) return;
     setMediaItems((prev) =>
-      prev.filter((item) => item.id !== mediaToRemove.id),
+      prev.filter((item) => item.id !== itemToRemove.id),
     );
     try {
       const progressData = JSON.parse(
         localStorage.getItem("mediaProgress") || "{}",
       );
-      delete progressData[mediaToRemove.id];
+      delete progressData[itemToRemove.id];
       localStorage.setItem("mediaProgress", JSON.stringify(progressData));
     } catch (error) {
       console.error("Error removing media:", error);
@@ -402,6 +411,8 @@ const ContinueWatching = () => {
                     isFavorite={favorites.includes(media.id)}
                     handleFavoriteToggle={handleFavoriteToggle}
                     onRemoveClick={setMediaToRemove}
+                    shouldConfirmRemove={shouldConfirmRemove}
+                    confirmRemove={confirmRemove}
                   />
                 ))}
               </div>
@@ -427,6 +438,8 @@ const ContinueWatching = () => {
                         isFavorite={favorites.includes(media.id)}
                         handleFavoriteToggle={handleFavoriteToggle}
                         onRemoveClick={setMediaToRemove}
+                        shouldConfirmRemove={shouldConfirmRemove}
+                        confirmRemove={confirmRemove}
                       />
                     </SwiperSlide>
                   ))}

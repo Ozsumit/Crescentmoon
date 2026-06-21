@@ -10,6 +10,7 @@ import {
   Tv,
   Search,
   Heart,
+  Settings,
   Menu,
   X,
   ArrowRight,
@@ -215,14 +216,28 @@ const Header = () => {
             </button>
 
             {/* Favorites */}
-            <div className="flex items-center justify-center h-full w-16 md:w-20 border-l border-white/5 hover:bg-white/5 transition-colors">
+            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-white/5 hover:bg-white/5 transition-colors">
               <Link href="/favourites" className="text-white">
                 <Heart
-                  size={20}
+                  size={18}
                   className={`transition-transform duration-300 ${
                     pathname === "/favourites"
                       ? "fill-white"
                       : "hover:scale-110"
+                  }`}
+                />
+              </Link>
+            </div>
+
+            {/* Settings */}
+            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-white/5 hover:bg-white/5 transition-colors">
+              <Link href="/settings" className="text-white">
+                <Settings
+                  size={18}
+                  className={`transition-all duration-300 ${
+                    pathname === "/settings"
+                      ? "rotate-90 text-indigo-400"
+                      : "hover:rotate-45"
                   }`}
                 />
               </Link>
