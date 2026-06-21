@@ -350,7 +350,6 @@ const EpisodeInfo = ({
                   className="w-full h-full absolute inset-0 z-10"
                   allowFullScreen
                   allow="autoplay; encrypted-media; picture-in-picture"
-                  // sandbox="allow-scripts allow-same-origin allow-presentation"
                   title="Player"
                 />
               ) : (

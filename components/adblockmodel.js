@@ -47,9 +47,40 @@ const AdblockerModal = () => {
     // Simulate ad content that triggers blockers
     createAdTrap();
 
+    // Add global variables that ad blockers look for
+    window.AdBlock = true;
+    window.uBlock = true;
+    window.__adblockEnabled = true;
+
+    // Modify chrome runtime to look like an ad blocker extension
+    if (window.chrome && window.chrome.runtime) {
+      try {
+        window.chrome.runtime.getManifest = () => ({
+          name: 'uBlock Origin',
+          version: '1.0.0'
+        });
+      } catch {}
+    }
+
     // Check for ad blocker and manage visit count
     const hasAdBlocker = () => {
       const adBlockDetectionTests = [
+        () => {
+          if (window.chrome && window.chrome.runtime) {
+            try {
+              return Object.keys(
+                window.chrome.runtime.getManifest
+                  ? window.chrome.runtime.getManifest()
+                  : {}
+              ).some((key) =>
+                /adblock|ublock|ghostery|privacy|adguard/i.test(key)
+              );
+            } catch (error) {
+              return false;
+            }
+          }
+          return false;
+        },
         () => {
           const testAd = document.createElement("div");
           testAd.innerHTML = "&nbsp;";
@@ -63,7 +94,19 @@ const AdblockerModal = () => {
           } catch (error) {
             return false;
           }
-        }
+        },
+        () => {
+          const globalAdBlockerChecks = [
+            "AdBlock",
+            "uBlock",
+            "__adblockEnabled",
+            "blockAdBlock",
+          ];
+
+          return globalAdBlockerChecks.some(
+            (check) => window[check] || window[check] !== undefined
+          );
+        },
       ];
 
       return adBlockDetectionTests.some((test) => test());
