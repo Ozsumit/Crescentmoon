@@ -4,16 +4,16 @@ import Script from "next/script"; // <--- Make sure this line is here!
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer/Footer";
 import AppInstallPopup from "@/components/app-installpopup";
-import SnowButton from "@/components/snowbutton";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+// import SnowButton from "@/components/snowbutton";
+// import { Analytics } from "@vercel/analytics/react";
+// import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PopupDeveloperFeedback } from "@/components/feedback";
-import Script from "next/script";
+// import Script from "next/script";
 import CookieConsent from "@/components/cookies";
 
-const PopupDeveloperFeedback = dynamic(() =>
-  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
-);
+// const PopupDeveloperFeedback = dynamic(() =>
+//   import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
+// );
 
 const BASE_URL = "https://cmoon.sumit.info.np";
 
