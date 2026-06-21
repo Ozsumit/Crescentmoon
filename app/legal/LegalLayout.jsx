@@ -1,9 +1,9 @@
 "use client";
-import ThemeWrapper from "@/components/themewrappr";
+import { PageContainer } from "@/components/themewrappr";
 
 export default function LegalLayout({ title, date, children }) {
   return (
-    <ThemeWrapper>
+    <PageContainer>
       <div className="max-w-3xl mx-auto">
         <div className="mb-16">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-neutral-900 mb-4">
@@ -18,6 +18,6 @@ export default function LegalLayout({ title, date, children }) {
           {children}
         </div>
       </div>
-    </ThemeWrapper>
+    </PageContainer>
   );
 }

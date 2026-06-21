@@ -2,12 +2,13 @@ import Header from "@/components/navbar/Header";
 import "./globals.css";
 import Script from "next/script"; // <--- Make sure this line is here!
 import dynamic from "next/dynamic";
+import ThemeWrapper from "@/components/themewrappr";
 import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
 
-// const PopupDeveloperFeedback = dynamic(() =>
-//   import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
-// );
+const PopupDeveloperFeedback = dynamic(() =>
+  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
+);
 
 const BASE_URL = "https://cmoon.sumit.info.np";
 
@@ -194,13 +195,15 @@ export default function RootLayout({ children }) {
       </head>
 
       <body className="bg-neutral-950 text-white antialiased">
-        <Header />
+        <ThemeWrapper>
+          <Header />
 
-        <main>{children}</main>
-        <CookieConsent />
-        <PopupDeveloperFeedback />
+          <main>{children}</main>
+          <CookieConsent />
+          <PopupDeveloperFeedback />
 
-        <Footer />
+          <Footer />
+        </ThemeWrapper>
       </body>
     </html>
   );

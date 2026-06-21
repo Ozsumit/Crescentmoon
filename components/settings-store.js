@@ -12,6 +12,7 @@ const useSettingsStore = create(
       customCursor: true,
       showFeedbackPopup: true,
       feedbackTheme: "classic",
+      siteTheme: "obsidian",
 
       setAccentColor: (color) => set({ accentColor: color }),
       setDefaultMovieServer: (server) => set({ defaultMovieServer: server }),
@@ -21,6 +22,7 @@ const useSettingsStore = create(
       setCustomCursor: (show) => set({ customCursor: show }),
       setShowFeedbackPopup: (show) => set({ showFeedbackPopup: show }),
       setFeedbackTheme: (theme) => set({ feedbackTheme: theme }),
+      setSiteTheme: (theme) => set({ siteTheme: theme }),
 
       resetSettings: () => set({
         accentColor: "#6366f1",
@@ -31,6 +33,7 @@ const useSettingsStore = create(
         customCursor: true,
         showFeedbackPopup: true,
         feedbackTheme: "classic",
+        siteTheme: "obsidian",
       }),
     }),
     {

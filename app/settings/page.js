@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import useSettingsStore from "@/components/settings-store";
-import ThemeWrapper from "@/components/themewrappr";
+import ThemeWrapper, { PageContainer } from "@/components/themewrappr";
 import { MOVIE_SERVERS, TV_SERVERS } from "@/lib/config";
 import { FEEDBACK_THEMES } from "@/lib/feedback-themes";
+import { SITE_THEMES } from "@/lib/themes";
 import {
   Palette,
   Server,
@@ -17,6 +18,8 @@ import {
   Monitor,
   Tv,
   MessageSquare,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -94,8 +97,8 @@ const SettingsPage = () => {
   );
 
   return (
-    <ThemeWrapper>
-      <div className="max-w-3xl mx-auto py-12 px-4">
+    <PageContainer>
+      <div className="max-w-3xl mx-auto">
         <header className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
@@ -115,7 +118,65 @@ const SettingsPage = () => {
           title="Theming"
           description="Customize the visual appearance of Cmoon."
         >
-          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+          {/* Site Theme Selection */}
+          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl mb-4">
+            <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
+              <Monitor size={16} className="text-indigo-400" />
+              Site Theme
+            </h3>
+
+            <div className="space-y-8">
+              {/* Dark Themes */}
+              <div>
+                <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <Moon size={12} /> Dark Modes
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {Object.entries(SITE_THEMES).filter(([_, t]) => t.type === 'dark').map(([key, theme]) => (
+                    <button
+                      key={key}
+                      onClick={() => { settings.setSiteTheme(key); triggerToast(); }}
+                      className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === key ? 'border-white bg-white/10 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                    >
+                      <div className="w-full aspect-video rounded-md overflow-hidden border border-white/10 flex">
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.background})` }} />
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase truncate w-full text-center">{theme.name}</span>
+                      {settings.siteTheme === key && <div className="absolute -top-2 -right-2 bg-white text-black rounded-full p-0.5 shadow-lg"><Check size={10} /></div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Light Themes */}
+              <div>
+                <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                  <Sun size={12} /> Light Modes
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {Object.entries(SITE_THEMES).filter(([_, t]) => t.type === 'light').map(([key, theme]) => (
+                    <button
+                      key={key}
+                      onClick={() => { settings.setSiteTheme(key); triggerToast(); }}
+                      className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === key ? 'border-indigo-500 bg-indigo-50 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                    >
+                      <div className="w-full aspect-video rounded-md overflow-hidden border border-black/5 flex">
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.background})` }} />
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
+                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase truncate w-full text-center ${settings.siteTheme === key ? 'text-indigo-900' : 'text-neutral-400'}`}>{theme.name}</span>
+                      {settings.siteTheme === key && <div className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full p-0.5 shadow-lg"><Check size={10} /></div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl mb-4">
             <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Accent Color</h3>
             <div className="flex flex-wrap gap-4">
               {ACCENT_COLORS.map((color) => (
@@ -269,7 +330,7 @@ const SettingsPage = () => {
           )}
         </AnimatePresence>
       </div>
-    </ThemeWrapper>
+    </PageContainer>
   );
 };
 
