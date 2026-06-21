@@ -6,33 +6,58 @@ const BASE_URL =
 export async function getData(id) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-  const res = await fetch(
-    `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&append_to_response=credits,videos`,
-    {
+  // 1. Diagnostic logs to check parameters (visible in your terminal console)
+  console.log("--- TMDB DIAGNOSTIC LOG ---");
+  console.log("Parsed ID:", id);
+  console.log("Type of ID:", typeof id);
+  console.log("API Key Configured:", !!apiKey);
+  
+  if (apiKey) {
+    console.log("API Key Preview:", apiKey.substring(0, 5) + "...");
+  } else {
+    console.warn("WARNING: NEXT_PUBLIC_TMDB_API_KEY is undefined.");
+  }
+
+  const url = `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&append_to_response=credits,videos`;
+
+  try {
+    const res = await fetch(url, {
       next: {
         revalidate: 3600, // Cache for 1 hour
       },
-    },
-  );
+    });
 
-  // Check errors first
-  if (!res.ok) {
-    throw new Error("Failed to Fetch data");
+    // 2. If the response fails, check the actual HTTP status
+    if (!res.ok) {
+      console.error(`TMDB Error Status: ${res.status} (${res.statusText})`);
+      try {
+        const errorBody = await res.json();
+        console.error("TMDB API Error Details:", JSON.stringify(errorBody, null, 2));
+      } catch {
+        console.error("Could not parse TMDB error body.");
+      }
+      throw new Error(`Failed to Fetch data: HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const genreArr = data.genres?.map((element) => element.name) || [];
+
+    console.log("--- TMDB FETCH SUCCESSFUL ---");
+    return { data, genreArr, id };
+
+  } catch (error) {
+    console.error("Network Fetch Exception:", error.message);
+    throw error;
   }
-
-  const data = await res.json();
-
-  // Safe genres mapping
-  const genreArr = data.genres?.map((element) => element.name) || [];
-
-  return { data, genreArr, id };
 }
 
 /**
  * ✅ Dynamic SEO Metadata
  */
 export async function generateMetadata({ params }) {
-  const { id } = params;
+  // Await params for Next.js 15 compatibility
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   try {
     const { data, genreArr } = await getData(id);
@@ -110,6 +135,7 @@ export async function generateMetadata({ params }) {
       category: "entertainment",
     };
   } catch (error) {
+    console.error("Error generating TV metadata:", error);
     return {
       title: "Series Not Found | Cmoon",
       description: "The requested TV series could not be found.",
@@ -145,7 +171,9 @@ function generateTvSchema(data, id) {
 }
 
 const TvDetail = async ({ params }) => {
-  const { id } = params;
+  // Await params for Next.js 15 compatibility
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   const { data, genreArr } = await getData(id);
 

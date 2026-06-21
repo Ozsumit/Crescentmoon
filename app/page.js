@@ -4,8 +4,6 @@ import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
 import SearchBar from "@/components/searchbar/SearchBar";
 import Title from "@/components/title/Title";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import TvDisplay from "@/components/display/TvDisplay";
 import WelcomeModal from "@/components/welcome";
 import AdblockerModal from "@/components/adblockmodel";
@@ -14,7 +12,12 @@ async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
     // `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
-    `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`
+    `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`,
+    {
+      next: {
+        revalidate: 3600, // Cache for 1 hour
+      },
+    }
   );
 
   if (!resp.ok) {

@@ -1,20 +1,49 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-// ?csiv
-generator client {
-  provider = "prisma-client-js"
-}
+// // Get a free hosted Postgres database in seconds: `npx create-db`
+// // ?csiv
+// generator client {
+//   provider = "prisma-client-js"
+// }
 
-datasource db {
-  provider = "postgresql"
-}
-model Feedback {
-  id        String   @id @default(cuid())
-  type      String   // "review", "bug", "feature"
-  rating    Int?     // 1-5
-  message   String   @db.Text
-  email     String?  
-  createdAt DateTime @default(now())
-}
+// datasource db {
+//   provider = "postgresql"
+// }
+// model Feedback {
+//   id        String   @id @default(cuid())
+//   type      String   // "review", "bug", "feature"
+//   rating    Int?     // 1-5
+//   message   String   @db.Text
+//   email     String?  
+//   createdAt DateTime @default(now())
+// }
+
+// model PageView {
+//   id        String   @id @default(cuid())
+//   path      String
+//   visitorId String
+//   createdAt DateTime @default(now())
+
+//   @@index([createdAt])
+//   @@index([path])
+// }
+
+// model VideoSource {
+//   id          String   @id @default(cuid())
+//   name        String
+//   url         String
+//   params      String?
+//   type        String   // "movie" or "tv"
+//   priority    Int      @default(0)
+//   active      Boolean  @default(true)
+//   icon        String?  // icon name from lucide
+//   features    Json?    // Array of strings
+//   description String?
+
+//   download    Boolean  @default(false)
+//   parseUrl    Boolean  @default(false)
+//   paramStyle  String   @default("query") // "query", "path-slash", "path-hyphen-mapi"
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+// }

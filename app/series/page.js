@@ -7,7 +7,11 @@ async function getData() {
 
   const resp = await fetch(
     `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`,
-    { cache: "no-store" },
+    {
+      next: {
+        revalidate: 3600, // Cache for 1 hour
+      },
+    },
   );
 
   if (!resp.ok) {

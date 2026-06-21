@@ -19,103 +19,38 @@ import {
   X,
   Crown,
   Settings2,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useSettingsStore from "@/components/settings-store";
+import { MOVIE_SERVERS as DEFAULT_VIDEO_SOURCES } from "@/lib/config";
 
-// --- CONSTANTS ---
-const VIDEO_SOURCES = [
-  {
-    name: "vidking",
-    url: "https://www.vidking.net/embed/movie/",
-    params: "?color=c3f0c2&icons=default&autoplay=true&nextbutton=true",
-    icon: <Crown className="w-3.5 h-3.5" />,
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidLink",
-    url: "https://vidlink.pro/movie/",
-    params:
-      "?primaryColor=6a5fef&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=jw&title=true&poster=true&autoplay=true&nextbutton=true",
-    icon: <Play className="w-3.5 h-3.5" />,
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidAPI",
-    url: "https://vaplayer.ru/embed/movie/",
-    params: "?skin=cinematic",
-    icon: <Webhook className="w-3.5 h-3.5" />,
-    features: ["Recommended", "Fast"],
-    description: "Fast loading with a modern player.",
-  },
-  {
-    name: "VidSrc",
-    url: "https://v2.vidsrc.me/embed/movie/",
-    params: "?multiLang=true",
-    icon: <Languages className="w-3.5 h-3.5" />,
-    features: ["Multi-Language"],
-    description: "Good source for non-English audio.",
-  },
-  {
-    name: "MoviesAPI",
-    url: "https://moviesapi.club/movie/",
-    params: "?multiLang=true",
-    icon: <List className="w-3.5 h-3.5" />,
-    features: ["Multi-Language", "Fast"],
-    description: "A reliable alternative with good subtitle support.",
-  },
-  {
-    name: "videasy",
-    url: "https://player.videasy.net/movie/",
-    params: "?multiLang=true",
-    icon: <Clapperboard className="w-3.5 h-3.5" />,
-    features: ["Multi-sub", "Clean UI"],
-    description: "Features a clean player with multiple subtitle choices.",
-  },
-  {
-    name: "Vidsrc 2",
-    url: "https://vidsrc.net/embed/movie/",
-    params: "?multiLang=true",
-    icon: <Server className="w-3.5 h-3.5" />,
-    features: ["Multi-Language", "Backup"],
-    description: "A secondary backup source for language options.",
-  },
-  {
-    name: "VidSrc 3",
-    url: "https://vidsrc.icu/embed/movie/",
-    params: "?multiLang=true",
-    icon: <Languages className="w-3.5 h-3.5" />,
-    features: ["Multi-Language", "Backup"],
-    description: "Alternative source for subtitles.",
-  },
-  {
-    name: "VidSrc 4",
-    url: "https://player.vidsrc.co/embed/movie/",
-    params:
-      "?autoplay=true&autonext=true&nextbutton=true&poster=true&primarycolor=6C63FF&secondarycolor=9F9BFF&iconcolor=FFFFFF&fontcolor=FFFFFF&fontsize=16px&opacity=0.5&font=Poppins",
-    icon: <Clapperboard className="w-3.5 h-3.5" />,
-    features: [],
-    download: true,
-    description: "A reliable classic player.",
-  },
-  {
-    name: "2Embed",
-    url: "https://2embed.cc/embed/movie/",
-    icon: <Film className="w-3.5 h-3.5" />,
-    features: ["Ads"],
-    params: "?multiLang=true",
-    description: "May have more pop-up ads.",
-  },
-  {
-    name: "Binge",
-    url: "https://vidbinge.dev/embed/movie/",
-    icon: <Zap className="w-3.5 h-3.5" />,
-    features: ["Fast"],
-    parseUrl: true,
-    description: "Quick-loading, lightweight player.",
-  },
-];
+const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
+  const icons = {
+    Play,
+    Star,
+    Clock,
+    Calendar,
+    Server,
+    Heart,
+    Share2,
+    Film,
+    List,
+    Clapperboard,
+    Zap,
+    Languages,
+    Check,
+    Webhook,
+    ShieldAlert,
+    X,
+    Crown,
+    Settings2,
+    Download,
+  };
+  const IconComponent = icons[iconName] || Play;
+  return <IconComponent {...props} />;
+};
+
 
 // --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
@@ -132,9 +67,15 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
 
 // --- MAIN COMPONENT ---
 
-const MovieInfo = ({ MovieDetail, genreArr, id }) => {
+const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
+  const activeSources = videoSources.filter((s) => s.active);
+  const sources =
+    activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
+
+  const { defaultMovieServer, showAdNotice } = useSettingsStore();
+
   const [isMounted, setIsMounted] = useState(false);
-  const [selectedServer, setSelectedServer] = useState(VIDEO_SOURCES[0]);
+  const [selectedServer, setSelectedServer] = useState(sources[0]);
   const [defaultServerName, setDefaultServerName] = useState("");
   const [iframeSrc, setIframeSrc] = useState("");
 
@@ -145,6 +86,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [showAdPopup, setShowAdPopup] = useState(false);
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
   const lastSavedTime = useRef(0);
 
@@ -152,20 +94,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   useEffect(() => {
     setIsMounted(true);
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
-    if (dismissed !== "true") setShowAdPopup(true);
+    if (dismissed !== "true" && showAdNotice) setShowAdPopup(true);
 
-    const savedDefault = localStorage.getItem("defaultServerName");
+    const savedDefault = defaultMovieServer;
     const savedSession = sessionStorage.getItem("sessionServerName");
 
     if (savedDefault) setDefaultServerName(savedDefault);
 
-    const initialServerName =
-      savedSession || savedDefault || VIDEO_SOURCES[0].name;
+    const initialServerName = savedSession || savedDefault || sources[0].name;
     const initialServer =
-      VIDEO_SOURCES.find((s) => s.name === initialServerName) ||
-      VIDEO_SOURCES[0];
+      sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
-  }, []);
+  }, [sources, defaultMovieServer, showAdNotice]);
 
   // --- DATA FETCHING & PROGRESS TRACKING ---
   useEffect(() => {
@@ -280,10 +220,24 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
   }, [id, MovieDetail]);
 
   useEffect(() => {
-    if (!isMounted) return;
-    const iframeSrc = setIframeSrc(
-      `${selectedServer.url}${id}${selectedServer.params}`,
-    );
+    if (!isMounted || !selectedServer) return;
+
+    const { url, params, paramStyle } = selectedServer;
+    let finalUrl = "";
+
+    switch (paramStyle) {
+      case "path-slash":
+        finalUrl = `${url}${id}`;
+        break;
+      case "path-hyphen-mapi":
+        finalUrl = `${url}${id}`;
+        break;
+      default: // query or others
+        finalUrl = `${url}${id}${params || ""}`;
+        break;
+    }
+
+    setIframeSrc(finalUrl);
   }, [selectedServer, id, isMounted]);
 
   // --- HANDLERS ---
@@ -397,16 +351,16 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-3 gap-3 mb-8">
               <button
                 onClick={toggleFav}
-                className={`h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all shadow-lg ${
+                className={`h-12 rounded-xl flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${
                   isFavorite
                     ? "bg-rose-500 text-white shadow-rose-500/20"
                     : "bg-white text-black hover:bg-neutral-200"
                 }`}
               >
-                <Heart size={16} className={isFavorite ? "fill-current" : ""} />{" "}
+                <Heart size={14} className={isFavorite ? "fill-current" : ""} />{" "}
                 {isFavorite ? "Saved" : "Save"}
               </button>
               <div className="relative group/share">
@@ -432,7 +386,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 <div className="flex items-start justify-between relative z-10 mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 shrink-0 shadow-inner">
-                      {selectedServer.icon}
+                      {typeof selectedServer.icon === "string"
+                        ? getIcon(selectedServer.icon)
+                        : selectedServer.icon}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -481,12 +437,12 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                     <Server size={12} /> Change Source
                   </span>
                   <span className="text-[10px] font-bold text-neutral-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
-                    {VIDEO_SOURCES.length} Options
+                    {sources.length} Options
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                  {VIDEO_SOURCES.map((s) => {
+                  {sources.map((s) => {
                     const active = selectedServer.name === s.name;
                     const isDefault = s.name === defaultServerName;
                     return (
@@ -506,7 +462,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                           <div
                             className={`shrink-0 transition-colors ${active ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-400"}`}
                           >
-                            {s.icon}
+                            {typeof s.icon === "string"
+                              ? getIcon(s.icon)
+                              : s.icon}
                           </div>
                           <span
                             className={`text-[11px] font-semibold truncate transition-colors ${active ? "text-indigo-100" : "text-neutral-400 group-hover:text-neutral-200"}`}
@@ -768,6 +726,56 @@ const MovieInfo = ({ MovieDetail, genreArr, id }) => {
                 <X size={14} />
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* DOWNLOAD PORTAL MODAL */}
+        {showDownloadPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl h-[80vh] bg-[#0c0c0c] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                    <Download size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-white uppercase tracking-wider">
+                      Download Options
+                    </h3>
+                    <p className="text-[10px] text-neutral-400">
+                      Access download links via VidVault
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDownloadPopup(false)}
+                  className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Iframe Body */}
+              <div className="flex-1 bg-[#050505] relative">
+                <iframe
+                  src={`https://vidvault.ru/movie/${id}`}
+                  className="w-full h-full absolute inset-0 z-10 border-0"
+                  allowFullScreen
+                  title="Download Portal"
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

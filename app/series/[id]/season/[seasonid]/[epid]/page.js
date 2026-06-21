@@ -1,4 +1,5 @@
 import EpisodeInfo from "@/components/info/EpisodeInfo";
+import { getVideoSources } from "@/lib/video-sources";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
@@ -50,7 +51,9 @@ async function fetchEpisodeData(id, seasonid, epid) {
  * ✅ Dynamic SEO Metadata
  */
 export async function generateMetadata({ params }) {
-  const { id, seasonid, epid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid, epid } = resolvedParams;
 
   try {
     const { seriesData, episodeData } = await fetchEpisodeData(
@@ -84,13 +87,13 @@ export async function generateMetadata({ params }) {
       ],
 
       alternates: {
-        canonical: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+        canonical: `${BASE_URL}/series/${id}/season/${seasonid}/${epid}`,
       },
 
       openGraph: {
         title,
         description,
-        url: `${BASE_URL}/series/${id}/season/${seasonid}/episode/${epid}`,
+        url: `${BASE_URL}/series/${id}/season/${seasonid}/${epid}`,
         siteName: "Cmoon",
         type: "video.episode",
 
@@ -163,10 +166,15 @@ function generateEpisodeSchema(episodeData, seriesData, id, seasonid, epid) {
  * ✅ Episode Details Page
  */
 export default async function EpisodeDetailsPage({ params }) {
-  const { id, seasonid, epid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid, epid } = resolvedParams;
 
   try {
-    const data = await fetchEpisodeData(id, seasonid, epid);
+    const [data, videoSources] = await Promise.all([
+      fetchEpisodeData(id, seasonid, epid),
+      getVideoSources("tv"),
+    ]);
 
     const jsonLd = generateEpisodeSchema(
       data.episodeData,
@@ -192,6 +200,7 @@ export default async function EpisodeDetailsPage({ params }) {
             seriesId={id}
             seasonData={data.seasonData}
             seriesData={data.seriesData}
+            videoSources={videoSources}
           />
         </div>
       </>

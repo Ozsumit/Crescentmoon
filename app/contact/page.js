@@ -614,15 +614,38 @@ const ContactArcade = () => {
                   Socials
                 </p>
                 <div className="flex gap-3">
-                  <button className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all">
+                  <a
+                    href="https://x.com/ozsumit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                  >
                     <Twitter size={18} />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all">
+                  </a>
+                  <a
+                    href="https://github.com/ozsumit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                  >
                     <Github size={18} />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all">
+                  </a>
+                  <a
+                    href="https://linkedin.com/in/ozsumit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                  >
                     <Linkedin size={18} />
-                  </button>
+                  </a>
+                  <a
+                    href="https://figma.com/@ozsumit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                  >
+                    <span className="font-bold text-lg">F</span>
+                  </a>
                 </div>
               </div>
             </div>

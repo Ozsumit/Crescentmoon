@@ -1,17 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add this block to enable Server Actions
-  experimental: {
-    serverActions: true,
-  },
   images: {
-    domains: [
-      "image.tmdb.org",
-      "imgur.com",
-      "arc.io",
-      "cdn.mos.cms.futurecdn.net",
-      "i.imgur.com",
-      "via.placeholder.com",
+    unoptimized: true, // Prevents Cloudflare Worker resource errors when loading images
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+      },
+      {
+        protocol: "https",
+        hostname: "imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "arc.io",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.mos.cms.futurecdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
     ],
   },
   env: {
@@ -45,5 +60,16 @@ const nextConfig = {
     ];
   },
 };
+// Check if we are running on Vercel
+const isVercel = process.env.VERCEL === "1" || process.env.NOW_BUILDER === "1";
 
-export default nextConfig;
+// Only initialize OpenNext-Cloudflare hooks if we are NOT on Vercel
+if (!isVercel) {
+  try {
+    require("@opennextjs/cloudflare").initOpenNextCloudflareForDev();
+  } catch (e) {
+    // Graceful fallback if dependency is missing or architecture fails
+  }
+}
+
+module.exports = nextConfig;

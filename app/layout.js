@@ -1,6 +1,7 @@
 import Header from "@/components/navbar/Header";
 import "./globals.css";
-import { Inter } from "next/font/google";
+import Script from "next/script"; // <--- Make sure this line is here!
+import dynamic from "next/dynamic";
 import Footer from "@/components/footer/Footer";
 import AppInstallPopup from "@/components/app-installpopup";
 import SnowButton from "@/components/snowbutton";
@@ -10,11 +11,9 @@ import { PopupDeveloperFeedback } from "@/components/feedback";
 import Script from "next/script";
 import CookieConsent from "@/components/cookies";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap", // Better CLS + SEO
-  preload: true,
-});
+const PopupDeveloperFeedback = dynamic(() =>
+  import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
+);
 
 const BASE_URL = "https://cmoon.sumit.info.np";
 
@@ -122,7 +121,13 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Theme Color */}
+
         <meta name="theme-color" content="#000000" />
+
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-1069983810172301"
+        ></meta>
 
         {/* Apple */}
         <meta name="apple-mobile-web-app-title" content="Cmoon" />
@@ -141,6 +146,40 @@ export default function RootLayout({ children }) {
         {/* Umami */}
 
         {/* Structured Data */}
+        {/* <!-- Cloudflare Web Analytics --> */}
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"
+        ></script>
+        <Script id="clarity-script" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "x8f0e4qaxu");
+          `}
+        </Script>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-9B1XNB1F0D"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-9B1XNB1F0D');
+          `}
+        </Script>
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "de022bcad822493286b101c58245c2b9"}'
+        ></script>
+        {/* <!-- End Cloudflare Web Analytics --> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -160,24 +199,14 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body
-        className={`${inter.className} bg-neutral-950 text-white antialiased`}
-      >
+      <body className="bg-neutral-950 text-white antialiased">
         <Header />
-
-        <Analytics />
-        <SpeedInsights />
 
         <main>{children}</main>
         <CookieConsent />
         <PopupDeveloperFeedback />
 
-        {/* <AdBlocker /> */}
-        {/* <AppInstallPopup /> */}
-
         <Footer />
-
-        {/* <SnowButton /> */}
       </body>
     </html>
   );

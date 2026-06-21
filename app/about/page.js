@@ -9,6 +9,11 @@ async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const resp = await fetch(
     `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`,
+    {
+      next: {
+        revalidate: 86400, // Cache for 24 hours
+      },
+    },
   );
 
   if (!resp.ok) {

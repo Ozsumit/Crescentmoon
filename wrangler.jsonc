@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "crescentmoon", // Replace with your actual project name
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-13", // Or the date you prefer to target
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+}

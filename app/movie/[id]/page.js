@@ -1,4 +1,5 @@
 import MovieInfo from "@/components/info/MovieInfo";
+import { getVideoSources } from "@/lib/video-sources";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
@@ -6,21 +7,26 @@ const BASE_URL =
 export async function getData(id) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits,videos`,
-    {
-      next: {
-        revalidate: 1800, // Cache for 1 hour
-      },
+  if (!apiKey) {
+    console.error("TMDB API Key is missing. Check your environment variables.");
+    throw new Error("TMDB API Key is not configured.");
+  }
+
+  const url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits,videos`;
+
+  const res = await fetch(url, {
+    next: {
+      revalidate: 1800, // Cache for 30 minutes
     },
-  );
+  });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch movie data");
+    // Log the actual error status to help with debugging
+    console.error(`TMDB API returned status ${res.status} for ID: ${id}`);
+    throw new Error(`Failed to fetch movie data: ${res.statusText}`);
   }
 
   const data = await res.json();
-
   const genreArr = data?.genres?.map((genre) => genre.name) || [];
 
   return { data, genreArr, id };
@@ -30,7 +36,9 @@ export async function getData(id) {
  * ✅ Dynamic SEO Metadata
  */
 export async function generateMetadata({ params }) {
-  const { id } = params;
+  // Awaiting params for Next.js 15 compatibility
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   try {
     const { data, genreArr } = await getData(id);
@@ -58,11 +66,9 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords,
-
       alternates: {
         canonical: `${BASE_URL}/movie/${id}`,
       },
-
       openGraph: {
         title,
         description,
@@ -79,14 +85,12 @@ export async function generateMetadata({ params }) {
         locale: "en_US",
         type: "video.movie",
       },
-
       twitter: {
         card: "summary_large_image",
         title,
         description,
         images: [poster],
       },
-
       robots: {
         index: true,
         follow: true,
@@ -98,12 +102,11 @@ export async function generateMetadata({ params }) {
           "max-snippet": -1,
         },
       },
-
       metadataBase: new URL(BASE_URL),
-
       category: "entertainment",
     };
   } catch (error) {
+    console.error("Error generating metadata:", error);
     return {
       title: "Movie Not Found | Cmoon",
       description: "The requested movie could not be found.",
@@ -134,9 +137,14 @@ function generateMovieSchema(data, id) {
 }
 
 const MovieDetail = async ({ params }) => {
-  const { id } = params;
+  // Awaiting params for Next.js 15 compatibility
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
-  const { data, genreArr } = await getData(id);
+  const [{ data, genreArr }, videoSources] = await Promise.all([
+    getData(id),
+    getVideoSources("movie"),
+  ]);
 
   const jsonLd = generateMovieSchema(data, id);
 
@@ -150,7 +158,12 @@ const MovieDetail = async ({ params }) => {
         }}
       />
 
-      <MovieInfo MovieDetail={data} genreArr={genreArr} id={id} />
+      <MovieInfo
+        MovieDetail={data}
+        genreArr={genreArr}
+        id={id}
+        videoSources={videoSources}
+      />
     </>
   );
 };

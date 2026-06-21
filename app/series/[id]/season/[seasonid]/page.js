@@ -9,7 +9,7 @@ const BASE_URL =
  */
 async function getData(id, seasonid) {
   if (!id || !seasonid) {
-    throw new Error("Missing required parameters");
+    throw new Error("Missing required parameters in API call");
   }
 
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -56,7 +56,9 @@ const ErrorState = ({ error }) => (
  * ✅ Dynamic SEO Metadata
  */
 export async function generateMetadata({ params }) {
-  const { id, seasonid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid } = resolvedParams;
 
   try {
     const { data } = await getData(id, seasonid);
@@ -149,7 +151,9 @@ function generateSeasonSchema(data, id, seasonid) {
  * ✅ Page Component
  */
 const SeasonsDetailsPage = async ({ params }) => {
-  const { id, seasonid } = params;
+  // Await the params Promise
+  const resolvedParams = await params;
+  const { id, seasonid } = resolvedParams;
 
   try {
     if (!id || !seasonid) {

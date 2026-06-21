@@ -1,14 +1,7 @@
 import Link from "next/link";
 import React from "react";
-import { Space_Grotesk } from "next/font/google"; // Swiss-style geometric sans
 import { Moon } from "lucide-react";
 import Image from "next/image";
-
-const spaceGrotesk = Space_Grotesk({
-  weight: ["300", "700"], // Mixing weights is very Swiss
-  subsets: ["latin"],
-  preload: true,
-});
 
 const Logo = () => {
   return (
@@ -25,9 +18,7 @@ const Logo = () => {
       </div>
 
       {/* Typography - Swiss Style (Tight tracking, mixed weights, uppercase) */}
-      <div
-        className={`${spaceGrotesk.className} flex flex-col justify-center leading-none`}
-      >
+      <div className="flex flex-col justify-center leading-none font-display">
         <span className="text-lg md:text-2xl font-bold tracking-tighter text-white uppercase group-hover:tracking-normal transition-all duration-500">
           Crescent
         </span>

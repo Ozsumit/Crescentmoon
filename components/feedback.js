@@ -251,7 +251,7 @@ export function PopupDeveloperFeedback() {
 
     if (feedbackSubmitted) return;
     if (lastDismissed) {
-      const oneDayInMs = 24 * 60 * 60 * 1000;
+      const oneDayInMs = 72 * 60 * 60 * 1000;
       if (Date.now() - parseInt(lastDismissed) < oneDayInMs) return;
     }
 
