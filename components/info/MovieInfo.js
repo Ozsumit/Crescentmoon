@@ -269,19 +269,10 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const share = (platform) => {
-    const url = window.location.href;
-    const text = `Watching ${MovieDetail.title} on Cmoon!`;
-
-    if (platform === "twitter") {
-      window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, "_blank");
-    } else if (platform === "whatsapp") {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, "_blank");
-    } else {
-      navigator.clipboard.writeText(url);
-      setToast("Link copied to clipboard");
-      setTimeout(() => setToast(null), 3000);
-    }
+  const share = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setToast("Link copied to clipboard");
+    setTimeout(() => setToast(null), 3000);
   };
 
   const dismissAd = () => {
@@ -302,7 +293,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
         <img
           src={bgImage}
           className="w-full h-full object-cover blur-[100px] opacity-10 scale-110"
-          alt={`${MovieDetail.title} cinematic background`}
+          alt="Background"
         />
       </div>
 
@@ -363,18 +354,18 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                 <Heart size={14} className={isFavorite ? "fill-current" : ""} />{" "}
                 {isFavorite ? "Saved" : "Save"}
               </button>
-              <div className="relative group/share">
-                <button
-                  className="w-full h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all text-white"
-                >
-                  <Share2 size={16} /> Share
-                </button>
-                <div className="absolute bottom-full left-0 mb-2 hidden group-hover/share:flex flex-col bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50 min-w-[150px]">
-                  <button onClick={() => share("copy")} className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors border-b border-white/5">Copy Link</button>
-                  <button onClick={() => share("twitter")} className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors border-b border-white/5">Twitter</button>
-                  <button onClick={() => share("whatsapp")} className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 text-left transition-colors">WhatsApp</button>
-                </div>
-              </div>
+              <button
+                onClick={share}
+                className="h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all text-white"
+              >
+                <Share2 size={14} /> Share
+              </button>
+              <button
+                onClick={() => setShowDownloadPopup(true)}
+                className="h-12 rounded-xl border border-indigo-600 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all text-white shadow-lg shadow-indigo-600/20"
+              >
+                <Download size={14} /> Download
+              </button>
             </div>
 
             {/* --- IMPROVED MATERIAL SOURCE CARD --- */}
@@ -665,7 +656,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                 className="w-full h-full absolute inset-0 z-10 bg-black"
                 allowFullScreen
                 allow="autoplay; encrypted-media; picture-in-picture"
-                // sandbox="allow-scripts allow-same-origin allow-presentation"
                 title="Player"
               />
             ) : (

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import useSettingsStore from "@/components/settings-store";
 import ThemeWrapper from "@/components/themewrappr";
 import { MOVIE_SERVERS, TV_SERVERS } from "@/lib/config";
+import { FEEDBACK_THEMES } from "@/lib/feedback-themes";
 import {
   Palette,
   Server,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   Monitor,
   Tv,
+  MessageSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -196,6 +198,49 @@ const SettingsPage = () => {
             value={settings.showAdNotice}
             onToggle={settings.setShowAdNotice}
           />
+        </SettingSection>
+
+        {/* FEEDBACK SETTINGS */}
+        <SettingSection
+          icon={MessageSquare}
+          title="Feedback Loop"
+          description="Configure how you interact with the developer."
+        >
+          <ToggleCard
+            title="Show Feedback Popup"
+            description="Automatically show the feedback dialog after some time."
+            value={settings.showFeedbackPopup}
+            onToggle={settings.setShowFeedbackPopup}
+          />
+
+          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Feedback Popup Theme</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {Object.keys(FEEDBACK_THEMES).map((themeKey) => {
+                const theme = FEEDBACK_THEMES[themeKey];
+                const isActive = settings.feedbackTheme === themeKey;
+                return (
+                  <button
+                    key={themeKey}
+                    onClick={() => { settings.setFeedbackTheme(themeKey); triggerToast(); }}
+                    className={`group relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${isActive ? 'border-white bg-white/10 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg ${theme.bg} ${theme.border} border flex items-center justify-center`}>
+                      <div className={`w-2 h-2 rounded-full ${theme.pulse}`} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? 'text-white' : 'text-neutral-500 group-hover:text-neutral-300'}`}>
+                      {themeKey}
+                    </span>
+                    {isActive && (
+                      <div className="absolute -top-2 -right-2 bg-indigo-500 rounded-full p-1 shadow-lg">
+                        <Check size={10} className="text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </SettingSection>
 
         {/* DANGER ZONE */}

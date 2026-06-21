@@ -1,27 +1,40 @@
-import AnimeClient from "./AnimeClient";
+"use client";
+import AnimeDisplay from "@/components/display/animedisplay";
+import MovieDisplay from "@/components/display/MovieDisplay";
+import SearchDisplay from "@/components/display/SearchDisplay";
+import HomeFilter from "@/components/filter/HomeFilter";
+import SearchBar from "@/components/searchbar/SearchBar";
+import MoviesTitle from "@/components/title/MoviesTitle";
+import React, { useEffect, useState } from "react";
+import { useDebounce } from "use-debounce";
+const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+async function getData() {
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  const resp = await fetch(
+    `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=1`,
+    {
+      next: {
+        revalidate: 3600, // Cache for 1 hour
+      },
+    }
+  );
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
+  if (!resp.ok) {
+    throw new Error("Failed to fetch data");
+  }
+  const data = await resp.json();
+  let res = data.results;
+  return res;
+}
 
-export const metadata = {
-  title: "Watch Anime Online | Cmoon",
-  description: "Stream your favorite anime series and movies in HD quality on Cmoon. Discover trending anime and classics.",
-  keywords: ["anime streaming", "watch anime online", "Cmoon", "HD anime"],
-  openGraph: {
-    title: "Watch Anime Online | Cmoon",
-    description: "Stream your favorite anime series and movies in HD quality on Cmoon.",
-    url: `${BASE_URL}/anime`,
-    siteName: "Cmoon",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Watch Anime Online | Cmoon",
-    description: "Stream your favorite anime series and movies in HD quality on Cmoon.",
-  },
+const Movies = async () => {
+  const moviedata = await getData();
+
+  return (
+    <div className="  pt-16 h-auto">
+ <AnimeDisplay/>
+    </div>
+  );
 };
 
-const Anime = () => {
-  return <AnimeClient />;
-};
-
-export default Anime;
+export default Movies;

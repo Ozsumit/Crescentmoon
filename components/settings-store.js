@@ -10,6 +10,8 @@ const useSettingsStore = create(
       confirmRemove: true,
       showAdNotice: true,
       customCursor: true,
+      showFeedbackPopup: true,
+      feedbackTheme: "classic",
 
       setAccentColor: (color) => set({ accentColor: color }),
       setDefaultMovieServer: (server) => set({ defaultMovieServer: server }),
@@ -17,6 +19,8 @@ const useSettingsStore = create(
       setConfirmRemove: (confirm) => set({ confirmRemove: confirm }),
       setShowAdNotice: (show) => set({ showAdNotice: show }),
       setCustomCursor: (show) => set({ customCursor: show }),
+      setShowFeedbackPopup: (show) => set({ showFeedbackPopup: show }),
+      setFeedbackTheme: (theme) => set({ feedbackTheme: theme }),
 
       resetSettings: () => set({
         accentColor: "#6366f1",
@@ -25,6 +29,8 @@ const useSettingsStore = create(
         confirmRemove: true,
         showAdNotice: true,
         customCursor: true,
+        showFeedbackPopup: true,
+        feedbackTheme: "classic",
       }),
     }),
     {
