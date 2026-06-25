@@ -1,30 +1,39 @@
-import TvDisplay from "@/components/display/TvDisplay";
-import TvClient from "./TvClient";
+import React from 'react';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid2';
+import LiteCard from '@/components/lite/LiteCard';
 
-async function getData() {
+async function getSeries() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
-  const resp = await fetch(
-    `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&page=1`,
-    {
-      next: {
-        revalidate: 3600, // Cache for 1 hour
-      },
-    },
-  );
-
-  if (!resp.ok) {
-    throw new Error("Failed to fetch data");
+  if (!apiKey || apiKey === "dummy") return [];
+  try {
+    const url = `https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&language=en-US&page=1`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.results || [];
+  } catch (e) {
+    return [];
   }
-
-  const data = await resp.json();
-  return data.results;
 }
 
-const Series = async () => {
-  const seriesData = await getData();
+export default async function LiteSeriesPage() {
+  const series = await getSeries();
 
-  return <TvClient series={seriesData} />;
-};
+  return (
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 800 }}>
+        Popular Series
+      </Typography>
 
-export default Series;
+      <Grid container spacing={2}>
+        {series.map((item) => (
+          <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={item.id}>
+            <LiteCard item={{...item, media_type: 'tv'}} />
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+}
