@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from "react";
 import useSettingsStore from "@/components/settings-store";
 import ThemeWrapper, { PageContainer } from "@/components/themewrappr";
-import { MOVIE_SERVERS, TV_SERVERS } from "@/lib/config";
 import { FEEDBACK_THEMES } from "@/lib/feedback-themes";
 import { SITE_THEMES } from "@/lib/themes";
+// Import the server action directly to call it from the client
+import { getVideoSources } from "@/lib/video-sources";
 import {
   Palette,
   Server,
@@ -20,6 +21,7 @@ import {
   MessageSquare,
   Sun,
   Moon,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,8 +39,31 @@ const SettingsPage = () => {
   const [mounted, setMounted] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
 
+  // Dynamic server sources state
+  const [movieServers, setMovieServers] = useState([]);
+  const [tvServers, setTvServers] = useState([]);
+  const [loadingServers, setLoadingServers] = useState(true);
+
   useEffect(() => {
     setMounted(true);
+
+    // Fetch dynamic video sources from the database on mount
+    const fetchServers = async () => {
+      try {
+        const [movies, tv] = await Promise.all([
+          getVideoSources("movie"),
+          getVideoSources("tv"),
+        ]);
+        setMovieServers(movies || []);
+        setTvServers(tv || []);
+      } catch (error) {
+        console.error("Failed to load dynamic video sources:", error);
+      } finally {
+        setLoadingServers(false);
+      }
+    };
+
+    fetchServers();
   }, []);
 
   if (!mounted) return null;
@@ -60,7 +85,9 @@ const SettingsPage = () => {
           <Icon size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">
+            {title}
+          </h2>
           <p className="text-sm text-neutral-500 font-medium">{description}</p>
         </div>
       </div>
@@ -71,21 +98,28 @@ const SettingsPage = () => {
   const ToggleCard = ({ title, description, value, onToggle, icon: Icon }) => (
     <div
       className="group flex items-center justify-between p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl hover:border-white/10 transition-all cursor-pointer"
-      onClick={() => { onToggle(!value); triggerToast(); }}
+      onClick={() => {
+        onToggle(!value);
+        triggerToast();
+      }}
     >
       <div className="flex items-center gap-4">
         {Icon && (
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${value ? 'bg-indigo-500/10 text-indigo-400' : 'bg-white/5 text-neutral-500'}`}>
+          <div
+            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${value ? "bg-indigo-500/10 text-indigo-400" : "bg-white/5 text-neutral-500"}`}
+          >
             <Icon size={18} />
           </div>
         )}
         <div>
-          <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{title}</h3>
+          <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+            {title}
+          </h3>
           <p className="text-xs text-neutral-500 mt-0.5">{description}</p>
         </div>
       </div>
       <div
-        className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${value ? 'bg-indigo-600' : 'bg-neutral-800'}`}
+        className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${value ? "bg-indigo-600" : "bg-neutral-800"}`}
       >
         <motion.div
           animate={{ x: value ? 26 : 2 }}
@@ -98,17 +132,20 @@ const SettingsPage = () => {
 
   return (
     <PageContainer>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto mt-16">
         <header className="mb-16">
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest">Configuration</span>
+            <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest">
+              Configuration
+            </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-4">
             Settings
           </h1>
           <p className="text-neutral-400 text-lg max-w-xl">
-            Personalize your viewing experience. These settings are saved locally to your browser.
+            Personalize your viewing experience. These settings are saved
+            locally to your browser.
           </p>
         </header>
 
@@ -118,76 +155,25 @@ const SettingsPage = () => {
           title="Theming"
           description="Customize the visual appearance of Cmoon."
         >
-          {/* Site Theme Selection */}
           <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl mb-4">
-            <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
-              <Monitor size={16} className="text-indigo-400" />
-              Site Theme
+            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+              Accent Color
             </h3>
-
-            <div className="space-y-8">
-              {/* Dark Themes */}
-              <div>
-                <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <Moon size={12} /> Dark Modes
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {Object.entries(SITE_THEMES).filter(([_, t]) => t.type === 'dark').map(([key, theme]) => (
-                    <button
-                      key={key}
-                      onClick={() => { settings.setSiteTheme(key); triggerToast(); }}
-                      className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === key ? 'border-white bg-white/10 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
-                    >
-                      <div className="w-full aspect-video rounded-md overflow-hidden border border-white/10 flex">
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.background})` }} />
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
-                      </div>
-                      <span className="text-[10px] font-bold uppercase truncate w-full text-center">{theme.name}</span>
-                      {settings.siteTheme === key && <div className="absolute -top-2 -right-2 bg-white text-black rounded-full p-0.5 shadow-lg"><Check size={10} /></div>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Light Themes */}
-              <div>
-                <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <Sun size={12} /> Light Modes
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {Object.entries(SITE_THEMES).filter(([_, t]) => t.type === 'light').map(([key, theme]) => (
-                    <button
-                      key={key}
-                      onClick={() => { settings.setSiteTheme(key); triggerToast(); }}
-                      className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === key ? 'border-indigo-500 bg-indigo-50 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
-                    >
-                      <div className="w-full aspect-video rounded-md overflow-hidden border border-black/5 flex">
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.background})` }} />
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
-                         <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
-                      </div>
-                      <span className={`text-[10px] font-bold uppercase truncate w-full text-center ${settings.siteTheme === key ? 'text-indigo-900' : 'text-neutral-400'}`}>{theme.name}</span>
-                      {settings.siteTheme === key && <div className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full p-0.5 shadow-lg"><Check size={10} /></div>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl mb-4">
-            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Accent Color</h3>
             <div className="flex flex-wrap gap-4">
               {ACCENT_COLORS.map((color) => (
                 <button
                   key={color.value}
-                  onClick={() => { settings.setAccentColor(color.value); triggerToast(); }}
-                  className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${settings.accentColor === color.value ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+                  onClick={() => {
+                    settings.setAccentColor(color.value);
+                    triggerToast();
+                  }}
+                  className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${settings.accentColor === color.value ? "border-white scale-110" : "border-transparent hover:scale-105"}`}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
                 >
-                  {settings.accentColor === color.value && <Check size={20} className="text-white drop-shadow-md" />}
+                  {settings.accentColor === color.value && (
+                    <Check size={20} className="text-white drop-shadow-md" />
+                  )}
                 </button>
               ))}
             </div>
@@ -209,32 +195,80 @@ const SettingsPage = () => {
           description="Choose your preferred streaming sources."
         >
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+            {/* Default Movie Server Dropdown */}
+            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl relative">
               <div className="flex items-center gap-2 mb-4 text-neutral-400">
                 <Monitor size={16} />
-                <h3 className="text-xs font-bold uppercase tracking-wider">Default Movie Server</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider">
+                  Default Movie Server
+                </h3>
               </div>
-              <select
-                value={settings.defaultMovieServer}
-                onChange={(e) => { settings.setDefaultMovieServer(e.target.value); triggerToast(); }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
-              >
-                {MOVIE_SERVERS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900">{s.name}</option>)}
-              </select>
+              {loadingServers ? (
+                <div className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center gap-2 text-xs text-neutral-500">
+                  <Loader2 size={14} className="animate-spin text-indigo-400" />
+                  Loading Movie Servers...
+                </div>
+              ) : (
+                <select
+                  value={settings.defaultMovieServer}
+                  onChange={(e) => {
+                    settings.setDefaultMovieServer(e.target.value);
+                    triggerToast();
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  {movieServers.map((s) => (
+                    <option
+                      key={s.id || s.name}
+                      value={s.name}
+                      className="bg-neutral-900"
+                    >
+                      {s.name}
+                    </option>
+                  ))}
+                  {movieServers.length === 0 && (
+                    <option className="bg-neutral-900">No servers found</option>
+                  )}
+                </select>
+              )}
             </div>
 
-            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+            {/* Default TV Server Dropdown */}
+            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl relative">
               <div className="flex items-center gap-2 mb-4 text-neutral-400">
                 <Tv size={16} />
-                <h3 className="text-xs font-bold uppercase tracking-wider">Default TV Server</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider">
+                  Default TV Server
+                </h3>
               </div>
-              <select
-                value={settings.defaultTvServer}
-                onChange={(e) => { settings.setDefaultTvServer(e.target.value); triggerToast(); }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
-              >
-                {TV_SERVERS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900">{s.name}</option>)}
-              </select>
+              {loadingServers ? (
+                <div className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center gap-2 text-xs text-neutral-500">
+                  <Loader2 size={14} className="animate-spin text-indigo-400" />
+                  Loading TV Servers...
+                </div>
+              ) : (
+                <select
+                  value={settings.defaultTvServer}
+                  onChange={(e) => {
+                    settings.setDefaultTvServer(e.target.value);
+                    triggerToast();
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                >
+                  {tvServers.map((s) => (
+                    <option
+                      key={s.id || s.name}
+                      value={s.name}
+                      className="bg-neutral-900"
+                    >
+                      {s.name}
+                    </option>
+                  ))}
+                  {tvServers.length === 0 && (
+                    <option className="bg-neutral-900">No servers found</option>
+                  )}
+                </select>
+              )}
             </div>
           </div>
         </SettingSection>
@@ -274,8 +308,10 @@ const SettingsPage = () => {
             onToggle={settings.setShowFeedbackPopup}
           />
 
-          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Feedback Popup Theme</h3>
+          {/* <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl">
+            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+              Feedback Popup Theme
+            </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {Object.keys(FEEDBACK_THEMES).map((themeKey) => {
                 const theme = FEEDBACK_THEMES[themeKey];
@@ -283,13 +319,20 @@ const SettingsPage = () => {
                 return (
                   <button
                     key={themeKey}
-                    onClick={() => { settings.setFeedbackTheme(themeKey); triggerToast(); }}
-                    className={`group relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${isActive ? 'border-white bg-white/10 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                    onClick={() => {
+                      settings.setFeedbackTheme(themeKey);
+                      triggerToast();
+                    }}
+                    className={`group relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${isActive ? "border-white bg-white/10 scale-105" : "border-white/5 bg-white/5 hover:border-white/20"}`}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${theme.bg} ${theme.border} border flex items-center justify-center`}>
+                    <div
+                      className={`w-8 h-8 rounded-lg ${theme.bg} ${theme.border} border flex items-center justify-center`}
+                    >
                       <div className={`w-2 h-2 rounded-full ${theme.pulse}`} />
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? 'text-white' : 'text-neutral-500 group-hover:text-neutral-300'}`}>
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? "text-white" : "text-neutral-500 group-hover:text-neutral-300"}`}
+                    >
                       {themeKey}
                     </span>
                     {isActive && (
@@ -301,7 +344,7 @@ const SettingsPage = () => {
                 );
               })}
             </div>
-          </div>
+          </div> */}
         </SettingSection>
 
         {/* DANGER ZONE */}
