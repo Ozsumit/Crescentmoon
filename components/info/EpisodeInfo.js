@@ -23,42 +23,10 @@ import {
   Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useSettingsStore from "@/components/settings-store";
+import { TV_SERVERS as DEFAULT_TV_SOURCES } from "@/lib/config";
 
 // --- CONSTANTS & HELPERS ---
-const DEFAULT_TV_SOURCES = [
-  {
-    name: "vidking",
-    url: "https://www.vidking.net/embed/tv/",
-    paramStyle: "path-slash",
-    icon: "Crown",
-    features: ["Recommended", "Fast"],
-    description: "Fast streaming with an interactive player.",
-  },
-  {
-    name: "VidLink",
-    url: "https://vidlink.pro/tv/",
-    paramStyle: "path-slash",
-    icon: "Play",
-    features: ["Recommended"],
-    description: "Fast loading with custom layout.",
-  },
-  {
-    name: "VidAPI",
-    url: "https://vaplayer.ru/embed/tv/",
-    paramStyle: "path-slash",
-    icon: "Webhook",
-    features: ["Recommended"],
-    description: "Highly stable Russian endpoint.",
-  },
-  {
-    name: "VidSrc",
-    url: "https://v2.vidsrc.me/embed/tv/",
-    paramStyle: "path-slash",
-    icon: "Languages",
-    features: ["Multi-Language"],
-    description: "Good for non-English audio files.",
-  },
-];
 
 const getIcon = (iconName, props = { className: "w-4 h-4" }) => {
   const icons = {
@@ -101,6 +69,8 @@ const EpisodeInfo = ({
       ? videoSources.filter((s) => s.active)
       : DEFAULT_TV_SOURCES;
 
+  const { defaultTvServer, showAdNotice } = useSettingsStore();
+
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(sources[0]);
   const [defaultServerName, setDefaultServerName] = useState("");
@@ -129,9 +99,9 @@ const EpisodeInfo = ({
   useEffect(() => {
     setIsMounted(true);
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
-    if (dismissed !== "true") setShowAdPopup(true);
+    if (dismissed !== "true" && showAdNotice) setShowAdPopup(true);
 
-    const savedDefault = localStorage.getItem("defaultTvServerName");
+    const savedDefault = defaultTvServer;
     const savedSession = sessionStorage.getItem("sessionTvServerName");
 
     if (savedDefault) setDefaultServerName(savedDefault);
@@ -140,7 +110,7 @@ const EpisodeInfo = ({
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
     setSelectedServer(initialServer);
-  }, [sources]);
+  }, [sources, defaultTvServer, showAdNotice]);
 
   // Click outside listener for dropdown
   useEffect(() => {

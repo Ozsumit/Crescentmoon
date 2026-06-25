@@ -1,10 +1,10 @@
 "use client";
-import ThemeWrapper from "@/components/themewrappr";
+import { PageContainer } from "@/components/themewrappr";
 import { ArrowRight } from "lucide-react";
 
 export default function Careers() {
   return (
-    <ThemeWrapper>
+    <PageContainer>
       <div className="max-w-4xl">
         <div className="flex items-center gap-4 mb-8">
           <span className="w-12 h-[1px] bg-black"></span>
@@ -45,6 +45,6 @@ export default function Careers() {
           </a>
         </div>
       </div>
-    </ThemeWrapper>
+    </PageContainer>
   );
 }

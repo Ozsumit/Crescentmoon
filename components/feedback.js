@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Star, Bug, Lightbulb, CheckCircle2, X } from "lucide-react";
 import { submitFeedback } from "../action"; // Adjust path as needed
+import useSettingsStore from "@/components/settings-store";
+import { FEEDBACK_THEMES } from "@/lib/feedback-themes";
 
 // ==========================================
 // 1. SHARED MICRO COMPONENTS
@@ -27,6 +29,9 @@ const TypeChip = ({ active, onClick, icon: Icon, label }) => (
 // 2. SHARED FORM LOGIC & UI (DRY Principle)
 // ==========================================
 const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
+  const { feedbackTheme } = useSettingsStore();
+  const theme = FEEDBACK_THEMES[feedbackTheme] || FEEDBACK_THEMES.classic;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,26 +65,26 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
     }
   };
 
-  // --- Dynamic Styles based on Component Type ---
+  // --- Dynamic Styles based on Component Type & Theme ---
   const pulseDotClass = isPopup
-    ? "bg-[#c3f0c2] shadow-[0_0_8px_#c3f0c2]"
+    ? theme.pulse
     : "bg-white/20";
 
   const successContainerClass = isPopup
     ? "flex flex-col items-center justify-center py-8 sm:py-10 text-center"
-    : "flex flex-col items-center justify-center py-8 sm:py-10 text-center border border-white/10 rounded-2xl bg-white/5";
+    : `flex flex-col items-center justify-center py-8 sm:py-10 text-center border border-white/10 rounded-2xl bg-white/5`;
 
   const focusBorderClass = isPopup
-    ? "focus:border-[#c3f0c2]/40"
+    ? `focus:border-white/40`
     : "focus:border-white/40";
 
   const submitBtnClass = isPopup
-    ? "bg-[#c3f0c2] text-black hover:bg-[#a6e8a5] shadow-[0_0_15px_rgba(195,240,194,0.3)]"
+    ? `${theme.accent} ${theme.accentText} shadow-[0_0_15px_rgba(255,255,255,0.2)]`
     : "bg-[#c3f0c2] text-black hover:bg-[#8bfca9]";
 
   return (
     <>
-      <h3 className="text-[11px] sm:text-xs font-mono text-neutral-500 uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2">
+      <h3 className={`text-[11px] sm:text-xs font-mono uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isPopup ? theme.text : "text-neutral-500"}`}>
         <span
           className={`w-2 h-2 rounded-full animate-pulse ${pulseDotClass}`}
         ></span>
@@ -264,6 +269,11 @@ export function PopupDeveloperFeedback() {
     localStorage.setItem("feedback_dismissed", Date.now().toString());
   };
 
+  const { showFeedbackPopup, feedbackTheme } = useSettingsStore();
+  const theme = FEEDBACK_THEMES[feedbackTheme] || FEEDBACK_THEMES.classic;
+
+  if (!showFeedbackPopup) return null;
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -278,17 +288,17 @@ export function PopupDeveloperFeedback() {
             Swiss Style Container: 
             Thick borders, deep corners, solid off-set shadow 
           */}
-          <div className="bg-neutral-950 border-4 border-white rounded-[2rem] shadow-[0px_0px_0px_0px_rgba(255,255,255,1)] p-6 sm:p-8 flex flex-col gap-6 relative">
+          <div className={`${theme.bg} border-4 ${theme.border} rounded-[2rem] p-6 sm:p-8 flex flex-col gap-6 relative transition-colors duration-500`}>
             {/* Header Area */}
             <div className="flex items-start justify-between">
-              <h2 className="text-3xl font-black uppercase tracking-tighter leading-none text-white">
+              <h2 className={`text-3xl font-black uppercase tracking-tighter leading-none ${theme.text}`}>
                 Feedback
                 <br />
                 Loop.
               </h2>
               <button
                 onClick={handleDismiss}
-                className="w-10 h-10 flex items-center justify-center bg-white text-black rounded-full hover:bg-neutral-200 transition-colors"
+                className={`w-10 h-10 flex items-center justify-center ${theme.accent} ${theme.accentText} rounded-full hover:opacity-80 transition-colors`}
               >
                 <X size={20} />
               </button>

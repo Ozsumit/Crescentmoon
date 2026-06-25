@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Play,
   Star,
@@ -20,45 +20,68 @@ import {
   Crown,
   Settings2,
   Download,
+  // Added common lucide icons used for server sources:
+  Tv,
+  Database,
+  Globe,
+  Hd,
+  Layers,
+  HardDrive,
+  Video,
+  Link,
+  Cpu,
+  Shield,
+  Monitor,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import useSettingsStore from "@/components/settings-store";
+import { MOVIE_SERVERS as DEFAULT_VIDEO_SOURCES } from "@/lib/config";
 
-const getIcon = (iconName, props = { className: "w-3.5 h-3.5" }) => {
+// Case-insensitive lookup dictionary with typical server fallback options
+const getIcon = (iconName, props = {}) => {
   const icons = {
-    Play,
-    Star,
-    Clock,
-    Calendar,
-    Server,
-    Heart,
-    Share2,
-    Film,
-    List,
-    Clapperboard,
-    Zap,
-    Languages,
-    Check,
-    Webhook,
-    ShieldAlert,
-    X,
-    Crown,
-    Settings2,
-    Download,
+    play: Play,
+    star: Star,
+    clock: Clock,
+    calendar: Calendar,
+    server: Server,
+    heart: Heart,
+    share2: Share2,
+    film: Film,
+    list: List,
+    clapperboard: Clapperboard,
+    zap: Zap,
+    languages: Languages,
+    check: Check,
+    webhook: Webhook,
+    shieldalert: ShieldAlert,
+    x: X,
+    crown: Crown,
+    settings2: Settings2,
+    download: Download,
+    tv: Tv,
+    database: Database,
+    globe: Globe,
+    layers: Layers,
+    harddrive: HardDrive,
+    video: Video,
+    link: Link,
+    cpu: Cpu,
+    shield: Shield,
+    monitor: Monitor,
   };
-  const IconComponent = icons[iconName] || Play;
+
+  if (!iconName) return <Play {...props} />;
+
+  // Normalize name to lowercase and strip non-alphanumeric characters (e.g., "hard-drive" -> "harddrive")
+  const normalizedKey = iconName
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]/g, "");
+  const IconComponent = icons[normalizedKey] || Play;
   return <IconComponent {...props} />;
 };
-
-// --- DEFAULT VIDEO SOURCES IF NONE PROVIDED ---
-const DEFAULT_VIDEO_SOURCES = [
-  {
-    name: "Server 1",
-    url: "https://vidsrc.me/embed/movie/",
-    paramStyle: "path-slash",
-    features: ["HD", "Multi-Sub"],
-    description: "Primary fast streaming node",
-  },
-];
 
 // --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
@@ -76,9 +99,12 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
 // --- MAIN COMPONENT ---
 
 const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
-  const activeSources = videoSources.filter((s) => s.active);
-  const sources =
-    activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
+  const sources = useMemo(() => {
+    const activeSources = videoSources.filter((s) => s.active);
+    return activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
+  }, [videoSources]);
+
+  const { defaultMovieServer, showAdNotice } = useSettingsStore();
 
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(sources[0]);
@@ -100,18 +126,21 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   useEffect(() => {
     setIsMounted(true);
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
-    if (dismissed !== "true") setShowAdPopup(true);
+    if (dismissed !== "true" && showAdNotice) setShowAdPopup(true);
 
-    const savedDefault = localStorage.getItem("defaultServerName");
+    const savedDefault = defaultMovieServer;
     const savedSession = sessionStorage.getItem("sessionServerName");
 
     if (savedDefault) setDefaultServerName(savedDefault);
 
-    const initialServerName = savedSession || savedDefault || sources[0].name;
+    const initialServerName = savedSession || savedDefault || sources[0]?.name;
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
-    setSelectedServer(initialServer);
-  }, [sources]);
+
+    if (initialServer) {
+      setSelectedServer(initialServer);
+    }
+  }, [sources, defaultMovieServer, showAdNotice]);
 
   // --- DATA FETCHING & PROGRESS TRACKING ---
   useEffect(() => {
@@ -377,55 +406,59 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
             {/* --- IMPROVED MATERIAL SOURCE CARD --- */}
             <div className="bg-[#121212] rounded-2xl border border-white/5 shadow-xl overflow-hidden mb-8 flex flex-col">
               {/* 1. Active Source Display (Header) */}
-              <div className="p-5 border-b border-white/5 bg-white/[0.02] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none" />
+              {selectedServer && (
+                <div className="p-5 border-b border-white/5 bg-white/[0.02] relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none" />
 
-                <div className="flex items-start justify-between relative z-10 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 shrink-0 shadow-inner">
-                      {typeof selectedServer.icon === "string"
-                        ? getIcon(selectedServer.icon)
-                        : selectedServer.icon}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                          {selectedServer.name}
-                        </h3>
-                        {selectedServer.name === defaultServerName && (
-                          <span className="bg-yellow-500/10 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
-                            <Star size={8} className="fill-current" /> Default
-                          </span>
-                        )}
+                  <div className="flex items-start justify-between relative z-10 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 shrink-0 shadow-inner">
+                        {typeof selectedServer.icon === "string"
+                          ? getIcon(selectedServer.icon, {
+                              className: "w-5 h-5",
+                            })
+                          : selectedServer.icon}
                       </div>
-                      <p className="text-[11px] text-neutral-400 mt-1">
-                        {selectedServer.description}
-                      </p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                            {selectedServer.name}
+                          </h3>
+                          {selectedServer.name === defaultServerName && (
+                            <span className="bg-yellow-500/10 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                              <Star size={8} className="fill-current" /> Default
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-neutral-400 mt-1">
+                          {selectedServer.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="flex gap-1.5 flex-wrap">
-                    {selectedServer.features?.map((f, i) => (
-                      <span
-                        key={i}
-                        className="px-2.5 py-1 bg-[#1a1a1a] text-neutral-300 border border-white/5 rounded-md text-[9px] uppercase font-bold tracking-wider"
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {selectedServer.features?.map((f, i) => (
+                        <span
+                          key={i}
+                          className="px-2.5 py-1 bg-[#1a1a1a] text-neutral-300 border border-white/5 rounded-md text-[9px] uppercase font-bold tracking-wider"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                    {isMounted && selectedServer.name !== defaultServerName && (
+                      <button
+                        onClick={() => handleSetDefault(selectedServer.name)}
+                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg ml-auto border border-indigo-500/20"
                       >
-                        {f}
-                      </span>
-                    ))}
+                        <Star size={12} /> Set Default
+                      </button>
+                    )}
                   </div>
-                  {isMounted && selectedServer.name !== defaultServerName && (
-                    <button
-                      onClick={() => handleSetDefault(selectedServer.name)}
-                      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg ml-auto border border-indigo-500/20"
-                    >
-                      <Star size={12} /> Set Default
-                    </button>
-                  )}
                 </div>
-              </div>
+              )}
 
               {/* 2. Available Sources Grid (Body) */}
               <div className="p-5 bg-[#0a0a0a]/50">
@@ -440,7 +473,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2">
                   {sources.map((s) => {
-                    const active = selectedServer.name === s.name;
+                    const active = selectedServer?.name === s.name;
                     const isDefault = s.name === defaultServerName;
                     return (
                       <button
@@ -460,7 +493,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
                             className={`shrink-0 transition-colors ${active ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-400"}`}
                           >
                             {typeof s.icon === "string"
-                              ? getIcon(s.icon)
+                              ? getIcon(s.icon, { className: "w-4 h-4" })
                               : s.icon}
                           </div>
                           <span
@@ -656,7 +689,7 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
 
           {/* Player Container */}
           <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_rgba(0,0,0,1)] lg:border border-white/10 z-10 bg-[#050505] lg:ring-1 ring-white/5 group">
-            {isMounted ? (
+            {isMounted && iframeSrc ? (
               <iframe
                 src={iframeSrc}
                 className="w-full h-full absolute inset-0 z-10 bg-black"

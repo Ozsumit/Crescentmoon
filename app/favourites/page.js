@@ -120,17 +120,17 @@ const Favorites = () => {
   // --- LOADING STATE ---
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-1 bg-white/10 overflow-hidden rounded-full">
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
               transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="w-1/2 h-full bg-indigo-500"
+              className="w-1/2 h-full bg-primary"
             />
           </div>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
             Loading_Data...
           </p>
         </div>
@@ -139,7 +139,7 @@ const Favorites = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-neutral-950 text-white relative selection:bg-indigo-500/30">
+    <div className="min-h-screen pt-24 pb-20 bg-background text-foreground relative selection:bg-primary/30">
       {/* Background Texture */}
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 

@@ -1,10 +1,10 @@
 "use client";
-import ThemeWrapper from "@/components/themewrappr";
+import { PageContainer } from "@/components/themewrappr";
 import { Download, Image as ImageIcon } from "lucide-react";
 
 export default function PressKit() {
   return (
-    <ThemeWrapper>
+    <PageContainer>
       <div className="max-w-5xl">
         <div className="flex items-center gap-4 mb-8">
           <span className="w-12 h-[1px] bg-black"></span>
@@ -66,6 +66,6 @@ export default function PressKit() {
           ))}
         </div>
       </div>
-    </ThemeWrapper>
+    </PageContainer>
   );
 }
