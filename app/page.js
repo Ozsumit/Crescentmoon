@@ -1,56 +1,61 @@
-// "use client";
-import SpotlightCarousel from "@/components/display/carausel";
-import HomeDisplay from "@/components/display/HomeDisplay";
-import HomeFilter from "@/components/filter/HomeFilter";
-import SearchBar from "@/components/searchbar/SearchBar";
-import Title from "@/components/title/Title";
-import TvDisplay from "@/components/display/TvDisplay";
-import WelcomeModal from "@/components/welcome";
-import AdblockerModal from "@/components/adblockmodel";
+import React from 'react';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid2';
+import LiteCard from '@/components/lite/LiteCard';
+import Box from '@mui/material/Box';
 
-async function getData() {
+async function getTrending() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  const resp = await fetch(
-    // `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
-    `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`,
-    {
-      next: {
-        revalidate: 3600, // Cache for 1 hour
-      },
-    }
-  );
+  if (!apiKey || apiKey === "dummy") return [];
+  try {
+    const resp = await fetch(
+        `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`,
+        {
+          next: {
+            revalidate: 3600,
+          },
+        }
+      );
 
-  if (!resp.ok) {
-    console.error(`Error: ${resp.status} ${resp.statusText}`);
-    throw new Error("Pussycat API error");
+      if (!resp.ok) {
+        return [];
+      }
+      const data = await resp.json();
+      return data.results || [];
+  } catch (e) {
+      return [];
   }
-  const data = await resp.json();
-  if (!data.results) {
-    console.error("Error: 'results' field is missing in the API response");
-    throw new Error("Invalid API tung tung tung tung tung sahurrr response");
-  }
-  let res = data.results;
-  return res;
 }
 
-export default async function Home() {
-  const data = await getData();
-  return (
-    <div className=" m-0 bg-background h-auto">
-    {/* <Title /> */}
-      <SpotlightCarousel />
-      {/* <SearchBar /> */}
-      {/* <HomeFilter /> */}
-      {/* <h1>Trending Movies</h1> div*/}
-      <div className="w-full flex px-0 sm:px-4  justify-center items-center">
-        <HomeDisplay movies={data} />
-      </div>
-      {/* <WelcomeModal /> */}
-      {/* // Auto-show on first visit or version update */}
-      {/* <WelcomeModal onClose={() => {}} /> */}
+export default async function LiteHome() {
+  const trending = await getTrending();
 
-      {/* // Or use the trigger button */}
-      <AdblockerModal />
-    </div>
+  return (
+    <Container sx={{ py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, color: 'primary.main' }}>
+          Cmoon Lite
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Minimalist, fast streaming experience.
+        </Typography>
+      </Box>
+
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+        Trending Now
+      </Typography>
+
+      <Grid container spacing={2}>
+        {trending.map((item) => (
+          <Grid size={{ xs: 6, sm: 4, md: 3, lg: 2 }} key={item.id}>
+            <LiteCard item={item} />
+          </Grid>
+        ))}
+        {trending.length === 0 && (
+            <Typography>No content available at the moment.</Typography>
+        )}
+      </Grid>
+    </Container>
   );
 }

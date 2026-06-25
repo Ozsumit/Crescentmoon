@@ -1,171 +1,48 @@
-import MovieInfo from "@/components/info/MovieInfo";
-import { getVideoSources } from "@/lib/video-sources";
+import React from 'react';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import LitePlayer from '@/components/lite/LitePlayer';
+import { MOVIE_SERVERS } from '@/lib/config';
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
-
-export async function getData(id) {
+async function getMovie(id) {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
-  if (!apiKey) {
-    console.error("TMDB API Key is missing. Check your environment variables.");
-    throw new Error("TMDB API Key is not configured.");
-  }
-
-  const url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits,videos`;
-
-  const res = await fetch(url, {
-    next: {
-      revalidate: 1800, // Cache for 30 minutes
-    },
-  });
-
-  if (!res.ok) {
-    // Log the actual error status to help with debugging
-    console.error(`TMDB API returned status ${res.status} for ID: ${id}`);
-    throw new Error(`Failed to fetch movie data: ${res.statusText}`);
-  }
-
-  const data = await res.json();
-  const genreArr = data?.genres?.map((genre) => genre.name) || [];
-
-  return { data, genreArr, id };
+  const url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits`;
+  const res = await fetch(url, { next: { revalidate: 1800 } });
+  if (!res.ok) return null;
+  return res.json();
 }
 
-/**
- * ✅ Dynamic SEO Metadata
- */
-export async function generateMetadata({ params }) {
-  // Awaiting params for Next.js 15 compatibility
+export default async function LiteMoviePage({ params }) {
   const resolvedParams = await params;
-  const { id } = resolvedParams;
+  const id = resolvedParams.id;
+  const movie = await getMovie(id);
 
-  try {
-    const { data, genreArr } = await getData(id);
-
-    const title = `${data.title} (${data.release_date?.slice(0, 4)}) - | Cmoon`;
-
-    const description =
-      data.overview?.slice(0, 155) ||
-      `Watch ${data.title} online in HD quality on Cmoon.`;
-
-    const poster = data.poster_path
-      ? `https://image.tmdb.org/t/p/w780${data.poster_path}`
-      : `${BASE_URL}/og-image.jpg`;
-
-    const keywords = [
-      data.title,
-      ...genreArr,
-      "watch movies online",
-      "stream movies",
-      "HD movies",
-      "Cmoon",
-    ];
-
-    return {
-      title,
-      description,
-      keywords,
-      alternates: {
-        canonical: `${BASE_URL}/movie/${id}`,
-      },
-      openGraph: {
-        title,
-        description,
-        url: `${BASE_URL}/movie/${id}`,
-        siteName: "Cmoon",
-        images: [
-          {
-            url: poster,
-            width: 1280,
-            height: 720,
-            alt: data.title,
-          },
-        ],
-        locale: "en_US",
-        type: "video.movie",
-      },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: [poster],
-      },
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-video-preview": -1,
-          "max-image-preview": "large",
-          "max-snippet": -1,
-        },
-      },
-      metadataBase: new URL(BASE_URL),
-      category: "entertainment",
-    };
-  } catch (error) {
-    console.error("Error generating metadata:", error);
-    return {
-      title: "Movie Not Found | Cmoon",
-      description: "The requested movie could not be found.",
-    };
-  }
-}
-
-/**
- * ✅ JSON-LD Structured Data
- */
-function generateMovieSchema(data, id) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Movie",
-    name: data.title,
-    image: `https://image.tmdb.org/t/p/w780${data.poster_path}`,
-    description: data.overview,
-    datePublished: data.release_date,
-    aggregateRating: data.vote_average
-      ? {
-          "@type": "AggregateRating",
-          ratingValue: data.vote_average,
-          ratingCount: data.vote_count,
-        }
-      : undefined,
-    url: `${BASE_URL}/movie/${id}`,
-  };
-}
-
-const MovieDetail = async ({ params }) => {
-  // Awaiting params for Next.js 15 compatibility
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-
-  const [{ data, genreArr }, videoSources] = await Promise.all([
-    getData(id),
-    getVideoSources("movie"),
-  ]);
-
-  const jsonLd = generateMovieSchema(data, id);
+  if (!movie) return <Typography>Movie not found</Typography>;
 
   return (
-    <>
-      {/* ✅ Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd),
-        }}
-      />
+    <Container sx={{ py: 4 }}>
+      <LitePlayer id={id} servers={MOVIE_SERVERS} type="movie" />
 
-      <MovieInfo
-        MovieDetail={data}
-        genreArr={genreArr}
-        id={id}
-        videoSources={videoSources}
-      />
-    </>
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+          {movie.title}
+        </Typography>
+
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Chip label={movie.release_date?.slice(0, 4)} size="small" variant="outlined" />
+          <Chip label={`${movie.vote_average?.toFixed(1)} ⭐`} size="small" sx={{ backgroundColor: 'secondary.container' }} />
+          {movie.genres?.map((g) => (
+            <Chip key={g.id} label={g.name} size="small" variant="filled" />
+          ))}
+        </Stack>
+
+        <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+          {movie.overview}
+        </Typography>
+      </Box>
+    </Container>
   );
-};
-
-export default MovieDetail;
+}
