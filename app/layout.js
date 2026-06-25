@@ -194,7 +194,7 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body className="bg-neutral-950 text-white antialiased">
+      <body className="bg-slate-950 text-white antialiased">
         <ThemeWrapper>
           <Header />
 
