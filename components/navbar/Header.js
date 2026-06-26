@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import LiteModeBanner from "@/components/litemodebanner";
+
 import {
   Home,
   Film,
@@ -96,6 +98,9 @@ const Header = () => {
             : "bg-black/98 backdrop-blur-md border-transparent"
         }`}
       >
+        {/* --- LITE MODE BANNER --- */}
+        <LiteModeBanner />
+
         {/* --- ALTERNATE DOMAIN NOTICE TOP BANNER --- */}
         <AnimatePresence>
           {showDomainNotice && (

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import ThemeWrapper from "@/components/themewrappr";
 import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
+// import LiteModeBanner from "@/components/litemodebanner";
 
 const PopupDeveloperFeedback = dynamic(() =>
   import("@/components/feedback").then((mod) => mod.PopupDeveloperFeedback),
@@ -142,11 +143,11 @@ export default function RootLayout({ children }) {
 
         {/* Structured Data */}
         {/* <!-- Cloudflare Web Analytics --> */}
-        <script
+        <Script
           defer
           src="https://cloud.umami.is/script.js"
           data-website-id="ef34f090-3fa5-4f40-a41e-eb05a3710d1b"
-        ></script>
+        ></Script>
         <Script id="clarity-script" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
@@ -169,13 +170,13 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-9B1XNB1F0D');
           `}
         </Script>
-        <script
+        <Script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
           data-cf-beacon='{"token": "de022bcad822493286b101c58245c2b9"}'
-        ></script>
+        ></Script>
         {/* <!-- End Cloudflare Web Analytics --> */}
-        <script
+        <Script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -197,11 +198,17 @@ export default function RootLayout({ children }) {
       <body className="bg-slate-950 text-white antialiased">
         <ThemeWrapper>
           <Header />
+          {/* <LiteModeBanner /> */}
 
           <main>{children}</main>
           <CookieConsent />
           <PopupDeveloperFeedback />
+          <main>{children}</main>
+          <CookieConsent />
+          <PopupDeveloperFeedback />
 
+          <Footer />
+          {/* </ThemeWrapper> */}
           <Footer />
         </ThemeWrapper>
       </body>
