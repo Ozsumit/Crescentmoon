@@ -43,7 +43,7 @@ export default async function Home() {
       {/* <HomeFilter /> */}
       {/* <h1>Trending Movies</h1> div*/}
       <div className="w-full flex px-0 sm:px-4  justify-center items-center">
-        <HomeDisplay movies={data} />
+        <HomeDisplay initialData={data} />
       </div>
       {/* <WelcomeModal /> */}
       {/* // Auto-show on first visit or version update */}

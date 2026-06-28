@@ -1,5 +1,6 @@
 import EpisodeInfo from "@/components/info/EpisodeInfo";
 import { getVideoSources } from "@/lib/video-sources";
+import { cache } from "react";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
@@ -7,14 +8,14 @@ const BASE_URL =
 /**
  * ✅ Fetch Episode Data
  */
-async function fetchEpisodeData(id, seasonid, epid) {
+export const fetchEpisodeData = cache(async (id, seasonid, epid) => {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   if (!id || !seasonid || !epid) {
     throw new Error("Missing required parameters");
   }
 
-  const [seriesResp, seasonResp, episodeResp] = await Promise.all([
+  const [seriesResp, seasonResp, episodeResp, recsResp] = await Promise.all([
     fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`, {
       next: { revalidate: 3600 },
     }),
@@ -32,20 +33,28 @@ async function fetchEpisodeData(id, seasonid, epid) {
         next: { revalidate: 3600 },
       },
     ),
+
+    fetch(
+      `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${apiKey}`,
+      {
+        next: { revalidate: 3600 },
+      },
+    ),
   ]);
 
   if (!seriesResp.ok || !seasonResp.ok || !episodeResp.ok) {
     throw new Error("Failed to fetch data");
   }
 
-  const [seriesData, seasonData, episodeData] = await Promise.all([
+  const [seriesData, seasonData, episodeData, recsData] = await Promise.all([
     seriesResp.json(),
     seasonResp.json(),
     episodeResp.json(),
+    recsResp.ok ? recsResp.json() : { results: [] },
   ]);
 
-  return { seriesData, seasonData, episodeData };
-}
+  return { seriesData, seasonData, episodeData, recommendations: recsData.results || [] };
+});
 
 /**
  * ✅ Dynamic SEO Metadata
@@ -201,6 +210,8 @@ export default async function EpisodeDetailsPage({ params }) {
             seasonData={data.seasonData}
             seriesData={data.seriesData}
             videoSources={videoSources}
+            cast={data.episodeData.credits?.cast || []}
+            recommendations={data.recommendations?.slice(0, 10) || []}
           />
         </div>
       </>

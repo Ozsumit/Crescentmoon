@@ -192,11 +192,18 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
 
 // --- MAIN PAGE ---
 
-const TvInfo = ({ TvDetail, genreArr, id }) => {
-  const [castInfo, setCastInfo] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const TvInfo = ({
+  TvDetail,
+  genreArr,
+  id,
+  castInfo: initialCast = [],
+  recommendations: initialRecommendations = [],
+  reviews: initialReviews = [],
+}) => {
+  const [castInfo, setCastInfo] = useState(initialCast);
+  const [recommendations, setRecommendations] = useState(initialRecommendations);
+  const [reviews, setReviews] = useState(initialReviews);
+  const [isLoading, setIsLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -247,38 +254,6 @@ const TvInfo = ({ TvDetail, genreArr, id }) => {
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favorites.some((item) => item.id === TvDetail.id));
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-        const [castRes, recRes, revRes] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/tv/${id}/credits?api_key=${apiKey}`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${apiKey}`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/tv/${id}/reviews?api_key=${apiKey}`
-          ),
-        ]);
-
-        const castData = await castRes.json();
-        const recData = await recRes.json();
-        const revData = await revRes.json();
-
-        setCastInfo(castData.cast?.slice(0, 10) || []);
-        setRecommendations(recData.results?.slice(0, 6) || []);
-        setReviews(revData.results?.slice(0, 5) || []);
-      } catch (error) {
-        showNotification("Error loading details");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
   }, [TvDetail.id, id]);
 
   return (

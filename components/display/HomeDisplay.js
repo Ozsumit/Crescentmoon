@@ -32,12 +32,13 @@ const HorizontalCardSkeleton = () => (
 );
 
 // --- MAIN COMPONENT ---
-const HomeDisplay = () => {
+const HomeDisplay = ({ initialData = [] }) => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
 
   const [contentData, setContentData] = useState({
-    movies: [],
-    tvShows: [],
+    movies: initialData.filter(i => i.media_type === "movie"),
+    tvShows: initialData.filter(i => i.media_type === "tv"),
+    all: initialData
   });
 
   // DEFAULT TAB = ALL
@@ -132,6 +133,12 @@ const HomeDisplay = () => {
 
   // FETCH LOGIC
   useEffect(() => {
+    // Skip initial fetch if initialData is provided and it's the first render for "all" tab
+    if (activeTab === "all" && initialData.length > 0 && contentData.all?.length > 0 && activeGenres.length === 0 && pageData.movies === 1 && pageData.tvShows === 1) {
+      // Data already initialized from props
+      return;
+    }
+
     if (activeTab === "all") {
       fetchContent("movies", pageData.movies, activeGenres);
       fetchContent("tvShows", pageData.tvShows, activeGenres);

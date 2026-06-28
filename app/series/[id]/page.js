@@ -1,24 +1,17 @@
 import TvInfo from "@/components/info/TvInfo";
+import { cache } from "react";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
 
-export async function getData(id) {
+export const getData = cache(async (id) => {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-  // 1. Diagnostic logs to check parameters (visible in your terminal console)
-  console.log("--- TMDB DIAGNOSTIC LOG ---");
-  console.log("Parsed ID:", id);
-  console.log("Type of ID:", typeof id);
-  console.log("API Key Configured:", !!apiKey);
-  
-  if (apiKey) {
-    console.log("API Key Preview:", apiKey.substring(0, 5) + "...");
-  } else {
-    console.warn("WARNING: NEXT_PUBLIC_TMDB_API_KEY is undefined.");
+  if (!apiKey) {
+    throw new Error("TMDB API Key is not configured.");
   }
 
-  const url = `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&append_to_response=credits,videos`;
+  const url = `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&append_to_response=credits,videos,recommendations,reviews`;
 
   try {
     const res = await fetch(url, {
@@ -27,29 +20,19 @@ export async function getData(id) {
       },
     });
 
-    // 2. If the response fails, check the actual HTTP status
     if (!res.ok) {
-      console.error(`TMDB Error Status: ${res.status} (${res.statusText})`);
-      try {
-        const errorBody = await res.json();
-        console.error("TMDB API Error Details:", JSON.stringify(errorBody, null, 2));
-      } catch {
-        console.error("Could not parse TMDB error body.");
-      }
       throw new Error(`Failed to Fetch data: HTTP ${res.status}`);
     }
 
     const data = await res.json();
     const genreArr = data.genres?.map((element) => element.name) || [];
 
-    console.log("--- TMDB FETCH SUCCESSFUL ---");
     return { data, genreArr, id };
-
   } catch (error) {
     console.error("Network Fetch Exception:", error.message);
     throw error;
   }
-}
+});
 
 /**
  * ✅ Dynamic SEO Metadata
@@ -189,7 +172,14 @@ const TvDetail = async ({ params }) => {
         }}
       />
 
-      <TvInfo TvDetail={data} genreArr={genreArr} id={id} />
+      <TvInfo
+        TvDetail={data}
+        genreArr={genreArr}
+        id={id}
+        castInfo={data.credits?.cast?.slice(0, 10) || []}
+        recommendations={data.recommendations?.results?.slice(0, 6) || []}
+        reviews={data.reviews?.results?.slice(0, 5) || []}
+      />
     </>
   );
 };

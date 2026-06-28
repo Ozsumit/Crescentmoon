@@ -71,9 +71,6 @@ const SpotlightCarousel = () => {
         const data = await response.json();
         const results = data.results?.slice(0, 10) || [];
         setSpotlights(results);
-        await Promise.all(
-          results.map((item) => fetchTrailer(item.id, item.media_type))
-        );
       } catch (error) {
         console.error("Error fetching spotlight data:", error);
       } finally {
@@ -119,6 +116,21 @@ const SpotlightCarousel = () => {
     if (!isLoading && spotlights.length > 0) startAutoplay();
     return () => stopAutoplay();
   }, [isPaused, currentSlide, isLoading, spotlights.length]);
+
+  useEffect(() => {
+    if (spotlights.length > 0) {
+      const currentItem = spotlights[currentSlide];
+      if (!trailers[currentItem.id]) {
+        fetchTrailer(currentItem.id, currentItem.media_type);
+      }
+      // Pre-fetch next trailer
+      const nextSlide = (currentSlide + 1) % spotlights.length;
+      const nextItem = spotlights[nextSlide];
+      if (!trailers[nextItem.id]) {
+        fetchTrailer(nextItem.id, nextItem.media_type);
+      }
+    }
+  }, [currentSlide, spotlights, trailers]);
 
   const handleNextSlide = () => {
     setShowTrailer(false);

@@ -3,6 +3,11 @@
 import { sql } from "@/lib/db";
 import { createId } from "@paralleldrive/cuid2";
 import { revalidatePath } from "next/cache";
+import {
+  getVideoSources as libGetVideoSources,
+  saveVideoSource as libSaveVideoSource,
+  deleteVideoSource as libDeleteVideoSource
+} from "@/lib/video-sources";
 
 const TIMEZONE = process.env.ANALYTICS_TIMEZONE || "Asia/Kathmandu";
 
@@ -40,20 +45,7 @@ export async function deleteFeedback(id) {
 
 export async function getVideoSources(type) {
   try {
-    if (type) {
-      return await sql`
-        SELECT *
-        FROM "VideoSource"
-        WHERE type = ${type}
-        ORDER BY priority DESC
-      `;
-    }
-
-    return await sql`
-      SELECT *
-      FROM "VideoSource"
-      ORDER BY priority DESC
-    `;
+    return await libGetVideoSources(type);
   } catch (error) {
     console.error("Error fetching video sources:", error);
     throw new Error("Could not retrieve video sources list.");
@@ -100,71 +92,28 @@ export async function saveVideoSource(data) {
         .map((f) => f.trim())
         .filter(Boolean);
     }
-    const features = JSON.stringify(featuresArray);
+
+    const formattedData = {
+      id,
+      name,
+      url,
+      params,
+      type,
+      priority,
+      active,
+      icon,
+      description,
+      download,
+      parseUrl,
+      paramStyle,
+      features: featuresArray
+    };
 
     if (!url) {
       return { success: false, error: "Base player URL is required." };
     }
 
-    if (id) {
-      await sql`
-        UPDATE "VideoSource"
-        SET
-          name = ${name},
-          url = ${url},
-          params = ${params},
-          type = ${type},
-          priority = ${priority},
-          active = ${active},
-          icon = ${icon},
-          features = ${features},
-          description = ${description},
-          download = ${download},
-          "parseUrl" = ${parseUrl},
-          "paramStyle" = ${paramStyle},
-          "updatedAt" = NOW()
-        WHERE id = ${id}
-      `;
-    } else {
-      await sql`
-        INSERT INTO "VideoSource" (
-          id,
-          name,
-          url,
-          params,
-          type,
-          priority,
-          active,
-          icon,
-          features,
-          description,
-          download,
-          "parseUrl",
-          "paramStyle",
-          "createdAt",
-          "updatedAt"
-        )
-        VALUES (
-          ${createId()},
-          ${name},
-          ${url},
-          ${params},
-          ${type},
-          ${priority},
-          ${active},
-          ${icon},
-          ${features},
-          ${description},
-          ${download},
-          ${parseUrl},
-          ${paramStyle},
-          NOW(),
-          NOW()
-        )
-      `;
-    }
-
-    revalidatePath("/abmin");
+    await libSaveVideoSource(formattedData);
     return { success: true };
   } catch (error) {
     console.error("Error saving video source:", error);
@@ -178,12 +127,7 @@ export async function deleteVideoSource(id) {
   }
 
   try {
-    await sql`
-      DELETE FROM "VideoSource"
-      WHERE id = ${id}
-    `;
-
-    revalidatePath("/abmin");
+    await libDeleteVideoSource(id);
     return { success: true };
   } catch (error) {
     console.error("Error deleting video source:", error);
