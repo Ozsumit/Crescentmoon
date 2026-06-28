@@ -1,10 +1,11 @@
 import MovieInfo from "@/components/info/MovieInfo";
 import { getVideoSources } from "@/lib/video-sources";
+import { cache } from "react";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://cmoon.sumit.info.np";
 
-export async function getData(id) {
+export const getData = cache(async (id) => {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   if (!apiKey) {
@@ -12,7 +13,7 @@ export async function getData(id) {
     throw new Error("TMDB API Key is not configured.");
   }
 
-  const url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits,videos`;
+  const url = `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&append_to_response=credits,videos,recommendations,reviews`;
 
   const res = await fetch(url, {
     next: {
@@ -30,7 +31,7 @@ export async function getData(id) {
   const genreArr = data?.genres?.map((genre) => genre.name) || [];
 
   return { data, genreArr, id };
-}
+});
 
 /**
  * ✅ Dynamic SEO Metadata
@@ -163,6 +164,9 @@ const MovieDetail = async ({ params }) => {
         genreArr={genreArr}
         id={id}
         videoSources={videoSources}
+        cast={data.credits?.cast?.slice(0, 10) || []}
+        recommendations={data.recommendations?.results?.slice(0, 12) || []}
+        reviews={data.reviews?.results?.slice(0, 5) || []}
       />
     </>
   );

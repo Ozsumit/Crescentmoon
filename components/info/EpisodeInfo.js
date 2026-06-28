@@ -63,6 +63,8 @@ const EpisodeInfo = ({
   seasonData,
   seriesData,
   videoSources = [],
+  cast: initialCast = [],
+  recommendations: initialRecommendations = [],
 }) => {
   const sources =
     videoSources.length > 0
@@ -78,8 +80,8 @@ const EpisodeInfo = ({
   const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
   const [iframeSrc, setIframeSrc] = useState("");
 
-  const [cast, setCast] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
+  const [cast, setCast] = useState(initialCast);
+  const [recommendations, setRecommendations] = useState(initialRecommendations);
   const [isFavorite, setIsFavorite] = useState(false);
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -127,32 +129,7 @@ const EpisodeInfo = ({
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favs.some((i) => i.id === seriesData.id));
-
-    const fetchRecs = async () => {
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
-        );
-        const data = await res.json();
-        setRecommendations(data.results.slice(0, 10));
-      } catch (e) {}
-    };
-    fetchRecs();
   }, [seriesId, seriesData.id]);
-
-  useEffect(() => {
-    const fetchCast = async () => {
-      if (!selectedEpisode) return;
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
-        );
-        const data = await res.json();
-        setCast(data.cast || []);
-      } catch (e) {}
-    };
-    fetchCast();
-  }, [seriesId, selectedEpisode]);
 
   // --- URL BUILDER ---
   useEffect(() => {
