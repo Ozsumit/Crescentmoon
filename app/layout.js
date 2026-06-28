@@ -203,12 +203,7 @@ export default function RootLayout({ children }) {
           <main>{children}</main>
           <CookieConsent />
           <PopupDeveloperFeedback />
-          <main>{children}</main>
-          <CookieConsent />
-          <PopupDeveloperFeedback />
 
-          <Footer />
-          {/* </ThemeWrapper> */}
           <Footer />
         </ThemeWrapper>
       </body>
