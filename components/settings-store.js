@@ -9,15 +9,22 @@ const getInitialMovieServer = () => {
   return "Server 1";
 };
 
+const getInitialTvServer = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("defaultTvServerName") || "server 1";
+  }
+  return "server 1";
+};
+
 const useSettingsStore = create(
   persist(
     (set) => ({
       accentColor: "#6366f1", // Default Indigo
       defaultMovieServer: getInitialMovieServer(),
-      defaultTvServer: "vidking",
+      defaultTvServer: getInitialTvServer(),
       confirmRemove: true,
       showAdNotice: true,
-      customCursor: true,
+      customCursor: false,
       showFeedbackPopup: true,
       feedbackTheme: "classic",
       siteTheme: "obsidian",
@@ -31,7 +38,13 @@ const useSettingsStore = create(
         set({ defaultMovieServer: server });
       },
 
-      setDefaultTvServer: (server) => set({ defaultTvServer: server }),
+      setDefaultTvServer: (server) => {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("defaultTvServerName", server);
+        }
+        set({ defaultTvServer: server });
+      },
+
       setConfirmRemove: (confirm) => set({ confirmRemove: confirm }),
       setShowAdNotice: (show) => set({ showAdNotice: show }),
       setCustomCursor: (show) => set({ customCursor: show }),
@@ -40,14 +53,18 @@ const useSettingsStore = create(
       setSiteTheme: (theme) => set({ siteTheme: theme }),
 
       resetSettings: () => {
-        const defaultServer = "Server 1";
+        const defaultMovieServer = "Server 1";
+        const defaultTvServer = "server 1";
+
         if (typeof window !== "undefined") {
-          localStorage.setItem("defaultServerName", defaultServer);
+          localStorage.setItem("defaultServerName", defaultMovieServer);
+          localStorage.setItem("defaultTvServerName", defaultTvServer);
         }
+
         set({
           accentColor: "#6366f1",
-          defaultMovieServer: defaultServer,
-          defaultTvServer: "vidking",
+          defaultMovieServer: defaultMovieServer,
+          defaultTvServer: defaultTvServer,
           confirmRemove: true,
           showAdNotice: true,
           customCursor: true,

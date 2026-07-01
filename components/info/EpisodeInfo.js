@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Play,
   Star,
@@ -63,13 +63,17 @@ const EpisodeInfo = ({
   seasonData,
   seriesData,
   videoSources = [],
+  cast: initialCast = [],
+  recommendations: initialRecommendations = [],
 }) => {
-  const sources =
-    videoSources.length > 0
-      ? videoSources.filter((s) => s.active)
-      : DEFAULT_TV_SOURCES;
+  // Memoize sources to prevent unnecessary re-runs of the initialization effect
+  const sources = useMemo(() => {
+    const activeSources = videoSources.filter((s) => s.active);
+    return activeSources.length > 0 ? activeSources : DEFAULT_TV_SOURCES;
+  }, [videoSources]);
 
-  const { defaultTvServer, showAdNotice } = useSettingsStore();
+  const { defaultTvServer, setDefaultTvServer, showAdNotice } =
+    useSettingsStore();
 
   const [isMounted, setIsMounted] = useState(false);
   const [selectedServer, setSelectedServer] = useState(sources[0]);
@@ -78,8 +82,10 @@ const EpisodeInfo = ({
   const [selectedEpisode, setSelectedEpisode] = useState(episodeDetails);
   const [iframeSrc, setIframeSrc] = useState("");
 
-  const [cast, setCast] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
+  const [cast, setCast] = useState(initialCast);
+  const [recommendations, setRecommendations] = useState(
+    initialRecommendations,
+  );
   const [isFavorite, setIsFavorite] = useState(false);
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -101,15 +107,23 @@ const EpisodeInfo = ({
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
     if (dismissed !== "true" && showAdNotice) setShowAdPopup(true);
 
-    const savedDefault = defaultTvServer;
+    // Resolve saved configurations with fallback options
+    const savedDefault =
+      defaultTvServer || localStorage.getItem("defaultTvServerName") || "";
     const savedSession = sessionStorage.getItem("sessionTvServerName");
 
-    if (savedDefault) setDefaultServerName(savedDefault);
+    if (savedDefault) {
+      setDefaultServerName(savedDefault);
+    }
 
-    const initialServerName = savedSession || savedDefault || sources[0].name;
+    const initialServerName =
+      savedSession || savedDefault || sources[0]?.name || "";
     const initialServer =
       sources.find((s) => s.name === initialServerName) || sources[0];
-    setSelectedServer(initialServer);
+
+    if (initialServer) {
+      setSelectedServer(initialServer);
+    }
   }, [sources, defaultTvServer, showAdNotice]);
 
   // Click outside listener for dropdown
@@ -127,32 +141,7 @@ const EpisodeInfo = ({
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
     setIsFavorite(favs.some((i) => i.id === seriesData.id));
-
-    const fetchRecs = async () => {
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/recommendations?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
-        );
-        const data = await res.json();
-        setRecommendations(data.results.slice(0, 10));
-      } catch (e) {}
-    };
-    fetchRecs();
   }, [seriesId, seriesData.id]);
-
-  useEffect(() => {
-    const fetchCast = async () => {
-      if (!selectedEpisode) return;
-      try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedEpisode.season_number}/episode/${selectedEpisode.episode_number}/credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
-        );
-        const data = await res.json();
-        setCast(data.cast || []);
-      } catch (e) {}
-    };
-    fetchCast();
-  }, [seriesId, selectedEpisode]);
 
   // --- URL BUILDER ---
   useEffect(() => {
@@ -261,6 +250,12 @@ const EpisodeInfo = ({
   const handleSetDefault = (serverName) => {
     setDefaultServerName(serverName);
     localStorage.setItem("defaultTvServerName", serverName);
+
+    // Sync with state store if the setter is available
+    if (typeof setDefaultTvServer === "function") {
+      setDefaultTvServer(serverName);
+    }
+
     setToast(`Set ${serverName} as default source`);
     setTimeout(() => setToast(null), 3000);
   };
@@ -339,7 +334,7 @@ const EpisodeInfo = ({
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* =========================================
-              LEFT COLUMN: PLAYER & INFO (Original Layout)
+              LEFT COLUMN: PLAYER & INFO
               ========================================= */}
           <div className="flex-1 lg:w-[65%] xl:w-[70%] flex flex-col gap-6">
             {/* 1. THE PLAYER */}
@@ -420,7 +415,7 @@ const EpisodeInfo = ({
               </div>
             </div>
 
-            {/* 3. REDESIGNED SOURCE SELECTION GRID */}
+            {/* 3. SOURCE SELECTION GRID */}
             <div className="bg-[#0a0a0a]/40 p-5 rounded-2xl border border-white/[0.05] backdrop-blur-md">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -436,7 +431,7 @@ const EpisodeInfo = ({
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {sources.map((s) => {
-                  const isActive = selectedServer.name === s.name;
+                  const isActive = selectedServer?.name === s.name;
                   const isDefault = s.name === defaultServerName;
                   return (
                     <button
@@ -601,7 +596,7 @@ const EpisodeInfo = ({
           </div>
 
           {/* =========================================
-              RIGHT COLUMN: YOUTUBE SIDEBAR FEED
+              RIGHT COLUMN: SIDEBAR FEED
               ========================================= */}
           <div className="w-full lg:w-[35%] xl:w-[30%] shrink-0 space-y-6">
             {/* 1. UP NEXT / NEXT EPISODE */}
@@ -650,7 +645,7 @@ const EpisodeInfo = ({
             {/* 2. OTHER EPISODES WITH DROPDOWN SELECTOR */}
             <div className="bg-[#0a0a0a]/50 p-4 border border-white/[0.08] rounded-2xl backdrop-blur-xl space-y-4">
               <div className="space-y-3">
-                {/* Custom Elegant Dropdown */}
+                {/* Custom Dropdown */}
                 <div className="relative w-full" ref={dropdownRef}>
                   <button
                     onClick={() =>
@@ -762,7 +757,7 @@ const EpisodeInfo = ({
               </div>
             </div>
 
-            {/* 3. RECOMMENDATIONS (YT Style Related Media Feed) */}
+            {/* 3. RECOMMENDATIONS */}
             <div className="bg-[#0a0a0a]/50 p-4 border border-white/[0.08] rounded-2xl backdrop-blur-xl space-y-4">
               <h3 className="text-sm font-bold text-white border-b border-white/5 pb-2">
                 Recommended Shows

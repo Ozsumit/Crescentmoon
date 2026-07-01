@@ -98,7 +98,15 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
 
 // --- MAIN COMPONENT ---
 
-const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
+const MovieInfo = ({
+  MovieDetail,
+  genreArr,
+  id,
+  videoSources = [],
+  cast: initialCast = [],
+  recommendations: initialRecommendations = [],
+  reviews: initialReviews = [],
+}) => {
   const sources = useMemo(() => {
     const activeSources = videoSources.filter((s) => s.active);
     return activeSources.length > 0 ? activeSources : DEFAULT_VIDEO_SOURCES;
@@ -111,9 +119,9 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
   const [defaultServerName, setDefaultServerName] = useState("");
   const [iframeSrc, setIframeSrc] = useState("");
 
-  const [cast, setCast] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
-  const [reviews, setReviews] = useState([]);
+  const [cast, setCast] = useState(initialCast);
+  const [recommendations, setRecommendations] = useState(initialRecommendations);
+  const [reviews, setReviews] = useState(initialReviews);
   const [isFavorite, setIsFavorite] = useState(false);
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -144,30 +152,6 @@ const MovieInfo = ({ MovieDetail, genreArr, id, videoSources = [] }) => {
 
   // --- DATA FETCHING & PROGRESS TRACKING ---
   useEffect(() => {
-    const fetchData = async () => {
-      const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-      try {
-        const [c, r, rv] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${key}`,
-          ).then((res) => res.json()),
-          fetch(
-            `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${key}`,
-          ).then((res) => res.json()),
-          fetch(
-            `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${key}`,
-          ).then((res) => res.json()),
-        ]);
-        setCast(c.cast?.slice(0, 10) || []);
-        setRecommendations(r.results?.slice(0, 12) || []);
-        setReviews(rv.results?.slice(0, 5) || []);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    fetchData();
-
     if (typeof window !== "undefined") {
       const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
       setIsFavorite(favs.some((i) => i.id === MovieDetail.id));

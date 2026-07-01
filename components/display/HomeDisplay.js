@@ -32,12 +32,13 @@ const HorizontalCardSkeleton = () => (
 );
 
 // --- MAIN COMPONENT ---
-const HomeDisplay = () => {
+const HomeDisplay = ({ initialData = [] }) => {
   const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
 
   const [contentData, setContentData] = useState({
-    movies: [],
-    tvShows: [],
+    movies: initialData.filter(i => i.media_type === "movie"),
+    tvShows: initialData.filter(i => i.media_type === "tv"),
+    all: initialData
   });
 
   // DEFAULT TAB = ALL
@@ -132,6 +133,12 @@ const HomeDisplay = () => {
 
   // FETCH LOGIC
   useEffect(() => {
+    // Skip initial fetch if initialData is provided and it's the first render for "all" tab
+    if (activeTab === "all" && initialData.length > 0 && contentData.all?.length > 0 && activeGenres.length === 0 && pageData.movies === 1 && pageData.tvShows === 1) {
+      // Data already initialized from props
+      return;
+    }
+
     if (activeTab === "all") {
       fetchContent("movies", pageData.movies, activeGenres);
       fetchContent("tvShows", pageData.tvShows, activeGenres);
@@ -228,7 +235,7 @@ const HomeDisplay = () => {
       </section>
 
       {/* Main Surface */}
-      <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative">
+      <div className="bg-card border border-border rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative">
         {/* Background */}
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
@@ -238,13 +245,13 @@ const HomeDisplay = () => {
         <div className="relative z-50 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           {/* Typography */}
           <div className="space-y-2 z-10">
-            <span className="block text-xs font-mono text-neutral-500 uppercase tracking-widest pl-1">
+            <span className="block text-xs font-mono text-muted-foreground uppercase tracking-widest pl-1">
               Browse Library
             </span>
 
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-white">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
               {activeGenres.length > 0 ? (
-                <span className="text-neutral-400">Filtered:</span>
+                <span className="text-muted-foreground">Filtered:</span>
               ) : (
                 "Trending "
               )}
@@ -265,8 +272,8 @@ const HomeDisplay = () => {
                   flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold tracking-wide transition-all border
                   ${
                     activeGenres.length > 0
-                      ? "bg-white text-black border-white hover:bg-neutral-200"
-                      : "bg-neutral-900 text-white border-white/10 hover:border-white/30"
+                      ? "bg-primary text-primary-foreground border-primary hover:opacity-90"
+                      : "bg-muted text-foreground border-border hover:border-foreground/30"
                   }
                 `}
               >
@@ -275,7 +282,7 @@ const HomeDisplay = () => {
                 <span>GENRES</span>
 
                 {activeGenres.length > 0 && (
-                  <span className="bg-black text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">
+                  <span className="bg-primary-foreground text-primary w-5 h-5 flex items-center justify-center rounded-full text-[10px]">
                     {activeGenres.length}
                   </span>
                 )}
@@ -296,7 +303,7 @@ const HomeDisplay = () => {
                   clearGenres();
                   setIsGenreMenuOpen(false);
                 }}
-                className="p-3 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+                className="p-3 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={20} />
               </button>
@@ -311,7 +318,7 @@ const HomeDisplay = () => {
           className="relative z-0 space-y-8"
         >
           {/* Tab List */}
-          <div className="w-full border-b border-white/10 pb-1">
+          <div className="w-full border-b border-border pb-1">
             <TabsList className="bg-transparent p-0 flex gap-8 w-auto h-auto">
               {["all", "movies", "tv"].map((tab) => {
                 const isActive = activeTab === tab;
@@ -325,8 +332,8 @@ const HomeDisplay = () => {
                       data-[state=active]:bg-transparent 
                       data-[state=active]:shadow-none 
                       text-lg md:text-xl font-medium tracking-tight transition-colors
-                      text-neutral-500 hover:text-neutral-300
-                      data-[state=active]:text-white
+                      text-muted-foreground hover:text-foreground/80
+                      data-[state=active]:text-foreground
                     "
                   >
                     <span className="flex items-center gap-2">
@@ -350,7 +357,7 @@ const HomeDisplay = () => {
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-white"
+                        className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-primary"
                       />
                     )}
                   </TabsTrigger>
@@ -401,7 +408,7 @@ const HomeDisplay = () => {
         </Tabs>
 
         {/* Footer */}
-        <div className="mt-16 border-t border-white/5 pt-12">
+        <div className="mt-16 border-t border-border pt-12">
           {/* Hide Pagination on Mixed View */}
           {activeTab !== "all" && !isLoading && currentData.length > 0 && (
             <HomePagination
@@ -433,7 +440,7 @@ const HomeDisplay = () => {
                 behavior: "smooth",
               })
             }
-            className="fixed bottom-8 right-8 z-50 p-4 rounded-[1.5rem] bg-[#c3f0c2] text-[#07210b] shadow-xl hover:scale-110 active:scale-95 transition-transform"
+            className="fixed bottom-8 right-8 z-50 p-4 rounded-[1.5rem] bg-primary text-primary-foreground shadow-xl hover:scale-110 active:scale-95 transition-transform"
           >
             <ArrowUp size={24} />
           </motion.button>

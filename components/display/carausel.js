@@ -31,18 +31,18 @@ const SpotlightCarousel = () => {
 
   // --- SKELETON LOADER ---
   const SpotlightSkeleton = () => (
-    <div className="relative w-full h-[100svh] bg-neutral-900 overflow-hidden">
-      <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
+    <div className="relative w-full h-[100svh] bg-background overflow-hidden">
+      <div className="absolute inset-0 bg-muted animate-pulse" />
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 z-20">
         <div className="flex flex-col md:flex-row items-end gap-8 mb-8 md:mb-0">
           <div className="flex-1 space-y-6 w-full max-w-4xl">
             <div className="space-y-4">
-              <div className="w-3/4 h-16 md:h-24 bg-white/10 rounded-3xl animate-pulse" />
-              <div className="w-1/2 h-16 md:h-24 bg-white/10 rounded-3xl animate-pulse" />
+              <div className="w-3/4 h-16 md:h-24 bg-foreground/10 rounded-3xl animate-pulse" />
+              <div className="w-1/2 h-16 md:h-24 bg-foreground/10 rounded-3xl animate-pulse" />
             </div>
             <div className="flex gap-4">
-              <div className="w-24 h-10 bg-white/10 rounded-full animate-pulse" />
-              <div className="w-24 h-10 bg-white/10 rounded-full animate-pulse" />
+              <div className="w-24 h-10 bg-foreground/10 rounded-full animate-pulse" />
+              <div className="w-24 h-10 bg-foreground/10 rounded-full animate-pulse" />
             </div>
           </div>
         </div>
@@ -71,9 +71,6 @@ const SpotlightCarousel = () => {
         const data = await response.json();
         const results = data.results?.slice(0, 10) || [];
         setSpotlights(results);
-        await Promise.all(
-          results.map((item) => fetchTrailer(item.id, item.media_type))
-        );
       } catch (error) {
         console.error("Error fetching spotlight data:", error);
       } finally {
@@ -120,6 +117,21 @@ const SpotlightCarousel = () => {
     return () => stopAutoplay();
   }, [isPaused, currentSlide, isLoading, spotlights.length]);
 
+  useEffect(() => {
+    if (spotlights.length > 0) {
+      const currentItem = spotlights[currentSlide];
+      if (!trailers[currentItem.id]) {
+        fetchTrailer(currentItem.id, currentItem.media_type);
+      }
+      // Pre-fetch next trailer
+      const nextSlide = (currentSlide + 1) % spotlights.length;
+      const nextItem = spotlights[nextSlide];
+      if (!trailers[nextItem.id]) {
+        fetchTrailer(nextItem.id, nextItem.media_type);
+      }
+    }
+  }, [currentSlide, spotlights, trailers]);
+
   const handleNextSlide = () => {
     setShowTrailer(false);
     setCurrentSlide((prev) => (prev + 1) % spotlights.length);
@@ -145,7 +157,7 @@ const SpotlightCarousel = () => {
 
   if (!isMounted || isLoading) return <SpotlightSkeleton />;
   if (!spotlights.length)
-    return <div className="bg-black text-white p-10">No content available</div>;
+    return <div className="bg-background text-foreground p-10">No content available</div>;
 
   const currentItem = spotlights[currentSlide];
   const title = currentItem.title || currentItem.name || "Untitled";
@@ -164,7 +176,7 @@ const SpotlightCarousel = () => {
   const href = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;
 
   return (
-    <div className="relative w-full h-[100svh] overflow-hidden bg-[#050505] text-white font-sans selection:bg-white/30">
+    <div className="relative w-full h-[100svh] overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
       {/* --- BACKGROUND LAYER --- */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -189,8 +201,8 @@ const SpotlightCarousel = () => {
 
           {/* Vignette & Gradients */}
           <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/90 via-[#050505]/20 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/20 to-transparent z-10" />
 
           {trailerKey && !isMobile && (
             <div
@@ -234,8 +246,8 @@ const SpotlightCarousel = () => {
                     className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border flex items-center gap-2
                     ${
                       isTV
-                        ? "bg-violet-500/10 text-violet-300 border-violet-500/20"
-                        : "bg-teal-500/10 text-teal-300 border-teal-500/20"
+                        ? "bg-primary/10 text-primary border-primary/20"
+                        : "bg-secondary/10 text-secondary-foreground border-secondary/20"
                     }`}
                   >
                     {isTV ? <Tv size={14} /> : <Film size={14} />}
@@ -243,7 +255,7 @@ const SpotlightCarousel = () => {
                   </div>
 
                   {/* Year Chip */}
-                  <div className="px-3 py-1.5 rounded-md text-xs font-medium uppercase tracking-wider bg-white/5 border border-white/10 text-neutral-300 flex items-center gap-2">
+                  <div className="px-3 py-1.5 rounded-md text-xs font-medium uppercase tracking-wider bg-foreground/5 border border-border text-muted-foreground flex items-center gap-2">
                     <Calendar size={14} />
                     {releaseYear}
                   </div>
@@ -258,25 +270,25 @@ const SpotlightCarousel = () => {
                 </div>
 
                 {/* TITLE */}
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white drop-shadow-2xl">
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-foreground drop-shadow-2xl">
                   {title}
                 </h1>
 
                 {/* DESCRIPTION */}
-                <p className="text-neutral-300 text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3">
+                <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3">
                   {description}
                 </p>
 
                 {/* BUTTONS */}
                 <div className="flex flex-wrap items-center gap-4 pt-2">
                   <Link href={href}>
-                    <button className="flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-xl font-bold tracking-tight hover:scale-105 hover:bg-neutral-200 transition-all duration-300">
-                      <Play size={20} className="fill-black" />
+                    <button className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-bold tracking-tight hover:scale-105 hover:opacity-90 transition-all duration-300 shadow-lg shadow-primary/20">
+                      <Play size={20} className="fill-primary-foreground" />
                       <span>Play Now</span>
                     </button>
                   </Link>
 
-                  <button className="px-6 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-colors font-medium flex items-center gap-2">
+                  <button className="px-6 py-3.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border backdrop-blur-md transition-colors font-medium text-foreground flex items-center gap-2">
                     <Info size={20} />
                     <span>More Info</span>
                   </button>
@@ -289,9 +301,9 @@ const SpotlightCarousel = () => {
           <div className="md:col-span-4 lg:col-span-5 flex flex-col items-end justify-end space-y-4">
             <div className="flex items-center gap-3">
               {/* SLIDE COUNTER & PROGRESS */}
-              <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group">
-                <span className="font-mono text-sm font-medium tracking-widest text-neutral-400 relative z-10">
-                  <span className="text-white text-lg">
+              <div className="bg-card/40 backdrop-blur-xl border border-border rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group">
+                <span className="font-mono text-sm font-medium tracking-widest text-muted-foreground relative z-10">
+                  <span className="text-foreground text-lg">
                     {String(currentSlide + 1).padStart(2, "0")}
                   </span>
                   <span className="opacity-50 mx-1">/</span>
@@ -299,9 +311,9 @@ const SpotlightCarousel = () => {
                 </span>
 
                 {/* Progress Line (Bottom) */}
-                <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full">
+                <div className="absolute bottom-0 left-0 h-[3px] bg-foreground/10 w-full">
                   <motion.div
-                    className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                    className="h-full bg-primary shadow-[0_0_10px_var(--accent-custom)]"
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{
@@ -315,28 +327,28 @@ const SpotlightCarousel = () => {
               </div>
 
               {/* NAVIGATION CONTROLS */}
-              <div className="h-14 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center p-1 gap-1">
+              <div className="h-14 bg-card/40 backdrop-blur-xl border border-border rounded-2xl flex items-center p-1 gap-1">
                 <button
                   onClick={handlePrevSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all"
                 >
                   <ArrowRight size={20} className="rotate-180" />
                 </button>
 
-                <div className="w-[1px] h-6 bg-white/10" />
+                <div className="w-[1px] h-6 bg-border" />
 
                 <button
                   onClick={togglePause}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-foreground transition-all"
                 >
                   {isPaused ? <Play size={20} /> : <Pause size={20} />}
                 </button>
 
-                <div className="w-[1px] h-6 bg-white/10" />
+                <div className="w-[1px] h-6 bg-border" />
 
                 <button
                   onClick={handleNextSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all"
                 >
                   <ArrowRight size={20} />
                 </button>
@@ -349,7 +361,7 @@ const SpotlightCarousel = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={toggleMute}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/60 backdrop-blur-md border border-white/5 text-neutral-400 hover:text-white transition-all"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-card/20 hover:bg-card/60 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground transition-all"
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </motion.button>

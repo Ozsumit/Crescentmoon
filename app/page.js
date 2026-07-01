@@ -36,14 +36,14 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" m-0 bg-background h-auto">
+    <div className=" m-0 bg-background text-foreground h-auto">
     {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */}
       {/* <h1>Trending Movies</h1> div*/}
       <div className="w-full flex px-0 sm:px-4  justify-center items-center">
-        <HomeDisplay movies={data} />
+        <HomeDisplay initialData={data} />
       </div>
       {/* <WelcomeModal /> */}
       {/* // Auto-show on first visit or version update */}
