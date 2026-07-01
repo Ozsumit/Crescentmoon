@@ -100,8 +100,8 @@ const Header = () => {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 flex flex-col ${
           isScrolled || isMobileMenuOpen
-            ? "bg-neutral-950/90 backdrop-blur-md border-white/10"
-            : "bg-black/98 backdrop-blur-md border-transparent"
+            ? "bg-background/80 backdrop-blur-md border-border"
+            : "bg-background/95 backdrop-blur-md border-transparent"
         }`}
       >
         {/* --- LITE MODE BANNER --- */}
@@ -110,7 +110,7 @@ const Header = () => {
         {/* SWISS GRID LAYOUT (Main Nav) */}
         <div className="w-full h-16 md:h-20 flex items-stretch relative z-20">
           {/* 1. BRANDING (Left) */}
-          <div className="flex items-center px-6 md:px-10 border-r border-white/5 bg-gradient-to-r from-black/20 to-transparent">
+          <div className="flex items-center px-6 md:px-10 border-r border-border bg-gradient-to-r from-foreground/5 to-transparent">
             <div
               onClick={handleLogoClick}
               className="relative z-50 cursor-pointer"
@@ -134,8 +134,8 @@ const Header = () => {
                       <span
                         className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-300 ${
                           isActive
-                            ? "text-white"
-                            : "text-neutral-400 group-hover:text-neutral-300"
+                            ? "text-foreground"
+                            : "text-muted-foreground group-hover:text-foreground"
                         }`}
                       >
                         {link.label}
@@ -144,7 +144,7 @@ const Header = () => {
 
                     {/* Active Line Indicator */}
                     <span
-                      className={`absolute bottom-0 left-0 h-[1px] bg-white transition-all duration-300 ease-out ${
+                      className={`absolute bottom-0 left-0 h-[2px] bg-primary transition-all duration-300 ease-out ${
                         isActive ? "w-full" : "w-0 group-hover:w-full"
                       }`}
                     />
@@ -161,15 +161,15 @@ const Header = () => {
           <div className="flex items-center">
             {/* Search */}
             <div
-              className="hidden md:flex items-center h-full px-6 border-l border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+              className="hidden md:flex items-center h-full px-6 border-l border-border hover:bg-accent transition-colors cursor-pointer"
               onClick={() => setIsQuickSearchOpen(true)}
             >
-              <button className="flex items-center gap-3 text-neutral-400 group-hover:text-white transition-colors">
+              <button className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground transition-colors">
                 <Search size={18} />
                 <span className="text-xs font-bold uppercase tracking-wider hidden lg:block">
                   Search
                 </span>
-                <span className="text-[10px] font-mono border border-white/10 px-1.5 py-0.5 rounded-sm bg-white/5 text-neutral-500">
+                <span className="text-[10px] font-mono border border-border px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground">
                   ⌘K
                 </span>
               </button>
@@ -178,19 +178,19 @@ const Header = () => {
             {/* Mobile Search Icon */}
             <button
               onClick={() => setIsQuickSearchOpen(true)}
-              className="md:hidden flex items-center justify-center h-full w-14 border-l border-white/5 text-white hover:bg-white/5"
+              className="md:hidden flex items-center justify-center h-full w-14 border-l border-border text-foreground hover:bg-accent"
             >
               <Search size={20} />
             </button>
 
             {/* Favorites */}
-            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-white/5 hover:bg-white/5 transition-colors">
-              <Link href="/favourites" className="text-white">
+            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-border hover:bg-accent transition-colors">
+              <Link href="/favourites" className="text-foreground">
                 <Heart
                   size={18}
                   className={`transition-transform duration-300 ${
                     pathname === "/favourites"
-                      ? "fill-white"
+                      ? "fill-foreground"
                       : "hover:scale-110"
                   }`}
                 />
@@ -198,13 +198,13 @@ const Header = () => {
             </div>
 
             {/* Settings */}
-            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-white/5 hover:bg-white/5 transition-colors">
-              <Link href="/settings" className="text-white">
+            <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-border hover:bg-accent transition-colors">
+              <Link href="/settings" className="text-foreground">
                 <Settings
                   size={18}
                   className={`transition-all duration-300 ${
                     pathname === "/settings"
-                      ? "rotate-90 text-indigo-400"
+                      ? "rotate-90 text-primary"
                       : "hover:rotate-45"
                   }`}
                 />
@@ -212,10 +212,10 @@ const Header = () => {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <div className="xl:hidden flex items-center justify-center h-full w-16 border-l border-white/5">
+            <div className="xl:hidden flex items-center justify-center h-full w-16 border-l border-border">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-white hover:rotate-90 transition-transform duration-300"
+                className="text-foreground hover:rotate-90 transition-transform duration-300"
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -230,11 +230,11 @@ const Header = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="w-full bg-white/[0.01] backdrop-blur-md border-t border-white/5 overflow-hidden relative z-10"
+              className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10"
             >
-              <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-neutral-400">
+              <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-muted-foreground">
                 <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <div className="flex items-center gap-1.5 shrink-0 text-white/40">
+                  <div className="flex items-center gap-1.5 shrink-0 text-foreground/40">
                     <AlertCircle size={12} />
                     <span className="hidden sm:block">MIRRORS:</span>
                   </div>
@@ -246,7 +246,7 @@ const Header = () => {
                         href={`https://${domain}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="snap-start shrink-0 text-neutral-400 hover:text-white transition-colors flex items-center gap-1"
+                        className="snap-start shrink-0 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                       >
                         {domain}
                       </a>
@@ -254,17 +254,17 @@ const Header = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-white/5 bg-gradient-to-l from-transparent to-transparent">
+                <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-border bg-gradient-to-l from-transparent to-transparent">
                   <Link
                     href="/legal/domains"
-                    className="text-white hover:underline uppercase font-bold tracking-normal"
+                    className="text-foreground hover:underline uppercase font-bold tracking-normal"
                   >
                     <span className="hidden sm:inline">All Mirrors</span>
                     <span className="sm:hidden">More</span>
                   </Link>
                   <button
                     onClick={() => setShowDomainNotice(false)}
-                    className="text-neutral-500 hover:text-white transition-colors"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
                     aria-label="Dismiss notice"
                   >
                     <X size={12} />
@@ -284,7 +284,7 @@ const Header = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               // top-full forces it to attach perfectly below whichever banners are visible
-              className="absolute top-full left-0 right-0 h-[100dvh] bg-neutral-950/95 backdrop-blur-xl border-t border-white/10"
+              className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border"
             >
               {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
               <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
@@ -304,23 +304,23 @@ const Header = () => {
                         <span
                           className={`text-4xl font-black uppercase tracking-tighter transition-colors ${
                             pathname === item.href
-                              ? "text-white"
-                              : "text-transparent bg-clip-text bg-gradient-to-br from-neutral-400 to-neutral-700 group-hover:text-white"
+                              ? "text-foreground"
+                              : "text-transparent bg-clip-text bg-gradient-to-br from-muted-foreground to-foreground/50 group-hover:text-foreground"
                           }`}
                         >
                           {item.label}
                         </span>
                         <ArrowRight
                           size={24}
-                          className="text-white opacity-0 group-hover:opacity-100 -rotate-45 group-hover:rotate-0 transition-all"
+                          className="text-foreground opacity-0 group-hover:opacity-100 -rotate-45 group-hover:rotate-0 transition-all"
                         />
                       </Link>
                     </motion.div>
                   ))}
                 </nav>
 
-                <div className="mt-auto border-t border-white/5 pt-6">
-                  <p className="text-[10px] text-neutral-500 font-mono uppercase">
+                <div className="mt-auto border-t border-border pt-6">
+                  <p className="text-[10px] text-muted-foreground font-mono uppercase">
                     © 2025 Crescent Moon.
                   </p>
                 </div>

@@ -84,10 +84,10 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
     <div
       onMouseEnter={() => onHover(index)}
       onClick={() => setIsMuted(!isMuted)}
-      className={`relative aspect-[16/9] sm:aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-[#0a0a0a] cursor-pointer transition-all duration-500 ease-out transform-gpu border ${
+      className={`relative aspect-[16/9] sm:aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-card cursor-pointer transition-all duration-500 ease-out transform-gpu border ${
         isActive
-          ? "border-white/30 scale-105 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
-          : "scale-100 z-0 border-white/5"
+          ? "border-primary/50 scale-105 z-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)]"
+          : "scale-100 z-0 border-border"
       }`}
     >
       {playVideo && trailerKey ? (
@@ -124,7 +124,7 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
 
       {/* Glassmorphic overlay for text */}
       <div
-        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-gradient-to-t from-card/90 via-card/20 to-transparent transition-opacity duration-300 ${
           isActive ? "opacity-100" : "opacity-0 sm:opacity-100"
         }`}
       >
@@ -133,8 +133,8 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
             <span
               className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                 type === "tv"
-                  ? "bg-[#d0bcff] text-[#381e72]"
-                  : "bg-[#bceeff] text-[#001f2a]"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
               }`}
             >
               {type === "tv" ? "Series" : "Movie"}
@@ -146,10 +146,10 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
               </div>
             )}
           </div>
-          <p className="text-white text-sm font-bold line-clamp-1 tracking-tight leading-tight mb-0.5">
+          <p className="text-foreground text-sm font-bold line-clamp-1 tracking-tight leading-tight mb-0.5">
             {item.title || item.name}
           </p>
-          <p className="text-white/50 text-[10px] font-medium uppercase tracking-wider">
+          <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider">
             {formatDate(item.release_date || item.first_air_date)}
           </p>
         </div>
@@ -157,12 +157,12 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
 
       {/* Hover Progress Bar */}
       {isActive && !playVideo && trailerKey && (
-        <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full z-20 overflow-hidden">
+        <div className="absolute bottom-0 left-0 h-[3px] bg-foreground/10 w-full z-20 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 3, ease: "linear" }}
-            className="h-full bg-white"
+            className="h-full bg-primary"
           />
         </div>
       )}
@@ -398,17 +398,17 @@ const MovieModalComponent = ({
         animate={{ y: 0, opacity: 1, scale: 1 }}
         exit={{ y: 20, opacity: 0, scale: 0.98 }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
-        className="relative w-full max-w-[1000px] bg-[#0a0a0a]/95 backdrop-blur-3xl sm:rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden h-fit my-auto"
+        className="relative w-full max-w-[1000px] bg-card/95 backdrop-blur-3xl sm:rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-border overflow-hidden h-fit my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 z-50 p-3 bg-black/20 border border-white/10 backdrop-blur-xl rounded-full text-white hover:bg-white hover:text-black hover:scale-110 transition-all duration-300"
+          className="absolute top-6 right-6 z-50 p-3 bg-card/20 border border-border backdrop-blur-xl rounded-full text-foreground hover:bg-foreground hover:text-background hover:scale-110 transition-all duration-300"
         >
           <X size={24} strokeWidth={2.5} />
         </button>
 
-        <div className="relative w-full aspect-[4/3] sm:aspect-[21/9] bg-[#050505] overflow-hidden">
+        <div className="relative w-full aspect-[4/3] sm:aspect-[21/9] bg-background overflow-hidden">
           <Image
             src={heroImage}
             alt={title}
@@ -435,20 +435,20 @@ const MovieModalComponent = ({
             </motion.div>
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/30 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-card/80 via-transparent to-transparent z-10" />
 
           <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full z-20">
-            <h1 className="text-5xl sm:text-7xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl leading-none">
+            <h1 className="text-5xl sm:text-7xl font-black text-foreground mb-6 tracking-tighter drop-shadow-2xl leading-none">
               {title}
             </h1>
 
             <div className="flex flex-wrap items-center gap-4">
               <Link href={getLink()}>
-                <button className="group flex items-center gap-3 bg-white text-black px-8 py-3.5 rounded-full font-extrabold text-lg hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                <button className="group flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-extrabold text-lg hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
                   <Play
                     size={22}
-                    className="fill-black group-hover:scale-110 transition-transform"
+                    className="fill-primary-foreground group-hover:scale-110 transition-transform"
                   />
                   Play
                 </button>
@@ -456,7 +456,7 @@ const MovieModalComponent = ({
               {heroTrailer && (
                 <button
                   onClick={() => setIsHeroMuted(!isHeroMuted)}
-                  className="flex items-center gap-3 bg-white/10 text-white px-8 py-3.5 rounded-full font-bold text-lg border border-white/20 hover:bg-white/20 hover:border-white/40 active:scale-95 transition-all duration-300 backdrop-blur-xl"
+                  className="flex items-center gap-3 bg-foreground/10 text-foreground px-8 py-3.5 rounded-full font-bold text-lg border border-border hover:bg-foreground/20 active:scale-95 transition-all duration-300 backdrop-blur-xl"
                 >
                   {isHeroMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
                 </button>
@@ -480,18 +480,18 @@ const MovieModalComponent = ({
           </div>
         </div>
 
-        <div className="px-8 md:px-12 py-10 grid grid-cols-1 md:grid-cols-3 gap-12 border-b border-white/5">
+        <div className="px-8 md:px-12 py-10 grid grid-cols-1 md:grid-cols-3 gap-12 border-b border-border">
           <div className="md:col-span-2 space-y-6">
-            <div className="flex items-center flex-wrap gap-4 text-base font-bold text-white/60">
+            <div className="flex items-center flex-wrap gap-4 text-base font-bold text-muted-foreground">
               {movie.vote_average > 0 && (
-                <span className="text-[#c3f0c2] font-extrabold flex items-center gap-1.5 tracking-wide">
+                <span className="text-primary font-extrabold flex items-center gap-1.5 tracking-wide">
                   {(movie.vote_average * 10).toFixed(0)}% Match
                 </span>
               )}
-              <span className="text-white font-medium">
+              <span className="text-foreground font-medium">
                 {formatDate(movie.release_date || movie.first_air_date)}
               </span>
-              <span className="border border-white/20 px-2 py-0.5 rounded text-sm text-white/80">
+              <span className="border border-border px-2 py-0.5 rounded text-sm text-foreground/80">
                 {isLoadingTV
                   ? "..."
                   : isTV && seasons.length > 0
@@ -499,25 +499,25 @@ const MovieModalComponent = ({
                     : "HD"}
               </span>
             </div>
-            <p className="text-xl text-white/90 leading-relaxed font-medium tracking-tight">
+            <p className="text-xl text-foreground/90 leading-relaxed font-medium tracking-tight">
               {movie.overview || "No overview available."}
             </p>
           </div>
-          <div className="md:col-span-1 space-y-4 text-sm text-white/50 font-medium">
+          <div className="md:col-span-1 space-y-4 text-sm text-muted-foreground font-medium">
             <div>
-              <span className="text-white/70">Original Language:</span>{" "}
+              <span className="text-foreground/70">Original Language:</span>{" "}
               {movie.original_language?.toUpperCase() || "EN"}
             </div>
           </div>
         </div>
 
         {isTV && (
-          <div className="px-8 md:px-12 py-10 border-b border-white/5 bg-white/[0.02]">
+          <div className="px-8 md:px-12 py-10 border-b border-border bg-foreground/[0.02]">
             <div className="mb-6">
-              <h3 className="text-3xl font-bold text-white tracking-tight mb-6">
+              <h3 className="text-3xl font-bold text-foreground tracking-tight mb-6">
                 Episodes{" "}
                 {seasons.length === 1 && (
-                  <span className="text-white/60 text-2xl">
+                  <span className="text-muted-foreground text-2xl">
                     ({seasons[0]?.name})
                   </span>
                 )}
@@ -532,8 +532,8 @@ const MovieModalComponent = ({
                       onClick={() => handleSeasonChange(s.season_number)}
                       className={`whitespace-nowrap px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 snap-start border ${
                         selectedSeason === s.season_number
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                          : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white"
+                          ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(0,0,0,0.3)]"
+                          : "bg-muted text-muted-foreground border-border hover:bg-accent hover:text-foreground"
                       }`}
                     >
                       {s.name}
@@ -559,7 +559,7 @@ const MovieModalComponent = ({
                     }
                     key={ep.id}
                   >
-                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-white/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-white/10">
+                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-foreground/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-border">
                       <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
                         <Image
                           src={getImageUrl(
@@ -580,16 +580,16 @@ const MovieModalComponent = ({
                       </div>
                       <div className="flex-1 flex flex-col justify-center py-2">
                         <div className="flex justify-between items-start mb-2 gap-4">
-                          <h4 className="text-white font-bold text-lg line-clamp-1 tracking-tight">
+                          <h4 className="text-foreground font-bold text-lg line-clamp-1 tracking-tight">
                             {ep.episode_number}. {ep.name}
                           </h4>
                           {ep.runtime && (
-                            <span className="text-sm font-bold text-white/40 shrink-0">
+                            <span className="text-sm font-bold text-muted-foreground shrink-0">
                               {ep.runtime}m
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-white/60 line-clamp-2 leading-relaxed font-medium">
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed font-medium">
                           {ep.overview ||
                             "No overview available for this episode."}
                         </p>
@@ -608,7 +608,7 @@ const MovieModalComponent = ({
         )}
 
         <div className="px-8 md:px-12 py-10 pb-20">
-          <h3 className="text-3xl font-bold text-white mb-8 tracking-tight">
+          <h3 className="text-3xl font-bold text-foreground mb-8 tracking-tight">
             More Like This
           </h3>
           {isLoadingSimilar ? (
@@ -711,7 +711,7 @@ const HomeCard = memo(({ MovieCard }) => {
         whileHover="hover"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu cursor-pointer"
+        className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border isolate transform-gpu cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <div
@@ -739,28 +739,28 @@ const HomeCard = memo(({ MovieCard }) => {
             className="absolute bottom-0 left-0 right-0 p-2 z-10"
             animate={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
           >
-            <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/20">
+            <div className="backdrop-blur-xl border border-border rounded-[1.5rem] overflow-hidden shadow-lg bg-card/40">
               <div className="px-4 pt-4 pb-2">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${
                         isTV
-                          ? "bg-[#d0bcff] text-[#381e72]"
-                          : "bg-[#bceeff] text-[#001f2a]"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
                       }`}
                     >
                       {isTV ? "Series" : "Movie"}
                     </span>
                     {MovieCard.vote_average > 0 && (
-                      <div className="flex items-center gap-1 text-xs font-bold text-[#ffdcc2]">
-                        <Star size={12} className="fill-[#ffdcc2]" />
+                      <div className="flex items-center gap-1 text-xs font-bold text-primary">
+                        <Star size={12} className="fill-primary" />
                         <span>{MovieCard.vote_average.toFixed(1)}</span>
                       </div>
                     )}
                   </div>
                 </div>
-                <h3 className="text-lg font-bold leading-tight line-clamp-1 text-white mb-1">
+                <h3 className="text-lg font-bold leading-tight line-clamp-1 text-foreground mb-1">
                   {title}
                 </h3>
               </div>
@@ -768,12 +768,12 @@ const HomeCard = memo(({ MovieCard }) => {
                 <div className="px-4 pb-4 flex flex-col gap-3">
                   <motion.p
                     variants={itemFade}
-                    className="text-xs text-neutral-300 line-clamp-3 leading-relaxed"
+                    className="text-xs text-muted-foreground line-clamp-3 leading-relaxed"
                   >
                     {MovieCard.overview || "No description available."}
                   </motion.p>
-                  <div className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2">
-                    <Play size={16} className="fill-[#07210b]" />
+                  <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2">
+                    <Play size={16} className="fill-primary-foreground" />
                     <span>Watch Now</span>
                   </div>
                 </div>
@@ -783,7 +783,7 @@ const HomeCard = memo(({ MovieCard }) => {
         </div>
 
         <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
-          <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+          <div className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg border border-border">
             {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
           </div>
           <motion.button
@@ -792,8 +792,8 @@ const HomeCard = memo(({ MovieCard }) => {
             whileTap={{ scale: 0.85 }}
             className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${
               isFavorite
-                ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
-                : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+                ? "bg-destructive border-destructive text-destructive-foreground"
+                : "bg-background/30 border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground"
             }`}
           >
             <AnimatePresence mode="wait">

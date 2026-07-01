@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import useSettingsStore from "@/components/settings-store";
-import ThemeWrapper, { PageContainer } from "@/components/themewrappr";
-import { FEEDBACK_THEMES } from "@/lib/feedback-themes";
+import { PageContainer } from "@/components/themewrappr";
 import { SITE_THEMES } from "@/lib/themes";
 // Import the server action directly to call it from the client
 import { getVideoSources } from "@/lib/video-sources";
@@ -15,12 +14,9 @@ import {
   Trash2,
   RotateCcw,
   Check,
-  ChevronRight,
   Monitor,
   Tv,
   MessageSquare,
-  Sun,
-  Moon,
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,14 +77,14 @@ const SettingsPage = () => {
   const SettingSection = ({ icon: Icon, title, description, children }) => (
     <section className="mb-12">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400">
+        <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground">
           <Icon size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="text-xl font-bold text-foreground tracking-tight">
             {title}
           </h2>
-          <p className="text-sm text-neutral-500 font-medium">{description}</p>
+          <p className="text-sm text-muted-foreground font-medium">{description}</p>
         </div>
       </div>
       <div className="grid gap-4">{children}</div>
@@ -97,7 +93,7 @@ const SettingsPage = () => {
 
   const ToggleCard = ({ title, description, value, onToggle, icon: Icon }) => (
     <div
-      className="group flex items-center justify-between p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl hover:border-white/10 transition-all cursor-pointer"
+      className="group flex items-center justify-between p-5 bg-card border border-border rounded-2xl hover:border-primary/30 transition-all cursor-pointer"
       onClick={() => {
         onToggle(!value);
         triggerToast();
@@ -106,25 +102,25 @@ const SettingsPage = () => {
       <div className="flex items-center gap-4">
         {Icon && (
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${value ? "bg-indigo-500/10 text-indigo-400" : "bg-white/5 text-neutral-500"}`}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${value ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
           >
             <Icon size={18} />
           </div>
         )}
         <div>
-          <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+          <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="text-xs text-neutral-500 mt-0.5">{description}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
         </div>
       </div>
       <div
-        className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${value ? "bg-indigo-600" : "bg-neutral-800"}`}
+        className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${value ? "bg-primary" : "bg-muted"}`}
       >
         <motion.div
           animate={{ x: value ? 26 : 2 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          className="absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow-lg"
+          className="absolute top-1 left-0 w-4 h-4 bg-background rounded-full shadow-lg"
         />
       </div>
     </div>
@@ -135,15 +131,15 @@ const SettingsPage = () => {
       <div className="max-w-3xl mx-auto mt-16">
         <header className="mb-16">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-            <span className="text-xs font-mono text-indigo-400 uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-mono text-primary uppercase tracking-widest">
               Configuration
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-4">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mb-4">
             Settings
           </h1>
-          <p className="text-neutral-400 text-lg max-w-xl">
+          <p className="text-muted-foreground text-lg max-w-xl">
             Personalize your viewing experience. These settings are saved
             locally to your browser.
           </p>
@@ -155,8 +151,50 @@ const SettingsPage = () => {
           title="Theming"
           description="Customize the visual appearance of Cmoon."
         >
-          <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl mb-4">
-            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+          {/* Site Theme Selector */}
+          <div className="p-6 bg-card border border-border rounded-2xl mb-4">
+            <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">
+              Site Theme
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {Object.keys(SITE_THEMES).map((themeKey) => {
+                const theme = SITE_THEMES[themeKey];
+                const isActive = settings.siteTheme === themeKey;
+                return (
+                  <button
+                    key={themeKey}
+                    onClick={() => {
+                      settings.setSiteTheme(themeKey);
+                      triggerToast();
+                    }}
+                    className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${isActive ? "border-primary bg-primary/10 scale-105" : "border-border bg-muted/50 hover:border-primary/50"}`}
+                  >
+                    <div
+                      className="w-full aspect-video rounded-lg border border-border overflow-hidden flex"
+                      style={{ background: `hsl(${theme.colors.background})` }}
+                    >
+                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
+                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.secondary})` }} />
+                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                    >
+                      {theme.name}
+                    </span>
+                    {isActive && (
+                      <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1 shadow-lg">
+                        <Check size={10} className="text-primary-foreground" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="p-6 bg-card border border-border rounded-2xl mb-4">
+            <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">
               Accent Color
             </h3>
             <div className="flex flex-wrap gap-4">
@@ -167,7 +205,7 @@ const SettingsPage = () => {
                     settings.setAccentColor(color.value);
                     triggerToast();
                   }}
-                  className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${settings.accentColor === color.value ? "border-white scale-110" : "border-transparent hover:scale-105"}`}
+                  className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${settings.accentColor === color.value ? "border-primary scale-110" : "border-transparent hover:scale-105"}`}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
                 >
@@ -196,16 +234,16 @@ const SettingsPage = () => {
         >
           <div className="grid sm:grid-cols-2 gap-4">
             {/* Default Movie Server Dropdown */}
-            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl relative">
-              <div className="flex items-center gap-2 mb-4 text-neutral-400">
+            <div className="p-5 bg-card border border-border rounded-2xl relative">
+              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <Monitor size={16} />
                 <h3 className="text-xs font-bold uppercase tracking-wider">
                   Default Movie Server
                 </h3>
               </div>
               {loadingServers ? (
-                <div className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center gap-2 text-xs text-neutral-500">
-                  <Loader2 size={14} className="animate-spin text-indigo-400" />
+                <div className="w-full h-11 bg-muted border border-border rounded-xl px-4 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin text-primary" />
                   Loading Movie Servers...
                 </div>
               ) : (
@@ -215,35 +253,35 @@ const SettingsPage = () => {
                     settings.setDefaultMovieServer(e.target.value);
                     triggerToast();
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
                 >
                   {movieServers.map((s) => (
                     <option
                       key={s.id || s.name}
                       value={s.name}
-                      className="bg-neutral-900"
+                      className="bg-card"
                     >
                       {s.name}
                     </option>
                   ))}
                   {movieServers.length === 0 && (
-                    <option className="bg-neutral-900">No servers found</option>
+                    <option className="bg-card">No servers found</option>
                   )}
                 </select>
               )}
             </div>
 
             {/* Default TV Server Dropdown */}
-            <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl relative">
-              <div className="flex items-center gap-2 mb-4 text-neutral-400">
+            <div className="p-5 bg-card border border-border rounded-2xl relative">
+              <div className="flex items-center gap-2 mb-4 text-muted-foreground">
                 <Tv size={16} />
                 <h3 className="text-xs font-bold uppercase tracking-wider">
                   Default TV Server
                 </h3>
               </div>
               {loadingServers ? (
-                <div className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 flex items-center gap-2 text-xs text-neutral-500">
-                  <Loader2 size={14} className="animate-spin text-indigo-400" />
+                <div className="w-full h-11 bg-muted border border-border rounded-xl px-4 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 size={14} className="animate-spin text-primary" />
                   Loading TV Servers...
                 </div>
               ) : (
@@ -253,19 +291,19 @@ const SettingsPage = () => {
                     settings.setDefaultTvServer(e.target.value);
                     triggerToast();
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
                 >
                   {tvServers.map((s) => (
                     <option
                       key={s.id || s.name}
                       value={s.name}
-                      className="bg-neutral-900"
+                      className="bg-card"
                     >
                       {s.name}
                     </option>
                   ))}
                   {tvServers.length === 0 && (
-                    <option className="bg-neutral-900">No servers found</option>
+                    <option className="bg-card">No servers found</option>
                   )}
                 </select>
               )}
@@ -307,51 +345,13 @@ const SettingsPage = () => {
             value={settings.showFeedbackPopup}
             onToggle={settings.setShowFeedbackPopup}
           />
-
-          {/* <div className="p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
-              Feedback Popup Theme
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {Object.keys(FEEDBACK_THEMES).map((themeKey) => {
-                const theme = FEEDBACK_THEMES[themeKey];
-                const isActive = settings.feedbackTheme === themeKey;
-                return (
-                  <button
-                    key={themeKey}
-                    onClick={() => {
-                      settings.setFeedbackTheme(themeKey);
-                      triggerToast();
-                    }}
-                    className={`group relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${isActive ? "border-white bg-white/10 scale-105" : "border-white/5 bg-white/5 hover:border-white/20"}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg ${theme.bg} ${theme.border} border flex items-center justify-center`}
-                    >
-                      <div className={`w-2 h-2 rounded-full ${theme.pulse}`} />
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? "text-white" : "text-neutral-500 group-hover:text-neutral-300"}`}
-                    >
-                      {themeKey}
-                    </span>
-                    {isActive && (
-                      <div className="absolute -top-2 -right-2 bg-indigo-500 rounded-full p-1 shadow-lg">
-                        <Check size={10} className="text-white" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div> */}
         </SettingSection>
 
         {/* DANGER ZONE */}
-        <div className="mt-20 pt-10 border-t border-white/5">
+        <div className="mt-20 pt-10 border-t border-border">
           <button
             onClick={handleReset}
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 hover:bg-rose-500/10 text-neutral-500 hover:text-rose-500 border border-white/5 hover:border-rose-500/20 transition-all text-sm font-bold"
+            className="flex items-center gap-2 px-6 py-3 rounded-full bg-muted hover:bg-destructive/10 text-muted-foreground hover:text-destructive border border-border hover:border-destructive/20 transition-all text-sm font-bold"
           >
             <RotateCcw size={16} />
             Reset all settings to default
@@ -365,7 +365,7 @@ const SettingsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-indigo-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm"
+              className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm"
             >
               <Check size={18} />
               Settings saved automatically
