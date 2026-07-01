@@ -201,15 +201,15 @@ export default function RootLayout({ children }) {
           {/* <LiteModeBanner /> */}
 
           <main>{children}</main>
-          <CookieConsent />
+          {/* <CookieConsent />
           <PopupDeveloperFeedback />
-          <main>{children}</main>
+          <main>{children}</main> */}
           <CookieConsent />
           <PopupDeveloperFeedback />
 
           <Footer />
           {/* </ThemeWrapper> */}
-          <Footer />
+          {/* <Footer /> */}
         </ThemeWrapper>
       </body>
     </html>

@@ -17,7 +17,7 @@ import {
   X,
   ArrowRight,
   ExternalLink,
-  AlertCircle, // Imported for the notice layout
+  AlertCircle,
 } from "lucide-react";
 import {
   motion,
@@ -29,6 +29,11 @@ import {
 // --- PLACEHOLDERS ---
 import Logo from "./Logo";
 // --------------------
+const ALTERNATE_DOMAINS = [
+  "skq.qzz.io",
+  "comsic.qzz.io",
+  "movie.sumit.info.np",
+];
 
 const QuickSearch = dynamic(() => import("../searchbar"), {
   ssr: false,
@@ -53,6 +58,7 @@ const Header = () => {
 
     setIsScrolled(!isAtTop);
 
+    // Prevent hiding the header if the mobile menu is open
     if (scrolledDown && !isMobileMenuOpen) {
       setIsHidden(true);
     } else {
@@ -92,60 +98,17 @@ const Header = () => {
         initial={{ y: 0 }}
         animate={isHidden ? { y: "-100%" } : { y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ${
-          isScrolled
-            ? "bg-neutral-950/80 backdrop-blur-md border-white/10"
+        className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 flex flex-col ${
+          isScrolled || isMobileMenuOpen
+            ? "bg-neutral-950/90 backdrop-blur-md border-white/10"
             : "bg-black/98 backdrop-blur-md border-transparent"
         }`}
       >
         {/* --- LITE MODE BANNER --- */}
         <LiteModeBanner />
 
-        {/* --- ALTERNATE DOMAIN NOTICE TOP BANNER --- */}
-        <AnimatePresence>
-          {showDomainNotice && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-neutral-900 border-b border-white/5 overflow-hidden"
-            >
-              <div className="w-full max-w-[1400px] mx-auto px-6 h-9 flex items-center justify-between text-[11px] tracking-wider font-mono text-neutral-400">
-                <div className="flex items-center gap-2 mx-auto sm:mx-0">
-                  <AlertCircle
-                    size={12}
-                    className="text-neutral-500 animate-pulse"
-                  />
-                  <span>
-                    NOTICE:{" "}
-                    <span className="text-neutral-200">
-                      Bookmark our alternate domains
-                    </span>{" "}
-                    if main site gets down temporarily.
-                  </span>
-                </div>
-                {/* Optional Actionable Links & Close Button */}
-                <div className="hidden sm:flex items-center gap-4">
-                  <Link
-                    href="/legal/domains"
-                    className="text-white hover:underline flex items-center gap-1 font-bold text-[10px] uppercase"
-                  >
-                    View Mirrors <ExternalLink size={10} />
-                  </Link>
-                  <button
-                    onClick={() => setShowDomainNotice(false)}
-                    className="text-neutral-500 hover:text-white transition-colors ml-2"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* SWISS GRID LAYOUT */}
-        <div className="w-full h-16 md:h-20 flex items-stretch">
+        {/* SWISS GRID LAYOUT (Main Nav) */}
+        <div className="w-full h-16 md:h-20 flex items-stretch relative z-20">
           {/* 1. BRANDING (Left) */}
           <div className="flex items-center px-6 md:px-10 border-r border-white/5 bg-gradient-to-r from-black/20 to-transparent">
             <div
@@ -260,21 +223,71 @@ const Header = () => {
           </div>
         </div>
 
+        {/* --- ALTERNATE DOMAIN TICKER --- */}
+        <AnimatePresence>
+          {showDomainNotice && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="w-full bg-white/[0.01] backdrop-blur-md border-t border-white/5 overflow-hidden relative z-10"
+            >
+              <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-neutral-400">
+                <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  <div className="flex items-center gap-1.5 shrink-0 text-white/40">
+                    <AlertCircle size={12} />
+                    <span className="hidden sm:block">MIRRORS:</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    {ALTERNATE_DOMAINS.map((domain) => (
+                      <a
+                        key={domain}
+                        href={`https://${domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="snap-start shrink-0 text-neutral-400 hover:text-white transition-colors flex items-center gap-1"
+                      >
+                        {domain}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-white/5 bg-gradient-to-l from-transparent to-transparent">
+                  <Link
+                    href="/legal/domains"
+                    className="text-white hover:underline uppercase font-bold tracking-normal"
+                  >
+                    <span className="hidden sm:inline">All Mirrors</span>
+                    <span className="sm:hidden">More</span>
+                  </Link>
+                  <button
+                    onClick={() => setShowDomainNotice(false)}
+                    className="text-neutral-500 hover:text-white transition-colors"
+                    aria-label="Dismiss notice"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* --- MOBILE MENU --- */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: "circOut" }}
-              className="fixed inset-0 top-[64px] z-40 bg-neutral-950/95 backdrop-blur-xl border-t border-white/10"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              // top-full forces it to attach perfectly below whichever banners are visible
+              className="absolute top-full left-0 right-0 h-[100dvh] bg-neutral-950/95 backdrop-blur-xl border-t border-white/10"
             >
-              <div className="flex flex-col h-full p-8">
-                <span className="text-[10px] font-mono text-neutral-600 mb-8 block border-b border-white/5 pb-4">
-                  DIRECTORY_01
-                </span>
-
+              {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
+              <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
                 <nav className="flex flex-col space-y-6">
                   {navLinks.map((item, i) => (
                     <motion.div
