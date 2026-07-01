@@ -75,8 +75,8 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
         whileTap={{ scale: 0.8 }}
         className={`absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md shadow-lg border transition-all duration-300 ease-out ${
           isFavorite
-            ? "bg-rose-500/20 border-rose-500/50"
-            : "bg-black/30 border-white/10 hover:bg-black/60"
+            ? "bg-destructive border-destructive text-destructive-foreground"
+            : "bg-background/30 border-border text-foreground hover:bg-background/60"
         }`}
       >
         <AnimatePresence mode="wait">
@@ -106,7 +106,7 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
       {/* MAIN CARD LINK */}
       <Link
         href={linkPath}
-        className={`flex w-full h-40 bg-[#141414] rounded-[2rem] overflow-hidden border border-white/5 shadow-md hover:shadow-2xl hover:border-white/10 hover:bg-[#1a1a1a] transition-all duration-300 ${className || ""}`}
+        className={`flex w-full h-40 bg-card rounded-[2rem] overflow-hidden border border-border shadow-md hover:shadow-2xl hover:border-foreground/20 hover:bg-card/80 transition-all duration-300 ${className || ""}`}
       >
         {/* --- LEFT: IMAGE --- */}
         <div className="p-2 h-full w-[120px] flex-shrink-0">
@@ -132,44 +132,44 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
             <span
               className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors duration-300 ${
                 isTV
-                  ? "bg-[#e8def8] text-[#1d192b] group-hover:bg-[#d0bcff]"
-                  : "bg-[#c4eed0] text-[#0a2010] group-hover:bg-[#bceeff]"
+                  ? "bg-primary text-primary-foreground group-hover:opacity-90"
+                  : "bg-secondary text-secondary-foreground group-hover:opacity-90"
               }`}
             >
               {isTV ? "TV" : "FILM"}
             </span>
 
             {MovieCard.vote_average > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#25232a] text-[#ffdcc2] text-[10px] font-bold">
-                <Star size={10} className="fill-[#ffdcc2]" />
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-foreground text-[10px] font-bold">
+                <Star size={10} className="fill-foreground" />
                 {MovieCard.vote_average?.toFixed(1)}
               </div>
             )}
           </div>
 
           <div className="pr-8">
-            <h3 className="text-lg font-bold text-white leading-tight line-clamp-1 mb-0.5 group-hover:text-violet-200 transition-colors duration-300">
+            <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-1 mb-0.5 group-hover:text-primary transition-colors duration-300">
               {title}
             </h3>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
             <Calendar size={12} />
             <span>
               {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
             </span>
           </div>
 
-          <p className="text-[11px] text-neutral-500 line-clamp-1 leading-relaxed">
+          <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed">
             {MovieCard.overview || "No description available."}
           </p>
 
           <div className="mt-auto flex justify-end">
             <motion.div
               whileTap={{ scale: 0.95 }}
-              className="bg-white text-black px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm hover:brightness-110 transition-all"
+              className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm hover:brightness-110 transition-all"
             >
-              <PlayCircle size={14} className="fill-black text-white" />
+              <PlayCircle size={14} className="fill-primary-foreground text-primary" />
               WATCH
             </motion.div>
           </div>

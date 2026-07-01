@@ -26,8 +26,7 @@ html {
 }
 
 body {
-  background-image: linear-gradient(to top, #141414 0%, rgb(8, 8, 8) 100%);
-  /* background-image: linear-gradient(to bottom, #09203f 0%, #242222 100%); */
+  background-color: hsl(var(--background));
 }
 @keyframes spin-slow {
   0% {
@@ -148,9 +147,9 @@ body {
   scrollbar-color: rgb(51 65 85 / 0.5) rgb(15 23 42 / 0.3);
 }
 
-/* Make sure scrollbar blends with dark backgrounds */
+/* Make sure scrollbar blends with theme backgrounds */
 html {
-  background: rgb(2 6 23); /* Very dark background */
+  background: hsl(var(--background));
 }
 .jingle-letter::after,
 .bells-letter::after {
