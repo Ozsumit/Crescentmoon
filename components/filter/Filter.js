@@ -65,11 +65,11 @@ const GenreSelector = ({
           className="absolute right-0 top-full mt-3 z-[100] w-[90vw] sm:w-[500px] md:w-[600px] px-1"
         >
           {/* Glass Container */}
-          <div className="rounded-3xl border border-white/10 bg-[#0a0a0a]/95 backdrop-blur-2xl shadow-2xl overflow-hidden p-6 ring-1 ring-white/5">
+          <div className="rounded-3xl border border-border bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden p-6 ring-1 ring-border">
             {/* Header / Search Area */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-2 text-white/80">
-                <Sparkles size={16} className="text-purple-400" />
+              <div className="flex items-center gap-2 text-foreground/80">
+                <Sparkles size={16} className="text-primary" />
                 <h3 className="text-sm font-bold uppercase tracking-widest">
                   Filter by Genre
                 </h3>
@@ -81,11 +81,11 @@ const GenreSelector = ({
                   placeholder="Search..."
                   value={genreFilter}
                   onChange={(e) => setGenreFilter(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:bg-white/10 focus:border-purple-500/50 transition-all"
+                  className="w-full pl-9 pr-4 py-2 bg-background/50 border border-border rounded-lg text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:bg-background/80 focus:border-primary/50 transition-all"
                 />
                 <Search
                   size={14}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-purple-400 transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/30 group-focus-within:text-primary transition-colors"
                 />
               </div>
             </div>
@@ -107,15 +107,15 @@ const GenreSelector = ({
                           relative px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 border text-left
                           ${
                             isActive
-                              ? "border-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-900/20 scale-[1.02]"
-                              : "border-white/5 bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white hover:border-white/20 hover:scale-[1.02]"
+                              ? "border-transparent bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
+                              : "border-border bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:border-foreground/20 hover:scale-[1.02]"
                           }
                         `}
                       >
                         {isActive && (
                           <motion.span
                             layoutId="activeDot"
-                            className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-white shadow-sm"
+                            className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-primary-foreground shadow-sm"
                           />
                         )}
                         <span className="relative z-10 truncate block pr-2">
@@ -126,7 +126,7 @@ const GenreSelector = ({
                   })}
                 </div>
               ) : (
-                <div className="py-8 text-center text-neutral-500 text-sm">
+                <div className="py-8 text-center text-muted-foreground text-sm">
                   No genres found.
                 </div>
               )}
@@ -137,11 +137,11 @@ const GenreSelector = ({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-5 pt-4 border-t border-white/5 flex justify-end"
+                className="mt-5 pt-4 border-t border-border flex justify-end"
               >
                 <button
                   onClick={onClearGenres}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 >
                   <X size={14} />
                   Clear Filters

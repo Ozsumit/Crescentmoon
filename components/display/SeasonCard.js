@@ -51,7 +51,7 @@ const SeasonCard = ({ SeasonDetails, SeriesId }) => {
 
   return (
     <div
-      className="relative bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transition-all hover:scale-105 hover:shadow-2xl"
+      className="relative bg-card border border-border rounded-xl overflow-hidden shadow-lg transition-all hover:scale-105 hover:shadow-2xl"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -74,13 +74,13 @@ const SeasonCard = ({ SeasonDetails, SeriesId }) => {
 
         {/* Hover Overlay */}
         {isHovered && (
-          <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center text-white p-4 text-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex flex-col justify-center items-center text-foreground p-4 text-center">
             <p className="text-sm mb-2 line-clamp-3">
               {SeasonDetails.overview || "No overview available"}
             </p>
             <Link
               href={`/series/${SeriesId}/season/${SeasonDetails.season_number}`}
-              className="flex items-center text-sm hover:text-blue-400 transition-colors"
+              className="flex items-center text-sm hover:text-primary transition-colors font-bold uppercase tracking-wider"
             >
               <Info size={16} className="mr-2" />
               More Details
@@ -91,12 +91,12 @@ const SeasonCard = ({ SeasonDetails, SeriesId }) => {
 
       {/* Card Footer */}
       <div className="p-4">
-        <h3 className="text-center z-[100] text-slate-200 font-semibold text-base mb-2 line-clamp-1">
+        <h3 className="text-center z-[100] text-foreground font-semibold text-base mb-2 line-clamp-1">
           {SeasonDetails.name || "Unknown Season"}
         </h3>
-        <div className="flex justify-between items-center text-xs text-slate-400">
+        <div className="flex justify-between items-center text-xs text-muted-foreground">
           <div className="flex items-center">
-            <Star size={14} className="mr-1 text-yellow-500" />
+            <Star size={14} className="mr-1 text-primary fill-current" />
             <span>{rating}</span>
           </div>
           <span>{formattedDate}</span>

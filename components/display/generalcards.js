@@ -67,7 +67,7 @@ const HomeCards2 = ({ MovieCard }) => {
   }, [MovieCard.id]);
 
   return (
-    <div className="bg-slate-700/50 rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative">
+    <div className="bg-card border border-border rounded-xl overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative">
       <Link href={getLink()} title={renderTitle()} className="block">
         <Image
           src={getImagePath()}
@@ -78,19 +78,19 @@ const HomeCards2 = ({ MovieCard }) => {
           unoptimized
         />
         {/* Subtle Type Tag */}
-        <div className="absolute top-2 left-2 bg-black/30 text-white/70 px-2 py-0.5 rounded text-xs">
+        <div className="absolute top-2 left-2 bg-background/30 text-foreground/70 px-2 py-0.5 rounded text-xs backdrop-blur-sm border border-border">
           {additionalDetails.type}
         </div>
       </Link>
       <div className="p-4">
-        <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
+        <h3 className="text-center text-foreground font-semibold text-base mb-2 line-clamp-1">
           {renderTitle()}
         </h3>
 
         {/* Additional Details Section */}
-        <div className="flex justify-between items-center text-xs text-slate-400">
+        <div className="flex justify-between items-center text-xs text-muted-foreground">
           <div className="flex items-center">
-            <Star size={14} className="mr-1 text-yellow-500" />
+            <Star size={14} className="mr-1 text-primary fill-current" />
             <span>{additionalDetails.rating}</span>
           </div>
 
@@ -104,13 +104,13 @@ const HomeCards2 = ({ MovieCard }) => {
       {/* Favorite Toggle Button */}
       <button
         onClick={handleFavoriteToggle}
-        className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-1 hover:bg-black/70 transition-colors"
+        className="absolute top-2 right-2 z-20 bg-background/50 rounded-full p-1 hover:bg-background/70 transition-colors border border-border"
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
         <Heart
           size={16}
-          fill={isFavorite ? "red" : "none"}
-          stroke={isFavorite ? "red" : "white"}
+          fill={isFavorite ? "hsl(var(--primary))" : "none"}
+          stroke={isFavorite ? "hsl(var(--primary))" : "currentColor"}
           className="transition-colors"
         />
       </button>

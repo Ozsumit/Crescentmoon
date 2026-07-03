@@ -60,7 +60,7 @@ const AboutUs = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F9F9F9] text-neutral-900 overflow-hidden font-sans selection:bg-neutral-200 selection:text-black">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden font-sans selection:bg-primary/30">
       {/* Custom Cursor: Subtle Ring */}
       <motion.div
         ref={cursorRef}
@@ -80,9 +80,9 @@ const AboutUs = () => {
             width: isHovering ? "3rem" : "1rem",
             height: isHovering ? "3rem" : "1rem",
             border: isHovering
-              ? "1px solid rgba(0,0,0,0.2)"
+              ? "1px solid var(--accent-custom)"
               : "0px solid transparent",
-            backgroundColor: isHovering ? "transparent" : "black",
+            backgroundColor: isHovering ? "transparent" : "var(--accent-custom)",
           }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className="rounded-full flex items-center justify-center"
@@ -90,7 +90,7 @@ const AboutUs = () => {
           {/* Tiny dot inside the ring when hovering */}
           <motion.div
             animate={{ opacity: isHovering ? 1 : 0 }}
-            className="w-1 h-1 bg-black rounded-full"
+            className="w-1 h-1 bg-foreground rounded-full"
           />
         </motion.div>
       </motion.div>
@@ -104,7 +104,7 @@ const AboutUs = () => {
           variants={sectionVariants}
           className="mb-20"
         >
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 border-b border-neutral-200 pb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 border-b border-border pb-12">
             <div>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -112,18 +112,18 @@ const AboutUs = () => {
                 transition={{ duration: 1, delay: 0.2 }}
                 className="flex items-center gap-4 mb-4"
               >
-                <span className="w-12 h-[1px] bg-black"></span>
-                <span className="text-xs font-semibold tracking-widest uppercase text-neutral-500">
+                <span className="w-12 h-[1px] bg-foreground"></span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
                   Established 2024
                 </span>
               </motion.div>
-              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] text-neutral-900">
-                Crescent<span className="text-neutral-400">Moon</span>.
+              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.9] text-foreground">
+                Crescent<span className="text-muted-foreground">Moon</span>.
               </h1>
             </div>
 
             <div className="md:max-w-md">
-              <p className="text-lg md:text-xl text-neutral-600 font-medium leading-relaxed">
+              <p className="text-lg md:text-xl text-muted-foreground font-medium leading-relaxed">
                 Curating the invisible threads between storytelling and
                 audience. Cinema, redefined for the modern purist.
               </p>
@@ -164,27 +164,27 @@ const AboutUs = () => {
                   transition: { delay: index * 0.15, duration: 0.8 },
                 },
               }}
-              className="interactive-card group relative bg-white rounded-3xl p-8 border border-neutral-100 shadow-[0_5px_15px_-5px_rgba(0,0,0,0.02)]"
+              className="interactive-card group relative bg-card rounded-3xl p-8 border border-border shadow-[0_5px_15px_-5px_rgba(0,0,0,0.02)]"
             >
               {/* Card Hover Micro-interaction */}
               <motion.div
-                className="absolute inset-0 rounded-3xl bg-neutral-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                className="absolute inset-0 rounded-3xl bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 layoutId={`hover-bg-${index}`}
               />
 
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-10">
-                  <div className="p-3 bg-neutral-100 rounded-2xl group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                  <div className="p-3 bg-muted rounded-2xl group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
                     <section.icon className="w-6 h-6" />
                   </div>
-                  <ArrowUpRight className="w-5 h-5 text-neutral-300 group-hover:text-black group-hover:rotate-45 transition-all duration-300 ease-out" />
+                  <ArrowUpRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:rotate-45 transition-all duration-300 ease-out" />
                 </div>
 
                 <div className="mt-auto">
-                  <h2 className="text-2xl font-bold tracking-tight mb-3 text-neutral-900">
+                  <h2 className="text-2xl font-bold tracking-tight mb-3 text-foreground">
                     {section.title}
                   </h2>
-                  <p className="text-neutral-500 leading-relaxed group-hover:text-neutral-700 transition-colors duration-300">
+                  <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-300">
                     {section.description}
                   </p>
                 </div>
@@ -199,17 +199,17 @@ const AboutUs = () => {
           whileInView="visible"
           viewport={{ once: true }}
           variants={sectionVariants}
-          className="mt-24 bg-neutral-900 rounded-[2.5rem] p-12 md:p-16 text-white overflow-hidden relative"
+          className="mt-24 bg-card rounded-[2.5rem] p-12 md:p-16 text-foreground overflow-hidden relative border border-border"
         >
           {/* Subtle Background Pattern */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-neutral-800 rounded-full blur-[100px] opacity-20 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-[100px] opacity-10 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
             <div className="max-w-xl">
               <h3 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
                 Ready to stream?
               </h3>
-              <p className="text-neutral-400 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Join thousands of cinephiles discovering their next obsession.
                 Start your journey with us today.
               </p>
@@ -220,9 +220,9 @@ const AboutUs = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] transition-shadow duration-300"
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-full font-bold text-lg hover:shadow-[0_0_20px_-5px_rgba(var(--primary),0.3)] transition-shadow duration-300"
                 >
-                  <Play className="w-5 h-5 fill-black" />
+                  <Play className="w-5 h-5 fill-current" />
                   <span>Start Watching</span>
                 </motion.button>
               </Link>
@@ -231,10 +231,10 @@ const AboutUs = () => {
                 <motion.button
                   whileHover={{
                     scale: 1.05,
-                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backgroundColor: "hsl(var(--muted))",
                   }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-transparent border border-neutral-700 text-white rounded-full font-bold text-lg transition-colors duration-300"
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-transparent border border-border text-foreground rounded-full font-bold text-lg transition-colors duration-300"
                 >
                   <Heart className="w-5 h-5" />
                   <span>Join Community</span>
@@ -246,17 +246,17 @@ const AboutUs = () => {
       </div>
 
       {/* Minimal Footer */}
-      <footer className="w-full py-12 px-6 border-t border-neutral-200 mt-12 bg-white">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm font-medium text-neutral-400">
+      <footer className="w-full py-12 px-6 border-t border-border mt-12 bg-card">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm font-medium text-muted-foreground">
           <p className="tracking-wide">&copy; 2024 CINEMOON.</p>
           <div className="flex gap-8 mt-4 md:mt-0">
-            <Link href="#" className="hover:text-black transition-colors">
+            <Link href="#" className="hover:text-primary transition-colors">
               Instagram
             </Link>
-            <Link href="#" className="hover:text-black transition-colors">
+            <Link href="#" className="hover:text-primary transition-colors">
               Twitter
             </Link>
-            <Link href="#" className="hover:text-black transition-colors">
+            <Link href="#" className="hover:text-primary transition-colors">
               LinkedIn
             </Link>
           </div>

@@ -63,7 +63,7 @@ const HighlightText = ({ text, highlight }) => {
           part.toLowerCase() === highlight.toLowerCase() ? (
             <span
               key={i}
-              className="text-white font-bold bg-indigo-500/20 px-0.5 rounded"
+              className="text-foreground font-bold bg-primary/20 px-0.5 rounded"
             >
               {part}
             </span>
@@ -94,7 +94,7 @@ const HighlightText = ({ text, highlight }) => {
         words.some((w) => w.toLowerCase() === part.toLowerCase()) ? (
           <span
             key={i}
-            className="text-white font-bold bg-indigo-500/20 px-0.5 rounded"
+            className="text-foreground font-bold bg-primary/20 px-0.5 rounded"
           >
             {part}
           </span>
@@ -122,14 +122,14 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
       layout="position"
       onClick={onClick}
       className={`group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors duration-200 z-10 ${
-        isSelected ? "text-white" : "text-neutral-400 hover:text-white"
+        isSelected ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {/* MATERIAL 3: GLIDING CURSOR */}
       {isSelected && (
         <motion.div
           layoutId="activeSearchItem"
-          className="absolute inset-0 bg-neutral-800 rounded-2xl -z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-white/5"
+          className="absolute inset-0 bg-muted rounded-2xl -z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-border"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -138,7 +138,7 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
       )}
 
       {/* Poster / Thumbnail */}
-      <div className="relative flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-neutral-900 shadow-sm ring-1 ring-white/10">
+      <div className="relative flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-muted shadow-sm ring-1 ring-border">
         {item.poster_path ? (
           <Image
             src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
@@ -148,7 +148,7 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
             sizes="48px"
           />
         ) : (
-          <div className="flex items-center justify-center w-full h-full text-neutral-700">
+          <div className="flex items-center justify-center w-full h-full text-muted-foreground">
             <Icon size={20} />
           </div>
         )}
@@ -159,7 +159,7 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
         <div className="flex items-center justify-between">
           <h4
             className={`text-base font-medium truncate ${
-              isSelected ? "text-white" : "text-neutral-200"
+              isSelected ? "text-foreground" : "text-foreground/80"
             }`}
           >
             <HighlightText text={title} highlight={searchQuery} />
@@ -167,23 +167,23 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
 
           {/* Rating Badge */}
           {item.vote_average > 0 && (
-            <div className="flex items-center gap-1 text-[10px] font-mono bg-white/10 px-1.5 py-0.5 rounded text-yellow-500 backdrop-blur-md">
+            <div className="flex items-center gap-1 text-[10px] font-mono bg-foreground/10 px-1.5 py-0.5 rounded text-accent-foreground backdrop-blur-md">
               <Star size={8} fill="currentColor" />
               <span>{item.vote_average.toFixed(1)}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono text-neutral-500 uppercase tracking-wider mt-0.5">
+        <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
           <span className="flex items-center gap-1.5">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                item.media_type === "movie" ? "bg-indigo-500" : "bg-rose-500"
+                item.media_type === "movie" ? "bg-primary" : "bg-secondary"
               } shadow-[0_0_8px_currentColor]`}
             />
             {mediaType}
           </span>
-          <span className="w-px h-3 bg-white/10" />
+          <span className="w-px h-3 bg-border" />
           <span className="flex items-center gap-1">
             <Calendar size={10} />
             {year}
@@ -371,18 +371,18 @@ const QuickSearch = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 gap-0 w-full max-w-2xl bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.8)] rounded-[24px] sm:rounded-[28px] overflow-hidden">
+      <DialogContent className="p-0 gap-0 w-full max-w-2xl bg-card/95 backdrop-blur-2xl border border-border shadow-[0_0_80px_rgba(0,0,0,0.8)] rounded-[24px] sm:rounded-[28px] overflow-hidden">
         {/* --- HEADER: INPUT FIELD --- */}
-        <div className="relative flex items-center h-16 sm:h-20 px-4 sm:px-6 border-b border-white/5 bg-white/[0.02]">
+        <div className="relative flex items-center h-16 sm:h-20 px-4 sm:px-6 border-b border-border bg-foreground/[0.02]">
           <Search
             className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-300 ${
-              isLoading ? "text-indigo-400" : "text-neutral-500"
+              isLoading ? "text-primary" : "text-muted-foreground"
             }`}
           />
 
           <input
             ref={inputRef}
-            className="flex-1 h-full bg-transparent border-none outline-none px-3 sm:px-4 text-lg sm:text-xl font-medium text-white placeholder-neutral-600 font-sans w-full"
+            className="flex-1 h-full bg-transparent border-none outline-none px-3 sm:px-4 text-lg sm:text-xl font-medium text-foreground placeholder-muted-foreground font-sans w-full"
             placeholder="Search exact titles or phonetics..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -393,9 +393,9 @@ const QuickSearch = ({ open, onOpenChange }) => {
           />
 
           {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
           ) : (
-            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-400">
+            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
               <span className="text-xs">ESC</span>
             </div>
           )}
@@ -405,15 +405,15 @@ const QuickSearch = ({ open, onOpenChange }) => {
         <div className="min-h-[300px] max-h-[60vh] sm:max-h-[500px] flex flex-col">
           {/* Empty State (No Search Term) -> Show Trending */}
           {!searchTerm && trending.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center text-neutral-600 gap-4 p-8">
-              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4 p-8">
+              <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center border border-border">
                 <Command size={32} strokeWidth={1.5} />
               </div>
               <div className="text-center space-y-1">
-                <p className="text-sm font-medium text-neutral-400">
+                <p className="text-sm font-medium text-muted-foreground">
                   Search for anything
                 </p>
-                <p className="text-xs font-mono text-neutral-600 uppercase tracking-wide">
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wide">
                   Movies • Series • Anime
                 </p>
               </div>
@@ -425,19 +425,19 @@ const QuickSearch = ({ open, onOpenChange }) => {
             {currentList.length > 0 ? (
               <div className="grid gap-1">
                 {/* Section Label (Swiss Style) */}
-                <div className="px-3 py-2 text-[10px] font-mono font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
+                <div className="px-3 py-2 text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                   {searchTerm ? (
                     <>
-                      <Layers size={12} className="text-indigo-400" /> Matches &
+                      <Layers size={12} className="text-primary" /> Matches &
                       Guesses
                     </>
                   ) : (
                     <>
-                      <TrendingUp size={12} className="text-rose-400" />{" "}
+                      <TrendingUp size={12} className="text-secondary" />{" "}
                       Trending Today
                     </>
                   )}
-                  <div className="h-px bg-white/5 flex-1" />
+                  <div className="h-px bg-border flex-1" />
                 </div>
 
                 <AnimatePresence mode="popLayout">
@@ -455,18 +455,18 @@ const QuickSearch = ({ open, onOpenChange }) => {
             ) : (
               !isLoading &&
               searchTerm && (
-                <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-3 py-10">
-                  <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center border border-white/5">
-                    <Search size={28} className="text-neutral-600" />
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 py-10">
+                  <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center border border-border">
+                    <Search size={28} className="text-muted-foreground" />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium text-neutral-400 mb-1">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
                       No matching records found
                     </p>
-                    <p className="text-xs text-neutral-600 max-w-[250px] mx-auto">
+                    <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">
                       Checked exact matches, phonetics, and misspellings, but
                       couldn't decode{" "}
-                      <span className="text-neutral-300 font-semibold">
+                      <span className="text-foreground font-semibold">
                         "{searchTerm}"
                       </span>
                       .
@@ -479,7 +479,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
         </div>
 
         {/* --- FOOTER: SPECS --- */}
-        <div className="h-10 sm:h-12 bg-neutral-950/80 border-t border-white/5 flex items-center justify-between px-4 sm:px-6 text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+        <div className="h-10 sm:h-12 bg-background/80 border-t border-border flex items-center justify-between px-4 sm:px-6 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
           <div className="flex items-center gap-4">
             {currentList.length > 0 && (
               <span>{currentList.length} items found</span>
@@ -494,7 +494,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
               </span>
               <span>NAVIGATE</span>
             </span>
-            <div className="w-px h-3 bg-white/10 hidden md:block" />
+            <div className="w-px h-3 bg-border hidden md:block" />
             <span className="hidden sm:flex items-center gap-1.5">
               <CornerDownLeft size={10} />
               <span>OPEN</span>

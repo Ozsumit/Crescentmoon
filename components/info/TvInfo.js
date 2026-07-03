@@ -34,7 +34,7 @@ import HomeCards from "@/components/display/HomeCard";
 
 const CastMember = ({ cast }) => (
   <div className="flex flex-col gap-3 group">
-    <div className="w-full aspect-[2/3] overflow-hidden rounded-2xl bg-neutral-900 border border-white/5 relative">
+    <div className="w-full aspect-[2/3] overflow-hidden rounded-2xl bg-muted border border-border relative">
       <img
         src={
           cast.profile_path
@@ -46,8 +46,8 @@ const CastMember = ({ cast }) => (
       />
     </div>
     <div>
-      <p className="text-sm font-bold text-white leading-tight">{cast.name}</p>
-      <p className="text-xs text-neutral-500 font-mono mt-1">
+      <p className="text-sm font-bold text-foreground leading-tight">{cast.name}</p>
+      <p className="text-xs text-muted-foreground font-mono mt-1">
         {cast.character}
       </p>
     </div>
@@ -62,29 +62,29 @@ const Review = ({ review }) => {
     : review.content.slice(0, 300);
 
   return (
-    <div className="bg-[#0A0A0A] rounded-[1.5rem] p-6 border border-white/5 hover:border-white/10 transition-colors">
+    <div className="bg-card rounded-[1.5rem] p-6 border border-border hover:border-foreground/10 transition-colors">
       <div className="flex items-start gap-4">
-        <Avatar className="w-10 h-10 border border-white/10">
+        <Avatar className="w-10 h-10 border border-border">
           <AvatarImage
             src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.author}`}
           />
-          <AvatarFallback className="bg-neutral-800 text-white">
+          <AvatarFallback className="bg-muted text-foreground">
             {review.author.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-white">{review.author}</h3>
+            <h3 className="font-bold text-foreground">{review.author}</h3>
             {review.author_details?.rating && (
-              <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-full border border-white/5">
-                <Star className="w-3 h-3 text-white" fill="currentColor" />
-                <span className="text-xs font-mono text-white">
+              <div className="flex items-center gap-1.5 bg-foreground/5 px-2 py-1 rounded-full border border-border">
+                <Star className="w-3 h-3 text-primary" fill="currentColor" />
+                <span className="text-xs font-mono text-foreground">
                   {review.author_details?.rating}/10
                 </span>
               </div>
             )}
           </div>
-          <div className="text-neutral-400 text-sm leading-relaxed font-light">
+          <div className="text-muted-foreground text-sm leading-relaxed font-light">
             <p>
               {displayContent}
               {isLongContent && !expanded && "..."}
@@ -92,7 +92,7 @@ const Review = ({ review }) => {
             {isLongContent && (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="mt-3 text-white hover:underline text-xs font-mono uppercase tracking-wider flex items-center gap-1"
+                className="mt-3 text-primary hover:underline text-xs font-mono uppercase tracking-wider flex items-center gap-1"
               >
                 {expanded ? "Show Less" : "Read More"}
               </button>
@@ -114,7 +114,7 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
     >
       <div
         className={`
-                relative overflow-hidden bg-[#0A0A0A] border border-white/5 transition-all duration-300 hover:border-white/20
+                relative overflow-hidden bg-card border border-border transition-all duration-300 hover:border-foreground/20
                 ${
                   isGrid
                     ? "rounded-[2rem] h-full flex flex-col"
@@ -125,7 +125,7 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
         {/* Image Section */}
         <div
           className={`
-                    relative overflow-hidden bg-neutral-900
+                    relative overflow-hidden bg-muted
                     ${
                       isGrid
                         ? "aspect-[16/9] w-full"
@@ -143,9 +143,9 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {/* Progress Overlay (Visual flair) */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-background/10">
             <div
-              className="h-full bg-white w-[0%]"
+              className="h-full bg-primary w-[0%]"
               style={{ width: `${(season.episode_count / 24) * 100}%` }}
             />
           </div>
@@ -159,10 +159,10 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
         >
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-bold text-white group-hover:text-neutral-300 transition-colors">
+              <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                 {season.name}
               </h3>
-              <div className="flex items-center gap-3 mt-1 text-xs font-mono text-neutral-500 uppercase tracking-wide">
+              <div className="flex items-center gap-3 mt-1 text-xs font-mono text-muted-foreground uppercase tracking-wide">
                 <span>{season.episode_count} EPS</span>
                 {season.air_date && (
                   <span>{new Date(season.air_date).getFullYear()}</span>
@@ -170,8 +170,8 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
               </div>
             </div>
             {season.vote_average > 0 && (
-              <div className="flex items-center gap-1 text-white">
-                <Star className="w-3 h-3" fill="currentColor" />
+              <div className="flex items-center gap-1 text-foreground">
+                <Star className="w-3 h-3 text-primary" fill="currentColor" />
                 <span className="text-xs font-bold">
                   {season.vote_average.toFixed(1)}
                 </span>
@@ -180,7 +180,7 @@ const SeasonCard = ({ season, viewType, seriesId }) => {
           </div>
 
           {!isGrid && season.overview && (
-            <p className="text-sm text-neutral-400 line-clamp-2 mt-2 font-light">
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-2 font-light">
               {season.overview}
             </p>
           )}
@@ -258,21 +258,21 @@ const TvInfo = ({
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-black text-white pb-24 relative overflow-x-hidden selection:bg-white/20 selection:text-white">
+      <div className="min-h-screen bg-background text-foreground pb-24 relative overflow-x-hidden selection:bg-primary/20 selection:text-foreground">
         {/* --- BACKDROP & NOISE --- */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05]" />
         </div>
 
         <div className="absolute top-0 left-0 right-0 h-[80vh] z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/80 to-black z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/90 to-background z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-background/90 z-10" />
           <motion.img
             initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.4 }}
+          animate={{ scale: 1, opacity: 0.1 }}
             transition={{ duration: 1.5 }}
             src={backdropPath}
-            className="w-full h-full object-cover"
+          className="w-full h-full object-cover blur-[80px]"
           />
         </div>
 
@@ -282,9 +282,9 @@ const TvInfo = ({
           <div className="flex justify-between items-center mb-12">
             <Link
               href="/"
-              className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
             >
-              <div className="p-2 rounded-full border border-white/10 bg-black/50 group-hover:bg-white group-hover:text-black transition-all">
+            <div className="p-2 rounded-full border border-border bg-card group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                 <ArrowLeft size={20} />
               </div>
               <span className="font-mono text-xs uppercase tracking-widest hidden sm:block">
@@ -294,7 +294,7 @@ const TvInfo = ({
           </div>
 
           {/* --- CONTENT SURFACE --- */}
-          <div className="bg-[#080808] border border-white/5 rounded-[2.5rem] p-6 md:p-12 shadow-2xl relative overflow-hidden min-h-[800px]">
+          <div className="bg-card border border-border rounded-[2.5rem] p-6 md:p-12 shadow-2xl relative overflow-hidden min-h-[800px]">
             {/* Inner Background Noise */}
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 
@@ -304,7 +304,7 @@ const TvInfo = ({
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="aspect-[2/3] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl relative group"
+                className="aspect-[2/3] rounded-[2rem] overflow-hidden border border-border shadow-2xl relative group"
                 >
                   <img
                     src={posterPath}
@@ -318,8 +318,8 @@ const TvInfo = ({
                     onClick={handleFavoriteToggle}
                     className={`flex items-center justify-center gap-2 py-4 rounded-2xl border transition-all duration-300 ${
                       isFavorite
-                        ? "bg-white text-black border-white hover:bg-neutral-200"
-                        : "bg-transparent text-white border-white/10 hover:border-white/30 hover:bg-white/5"
+                      ? "bg-destructive text-destructive-foreground border-destructive"
+                      : "bg-primary text-primary-foreground border-primary hover:opacity-90"
                     }`}
                   >
                     <Heart
@@ -333,7 +333,7 @@ const TvInfo = ({
 
                   <button
                     onClick={handleShare}
-                    className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-white/10 bg-transparent text-white hover:bg-white/5 hover:border-white/30 transition-all"
+                  className="flex items-center justify-center gap-2 py-4 rounded-2xl border border-border bg-muted text-foreground hover:bg-muted/80 transition-all"
                   >
                     <Share2 size={18} />
                     <span className="font-bold text-sm tracking-wide">
@@ -343,34 +343,34 @@ const TvInfo = ({
                 </div>
 
                 {/* Quick Stats */}
-                <div className="space-y-4 p-6 rounded-[2rem] bg-[#0A0A0A] border border-white/5">
-                  <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                    <span className="text-neutral-500 font-mono text-xs uppercase">
+                <div className="space-y-4 p-6 rounded-[2rem] bg-muted border border-border">
+                  <div className="flex justify-between items-center pb-4 border-b border-border">
+                    <span className="text-muted-foreground font-mono text-xs uppercase">
                       Rating
                     </span>
                     <div className="flex items-center gap-2">
                       <Star
-                        className="text-white w-4 h-4"
+                        className="text-foreground w-4 h-4"
                         fill="currentColor"
                       />
-                      <span className="text-white font-bold">
+                      <span className="text-foreground font-bold">
                         {TvDetail.vote_average?.toFixed(1)}/10
                       </span>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                    <span className="text-neutral-500 font-mono text-xs uppercase">
+                  <div className="flex justify-between items-center pb-4 border-b border-border">
+                    <span className="text-muted-foreground font-mono text-xs uppercase">
                       Seasons
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="text-foreground font-bold">
                       {TvDetail.number_of_seasons}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500 font-mono text-xs uppercase">
+                    <span className="text-muted-foreground font-mono text-xs uppercase">
                       First Air
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="text-foreground font-bold">
                       {new Date(TvDetail.first_air_date).getFullYear()}
                     </span>
                   </div>
@@ -386,24 +386,24 @@ const TvInfo = ({
                     {genreArr?.map((g, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 rounded-full border border-white/10 text-[10px] font-mono uppercase tracking-wider text-neutral-300"
+                        className="px-3 py-1 rounded-full border border-border text-[10px] font-mono uppercase tracking-wider text-muted-foreground"
                       >
                         {g.name || g}
                       </span>
                     ))}
                   </div>
 
-                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white leading-[0.9]">
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-foreground leading-[0.9]">
                     {TvDetail.name}
                   </h1>
 
                   {TvDetail.tagline && (
-                    <p className="text-xl text-neutral-400 font-light italic border-l-2 border-white/20 pl-4">
+                    <p className="text-xl text-muted-foreground font-light italic border-l-2 border-foreground/20 pl-4">
                       "{TvDetail.tagline}"
                     </p>
                   )}
 
-                  <p className="text-lg text-neutral-300 leading-relaxed font-light max-w-3xl">
+                  <p className="text-lg text-muted-foreground leading-relaxed font-light max-w-3xl">
                     {TvDetail.overview}
                   </p>
                 </div>
@@ -415,7 +415,7 @@ const TvInfo = ({
                   onValueChange={setActiveTab}
                   className="w-full"
                 >
-                  <div className="border-b border-white/10 pb-1 mb-8">
+                  <div className="border-b border-border pb-1 mb-8">
                     <TabsList className="bg-transparent p-0 flex gap-8 w-auto justify-start h-auto">
                       {["seasons", "cast", "reviews", "similar"].map((tab) => (
                         <TabsTrigger
@@ -424,8 +424,8 @@ const TvInfo = ({
                           className="
                                                 relative px-0 py-4 bg-transparent 
                                                 text-lg md:text-xl font-medium tracking-tight transition-colors
-                                                text-neutral-500 hover:text-neutral-300
-                                                data-[state=active]:text-white
+                                                text-muted-foreground hover:text-foreground/80
+                                                data-[state=active]:text-foreground
                                                 data-[state=active]:bg-transparent 
                                                 data-[state=active]:shadow-none 
                                             "
@@ -434,7 +434,7 @@ const TvInfo = ({
                           {activeTab === tab && (
                             <motion.div
                               layoutId="tvTabIndicator"
-                              className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-white"
+                              className="absolute bottom-[-5px] left-0 right-0 h-[2px] bg-primary"
                             />
                           )}
                         </TabsTrigger>
@@ -448,13 +448,13 @@ const TvInfo = ({
                     className="mt-0 focus-visible:outline-none"
                   >
                     <div className="flex justify-end mb-6">
-                      <div className="bg-[#0A0A0A] p-1 rounded-lg border border-white/10 flex gap-1">
+                      <div className="bg-muted p-1 rounded-lg border border-border flex gap-1">
                         <button
                           onClick={() => setViewType("grid")}
                           className={`p-2 rounded-md transition-all ${
                             viewType === "grid"
-                              ? "bg-white/10 text-white"
-                              : "text-neutral-500"
+                              ? "bg-foreground/10 text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
                           <LayoutGrid size={16} />
@@ -463,8 +463,8 @@ const TvInfo = ({
                           onClick={() => setViewType("list")}
                           className={`p-2 rounded-md transition-all ${
                             viewType === "list"
-                              ? "bg-white/10 text-white"
-                              : "text-neutral-500"
+                              ? "bg-foreground/10 text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
                           <LayoutList size={16} />
@@ -517,9 +517,9 @@ const TvInfo = ({
                         ))}
                       </div>
                     ) : (
-                      <div className="p-12 text-center border border-white/5 rounded-[2rem] bg-white/5">
-                        <MessageCircle className="mx-auto h-12 w-12 text-neutral-700 mb-4" />
-                        <p className="text-neutral-500 font-mono uppercase">
+                      <div className="p-12 text-center border border-border rounded-[2rem] bg-muted/50">
+                        <MessageCircle className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <p className="text-muted-foreground font-mono uppercase">
                           No Reviews Yet
                         </p>
                       </div>
@@ -550,9 +550,9 @@ const TvInfo = ({
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
-              className="fixed bottom-8 right-8 z-50 bg-white text-black px-6 py-4 rounded-xl shadow-2xl font-bold flex items-center gap-3"
+              className="fixed bottom-8 right-8 z-50 bg-card border border-border text-foreground px-6 py-4 rounded-xl shadow-2xl font-bold flex items-center gap-3"
             >
-              <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               {alertMessage}
             </motion.div>
           )}

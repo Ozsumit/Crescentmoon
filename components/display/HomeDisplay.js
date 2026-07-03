@@ -15,18 +15,18 @@ import { motion, AnimatePresence } from "framer-motion";
 // --- SKELETONS ---
 const CardSkeleton = () => (
   <div className="flex flex-col gap-3">
-    <div className="w-full aspect-[2/3] bg-neutral-900/50 rounded-[2rem] animate-pulse border border-white/5" />
-    <div className="h-4 w-3/4 bg-neutral-900/50 rounded-full animate-pulse" />
-    <div className="h-3 w-1/4 bg-neutral-900/50 rounded-full animate-pulse" />
+    <div className="w-full aspect-[2/3] bg-muted rounded-[2rem] animate-pulse border border-border" />
+    <div className="h-4 w-3/4 bg-muted rounded-full animate-pulse" />
+    <div className="h-3 w-1/4 bg-muted rounded-full animate-pulse" />
   </div>
 );
 
 const HorizontalCardSkeleton = () => (
-  <div className="flex gap-4 h-40 p-2 bg-neutral-900/30 rounded-[2rem] border border-white/5">
-    <div className="w-28 h-full bg-neutral-800/50 rounded-[1.5rem] animate-pulse" />
+  <div className="flex gap-4 h-40 p-2 bg-muted/30 rounded-[2rem] border border-border">
+    <div className="w-28 h-full bg-muted rounded-[1.5rem] animate-pulse" />
     <div className="flex-1 flex flex-col justify-center gap-3">
-      <div className="h-6 w-3/4 bg-neutral-800/50 rounded-full animate-pulse" />
-      <div className="h-4 w-1/3 bg-neutral-800/50 rounded-full animate-pulse" />
+      <div className="h-6 w-3/4 bg-muted rounded-full animate-pulse" />
+      <div className="h-4 w-1/3 bg-muted rounded-full animate-pulse" />
     </div>
   </div>
 );
@@ -400,7 +400,7 @@ const HomeDisplay = ({ initialData = [] }) => {
 
             {/* Error */}
             {error && !isLoading && (
-              <div className="p-12 text-center text-red-400 font-mono tracking-widest bg-red-900/10 rounded-3xl border border-red-500/20">
+              <div className="p-12 text-center text-destructive font-mono tracking-widest bg-destructive/10 rounded-3xl border border-destructive/20">
                 ERR: {error}
               </div>
             )}

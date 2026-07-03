@@ -103,10 +103,10 @@ const GlassMediaCard = ({
       whileHover="hover"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu select-none group"
+    className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border isolate transform-gpu select-none group"
     >
       <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden">
-        <div className="absolute inset-0 bg-neutral-900">
+      <div className="absolute inset-0 bg-muted">
           <Image
             src={getImagePath(media.poster_path)}
             alt={title}
@@ -117,13 +117,13 @@ const GlassMediaCard = ({
             } ${isHovered ? "scale-110" : "scale-100"}`}
             onLoad={() => setImageLoaded(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
         </div>
 
         {/* PROGRESS BAR */}
-        <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10 z-20">
+      <div className="absolute bottom-0 left-0 w-full h-1.5 bg-foreground/10 z-20">
           <motion.div
-            className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+          className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
@@ -133,17 +133,17 @@ const GlassMediaCard = ({
         {/* GLASS BOTTOM INFO BOX */}
         <motion.div
           className="absolute bottom-1.5 left-0 right-0 p-2 z-10"
-          animate={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
+        animate={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
         >
-          <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/40">
+        <div className="backdrop-blur-xl border border-border rounded-[1.5rem] overflow-hidden shadow-lg bg-card/40">
             <div className="px-4 pt-4 pb-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${
                       isTV
-                        ? "bg-[#d0bcff] text-[#381e72]"
-                        : "bg-[#bceeff] text-[#001f2a]"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
                     }`}
                   >
                     {isTV && media.last_season_watched
@@ -160,7 +160,7 @@ const GlassMediaCard = ({
                   )}
                 </div>
               </div>
-              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-white mb-1">
+              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-foreground mb-1">
                 {title}
               </h3>
             </div>
@@ -169,7 +169,7 @@ const GlassMediaCard = ({
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <motion.p
                   variants={itemFade}
-                  className="text-xs text-neutral-300 line-clamp-2 leading-relaxed"
+                  className="text-xs text-muted-foreground line-clamp-2 leading-relaxed"
                 >
                   {media.overview ||
                     "Saved in your continue watching list. Click to resume playback."}
@@ -178,9 +178,9 @@ const GlassMediaCard = ({
                 {/* PROGRESS TRACKER TEXT (ONLY SHOWS ON HOVER) */}
                 <motion.div
                   variants={itemFade}
-                  className="flex justify-between items-center bg-black/40 rounded-lg p-2.5 border border-white/5 backdrop-blur-sm"
+                  className="flex justify-between items-center bg-background/40 rounded-lg p-2.5 border border-border backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="flex items-center gap-2 text-primary">
                     <Clock size={12} />
                     <span className="text-[10px] font-mono font-bold tracking-wider uppercase">
                       {progressPercent > 0
@@ -188,15 +188,15 @@ const GlassMediaCard = ({
                         : "Not started"}
                     </span>
                   </div>
-                  <span className="text-[11px] font-mono font-bold text-white tracking-wider">
+                  <span className="text-[11px] font-mono font-bold text-foreground tracking-wider">
                     {Math.round(progressPercent)}%
                   </span>
                 </motion.div>
 
                 <motion.div variants={itemFade}>
                   <Link href={getMediaLink(media)}>
-                    <div className="w-full py-3 rounded-xl bg-emerald-400 text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-emerald-300 transition-colors">
-                      <Play size={16} className="fill-[#07210b]" />
+                    <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity">
+                      <Play size={16} className="fill-current" />
                       <span>
                         {progressPercent > 95 ? "Watch Again" : "Resume"}
                       </span>
@@ -220,7 +220,7 @@ const GlassMediaCard = ({
               confirmRemove(media);
             }
           }}
-          className="pointer-events-auto bg-black/40 backdrop-blur-md text-white/70 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300"
+          className="pointer-events-auto bg-background/40 backdrop-blur-md text-foreground/70 w-10 h-10 rounded-full flex items-center justify-center border border-border shadow-lg hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-300"
         >
           <X size={18} strokeWidth={2.5} />
         </button>
@@ -234,8 +234,8 @@ const GlassMediaCard = ({
           whileTap={{ scale: 0.85 }}
           className={`pointer-events-auto cursor-pointer w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ${
             isFavorite
-              ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
-              : "bg-black/40 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+              ? "bg-primary border-primary text-primary-foreground"
+              : "bg-background/40 border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground"
           }`}
         >
           <AnimatePresence mode="wait">
@@ -361,21 +361,21 @@ const ContinueWatching = () => {
       >
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-mono text-primary uppercase tracking-widest">
               Library
             </span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
             Continue Watching
           </h2>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#1a1a1a] p-1.5 rounded-full border border-white/10">
+        <div className="flex items-center gap-2 bg-muted p-1.5 rounded-full border border-border">
           {mediaItems.length > 0 && (
             <button
               onClick={() => setViewAll(!viewAll)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-neutral-300 hover:text-white transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/50 hover:bg-background/80 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
             >
               {viewAll ? <Rows size={14} /> : <LayoutGrid size={14} />}
               {viewAll ? "Collapse" : "Grid View"}
@@ -444,10 +444,10 @@ const ContinueWatching = () => {
                     </SwiperSlide>
                   ))}
                 </Swiper>
-                <div className="cw-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                <div className="cw-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-card text-foreground backdrop-blur-xl border border-border rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-foreground hover:text-background transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
                   <ChevronLeft size={24} strokeWidth={3} />
                 </div>
-                <div className="cw-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 text-white backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-white hover:text-black transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
+                <div className="cw-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-card text-foreground backdrop-blur-xl border border-border rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-110 hover:bg-foreground hover:text-background transition-all opacity-0 group-hover/swiper:opacity-100 hidden md:flex">
                   <ChevronRight size={24} strokeWidth={3} />
                 </div>
               </div>
@@ -458,20 +458,20 @@ const ContinueWatching = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-dashed border-white/10 rounded-[2rem] p-12 text-center bg-[#0a0a0a]"
+          className="border border-dashed border-border rounded-[2rem] p-12 text-center bg-card"
         >
-          <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
-            <Tv size={32} className="text-neutral-500" />
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 border border-border">
+            <Tv size={32} className="text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">
+          <h3 className="text-xl font-bold text-foreground mb-2">
             Nothing in progress...
           </h3>
-          <p className="text-neutral-500 mb-6 font-medium">
+          <p className="text-muted-foreground mb-6 font-medium">
             Start watching movies or series, and we'll track your progress here.
           </p>
           <Link
             href="/browse"
-            className="inline-flex items-center gap-2 bg-emerald-400 text-black px-6 py-3 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition-transform"
           >
             Explore Library
           </Link>
@@ -488,7 +488,7 @@ const ContinueWatching = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-background/60 backdrop-blur-sm"
               onClick={() => setMediaToRemove(null)}
             />
 
@@ -498,30 +498,30 @@ const ContinueWatching = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 p-6 sm:p-8 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden z-10"
+              className="bg-card/95 backdrop-blur-3xl border border-border p-6 sm:p-8 rounded-[2.5rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden z-10"
             >
-              {/* Subtle Red Ambient Glow */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-red-500/20 blur-[50px] pointer-events-none" />
+              {/* Subtle Ambient Glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/20 blur-[50px] pointer-events-none" />
 
               {/* Close X Button */}
               <button
                 onClick={() => setMediaToRemove(null)}
-                className="absolute top-6 right-6 p-2 bg-white/5 border border-white/10 backdrop-blur-xl rounded-full text-white/50 hover:text-white hover:bg-white/10 hover:scale-110 active:scale-95 transition-all"
+                className="absolute top-6 right-6 p-2 bg-muted border border-border backdrop-blur-xl rounded-full text-muted-foreground hover:text-foreground hover:bg-background/80 hover:scale-110 active:scale-95 transition-all"
               >
                 <X size={16} strokeWidth={2.5} />
               </button>
 
-              <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-6 border border-red-500/20 backdrop-blur-md relative z-10">
+              <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center text-destructive mb-6 border border-destructive/20 backdrop-blur-md relative z-10">
                 <Trash2 size={24} strokeWidth={2.5} />
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight relative z-10">
+              <h3 className="text-2xl font-bold text-foreground mb-2 tracking-tight relative z-10">
                 Remove Title?
               </h3>
 
-              <p className="text-sm text-neutral-400 mb-8 leading-relaxed relative z-10">
+              <p className="text-sm text-muted-foreground mb-8 leading-relaxed relative z-10">
                 Are you sure you want to remove{" "}
-                <span className="text-white font-bold">
+                <span className="text-foreground font-bold">
                   "{mediaToRemove.title || mediaToRemove.name}"
                 </span>{" "}
                 from your watch list? You will lose your tracked progress.
@@ -530,13 +530,13 @@ const ContinueWatching = () => {
               <div className="flex gap-3 relative z-10">
                 <button
                   onClick={() => setMediaToRemove(null)}
-                  className="flex-1 px-4 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/10 backdrop-blur-md active:scale-95"
+                  className="flex-1 px-4 py-3.5 rounded-full bg-muted hover:bg-muted/80 text-foreground font-bold transition-all border border-border backdrop-blur-md active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmRemove}
-                  className="flex-1 px-4 py-3.5 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3.5 rounded-full bg-destructive text-destructive-foreground font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
                 >
                   <Trash2 size={18} />
                   Remove

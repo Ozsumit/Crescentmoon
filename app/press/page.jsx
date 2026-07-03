@@ -7,13 +7,13 @@ export default function PressKit() {
     <PageContainer>
       <div className="max-w-5xl">
         <div className="flex items-center gap-4 mb-8">
-          <span className="w-12 h-[1px] bg-black"></span>
-          <span className="text-xs font-semibold tracking-widest uppercase text-neutral-500">
+          <span className="w-12 h-[1px] bg-foreground"></span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
             Media & Assets
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9] text-neutral-900 mb-16">
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.9] text-foreground mb-16">
           Press Kit.
         </h1>
 
@@ -42,23 +42,23 @@ export default function PressKit() {
           ].map((asset, i) => (
             <div
               key={i}
-              className="interactive-card group flex items-center justify-between p-6 bg-white rounded-2xl border border-neutral-100 shadow-sm cursor-pointer hover:border-black transition-colors"
+              className="interactive-card group flex items-center justify-between p-6 bg-card rounded-2xl border border-border shadow-sm cursor-pointer hover:border-primary transition-colors"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <ImageIcon size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-neutral-900">{asset.title}</h3>
-                  <p className="text-xs text-neutral-500 mt-1">{asset.desc}</p>
+                  <h3 className="font-bold text-foreground">{asset.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{asset.desc}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <Download
                   size={18}
-                  className="text-neutral-400 group-hover:text-black transition-colors"
+                  className="text-muted-foreground group-hover:text-primary transition-colors"
                 />
-                <span className="text-[10px] font-mono text-neutral-400 uppercase">
+                <span className="text-[10px] font-mono text-muted-foreground uppercase">
                   {asset.type}
                 </span>
               </div>
