@@ -26,7 +26,7 @@ const MovieModal = dynamic(() => Promise.resolve(MovieModalComponent), {
 });
 
 // --- MORE LIKE THIS CARD ---
-const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
+const MoreLikeThisCard = memo(({ item, index, isActive, onHover, ...props }) => {
   const [trailerKey, setTrailerKey] = useState(null);
   const [isMuted, setIsMuted] = useState(true);
   const [playVideo, setPlayVideo] = useState(false);
@@ -35,7 +35,7 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
   const hasFetchedTrailer = useRef(false);
 
   const type = item.media_type || (item.first_air_date ? "tv" : "movie");
-  const posterUrl = getImageUrl(item.backdrop_path || item.poster_path, "w500");
+  const posterUrl = getImageUrl(item.backdrop_path || item.poster_path, "w342");
 
   // OPTIMIZED FETCH: Only run once per card when hovered. Added AbortController.
   useEffect(() => {
@@ -81,7 +81,8 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
   }, [isActive]);
 
   return (
-    <div
+    <motion.div
+      {...props}
       onMouseEnter={() => onHover(index)}
       onClick={() => setIsMuted(!isMuted)}
       className={`relative aspect-[16/9] sm:aspect-[2/3] rounded-[1.5rem] overflow-hidden bg-card cursor-pointer transition-all duration-500 ease-out transform-gpu border ${
@@ -166,7 +167,7 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
           />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 });
 MoreLikeThisCard.displayName = "MoreLikeThisCard";
@@ -213,6 +214,7 @@ const MoreLikeThisGrid = memo(({ items }) => {
           index={index}
           isActive={activeIndex === index}
           onHover={handleHover}
+          layout="position"
         />
       ))}
     </div>
@@ -644,7 +646,7 @@ const HomeCard = memo(({ MovieCard }) => {
 
   const getImagePath = () => {
     if (MovieCard.poster_path)
-      return `https://image.tmdb.org/t/p/w500/${MovieCard.poster_path}`;
+      return `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
     return "https://i.imgur.com/HIYYPtZ.png";
   };
 
@@ -709,9 +711,11 @@ const HomeCard = memo(({ MovieCard }) => {
         variants={containerVariants}
         initial="rest"
         whileHover="hover"
+        layout="position"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border isolate transform-gpu cursor-pointer"
+        style={{ willChange: "transform" }}
         onClick={() => setIsModalOpen(true)}
       >
         <div
@@ -823,7 +827,7 @@ const HomeCard = memo(({ MovieCard }) => {
       </motion.div>
 
       {/* MODAL IS NOW DYNAMICALLY IMPORTED */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isModalOpen && (
           <MovieModal
             movie={MovieCard}

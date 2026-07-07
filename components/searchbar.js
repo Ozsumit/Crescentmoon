@@ -21,92 +21,138 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-// --- 1. UTILITY: PHONETIC GENERATOR ---
-// Generates common variations for typos and romanized text
-const generatePhoneticVariations = (q) => {
-  const vars = new Set();
+// --- 1. EXPANDED PHONETIC GENERATOR (COMBINATORIAL PERMUTATION ENGINE) ---
+export const generatePhoneticVariations = (q) => {
+  if (!q || typeof q !== "string") return [];
   const lowerQ = q.toLowerCase();
 
-  if (lowerQ.includes("i")) vars.add(lowerQ.replace(/i/g, "ee"));
-  if (lowerQ.includes("ee")) vars.add(lowerQ.replace(/ee/g, "i"));
-  if (lowerQ.includes("u")) vars.add(lowerQ.replace(/u/g, "oo"));
-  if (lowerQ.includes("oo")) vars.add(lowerQ.replace(/oo/g, "u"));
-  if (lowerQ.includes("v")) vars.add(lowerQ.replace(/v/g, "w"));
-  if (lowerQ.includes("w")) vars.add(lowerQ.replace(/w/g, "v"));
-  if (lowerQ.includes("ph")) vars.add(lowerQ.replace(/ph/g, "f"));
-  if (lowerQ.includes("f")) vars.add(lowerQ.replace(/f/g, "ph"));
-  if (lowerQ.includes("c")) vars.add(lowerQ.replace(/c/g, "k"));
-  if (lowerQ.includes("k")) vars.add(lowerQ.replace(/k/g, "c"));
-  if (lowerQ.includes("s")) vars.add(lowerQ.replace(/s/g, "z"));
-  if (lowerQ.includes("z")) vars.add(lowerQ.replace(/z/g, "s"));
+  const phoneticMap = [
+    { rules: ["i", "ee", "ea", "y"] },
+    { rules: ["u", "oo", "ou"] },
+    { rules: ["v", "w", "b"] },
+    { rules: ["ph", "f", "gh"] },
+    { rules: ["c", "k", "q", "ch"] },
+    { rules: ["s", "z", "sh", "c"] },
+    { rules: ["g", "j", "ge"] },
+    { rules: ["ae", "ai", "ay", "a"] },
+    { rules: ["o", "oa", "ow"] },
+    { rules: ["t", "d"] },
+    { rules: ["m", "n"] },
+  ];
 
-  // Limit permutations to 4 to prevent API rate limiting
-  return Array.from(vars)
-    .filter((v) => v !== lowerQ)
-    .slice(0, 4);
-};
+  const variations = new Set();
 
-// --- 2. UTILITY: SMART TEXT HIGHLIGHTER ---
-const HighlightText = ({ text, highlight }) => {
-  if (!highlight || !highlight.trim()) return <>{text}</>;
+  function permute(str, index = 0) {
+    if (index >= str.length) {
+      variations.add(str);
+      return;
+    }
 
-  // 1. Try EXACT phrase highlighting
-  const exactRegex = new RegExp(
-    `(${highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
-    "gi",
-  );
-  if (exactRegex.test(text)) {
-    const parts = text.split(exactRegex);
-    return (
-      <span>
-        {parts.map((part, i) =>
-          part.toLowerCase() === highlight.toLowerCase() ? (
-            <span
-              key={i}
-              className="text-foreground font-bold bg-primary/20 px-0.5 rounded"
-            >
-              {part}
-            </span>
-          ) : (
-            <span key={i}>{part}</span>
-          ),
-        )}
-      </span>
-    );
+    let matched = false;
+
+    for (const group of phoneticMap) {
+      for (const rule of group.rules) {
+        if (str.startsWith(rule, index)) {
+          matched = true;
+          for (const replacement of group.rules) {
+            const nextStr =
+              str.slice(0, index) +
+              replacement +
+              str.slice(index + rule.length);
+            permute(nextStr, index + replacement.length);
+          }
+        }
+      }
+    }
+
+    if (!matched) {
+      permute(str, index + 1);
+    }
   }
 
-  // 2. Fallback: Word-by-word highlighting (ignores tiny words)
-  const words = highlight
-    .trim()
-    .split(/\s+/)
-    .filter((w) => w.length > 2);
-  if (words.length === 0) return <>{text}</>;
+  permute(lowerQ);
 
-  const wordRegex = new RegExp(
-    `(${words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
-    "gi",
-  );
-  const parts = text.split(wordRegex);
+  const getLevenshteinDist = (a, b) => {
+    const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        matrix[i][j] =
+          b[j - 1] === a[i - 1]
+            ? matrix[i - 1][j - 1]
+            : Math.min(
+                matrix[i - 1][j - 1] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j] + 1,
+              );
+      }
+    }
+    return matrix[a.length][b.length];
+  };
 
+  return Array.from(variations)
+    .filter((v) => v !== lowerQ)
+    .sort(
+      (a, b) => getLevenshteinDist(lowerQ, a) - getLevenshteinDist(lowerQ, b),
+    )
+    .slice(0, 6);
+};
+
+// --- 2. UTILITY: HOOK RENDERER FOR HIGHLIGHTING ---
+function renderParts(sourceText, regexPattern, conditionFn) {
+  const parts = sourceText.split(regexPattern);
   return (
     <span>
       {parts.map((part, i) =>
-        words.some((w) => w.toLowerCase() === part.toLowerCase()) ? (
-          <span
+        conditionFn(part) ? (
+          <mark
             key={i}
-            className="text-foreground font-bold bg-primary/20 px-0.5 rounded"
+            className="text-primary-foreground font-bold bg-primary px-1 rounded-[4px] normal-case decoration-clone"
           >
             {part}
-          </span>
+          </mark>
         ) : (
           <span key={i}>{part}</span>
         ),
       )}
     </span>
   );
+}
+
+// --- 3. UPGRADED SMART TEXT HIGHLIGHTER COMPONENT ---
+export const HighlightText = ({ text, highlight }) => {
+  if (!text) return null;
+  if (!highlight || !highlight.trim()) return <>{text}</>;
+
+  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const exactRegex = new RegExp(`(${escapeRegExp(highlight.trim())})`, "gi");
+  if (exactRegex.test(text)) {
+    return renderParts(
+      text,
+      exactRegex,
+      (match) => match.toLowerCase() === highlight.trim().toLowerCase(),
+    );
+  }
+
+  const targetWords = highlight
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 1);
+
+  if (targetWords.length === 0) return <>{text}</>;
+
+  const wordRegex = new RegExp(
+    `(${targetWords.map((w) => escapeRegExp(w)).join("|")})`,
+    "gi",
+  );
+
+  return renderParts(text, wordRegex, (match) =>
+    targetWords.some((w) => w.toLowerCase() === match.toLowerCase()),
+  );
 };
 
-// --- 3. RESULT ITEM (Swiss Layout + Material Motion) ---
+// --- 4. RESULT ITEM (Swiss Layout + Material Motion) ---
 const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
   const mediaType = item.media_type === "movie" ? "MOVIE" : "SERIES";
   const year =
@@ -121,30 +167,32 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
     <motion.div
       layout="position"
       onClick={onClick}
-      className={`group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors duration-200 z-10 ${
-        isSelected ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+      className={`group relative flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-colors duration-150 select-none ${
+        isSelected
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {/* MATERIAL 3: GLIDING CURSOR */}
       {isSelected && (
         <motion.div
           layoutId="activeSearchItem"
-          className="absolute inset-0 bg-muted rounded-2xl -z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-border"
+          className="absolute inset-0 bg-muted rounded-2xl z-0 border border-border/60"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          transition={{ type: "spring", stiffness: 380, damping: 35 }}
         />
       )}
 
       {/* Poster / Thumbnail */}
-      <div className="relative flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-muted shadow-sm ring-1 ring-border">
+      <div className="relative z-10 flex-shrink-0 w-12 h-16 rounded-[6px] overflow-hidden bg-muted shadow-sm ring-1 ring-border">
         {item.poster_path ? (
           <Image
             src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
             alt={title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="48px"
           />
         ) : (
@@ -155,31 +203,27 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
       </div>
 
       {/* Text Content */}
-      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <div className="flex items-center justify-between">
-          <h4
-            className={`text-base font-medium truncate ${
-              isSelected ? "text-foreground" : "text-foreground/80"
-            }`}
-          >
+      <div className="relative z-10 flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <h4 className="text-sm sm:text-base font-semibold truncate text-foreground">
             <HighlightText text={title} highlight={searchQuery} />
           </h4>
 
           {/* Rating Badge */}
           {item.vote_average > 0 && (
-            <div className="flex items-center gap-1 text-[10px] font-mono bg-foreground/10 px-1.5 py-0.5 rounded text-accent-foreground backdrop-blur-md">
-              <Star size={8} fill="currentColor" />
+            <div className="flex items-center gap-1 text-[10px] font-mono bg-muted-foreground/15 px-1.5 py-0.5 rounded text-foreground backdrop-blur-md flex-shrink-0">
+              <Star size={8} fill="currentColor" className="text-amber-500" />
               <span>{item.vote_average.toFixed(1)}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
-          <span className="flex items-center gap-1.5">
+        <div className="flex items-center gap-3 text-[11px] font-mono uppercase tracking-wider text-muted-foreground/90">
+          <span className="flex items-center gap-1.5 font-bold">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                item.media_type === "movie" ? "bg-primary" : "bg-secondary"
-              } shadow-[0_0_8px_currentColor]`}
+                item.media_type === "movie" ? "bg-primary" : "bg-sky-500"
+              }`}
             />
             {mediaType}
           </span>
@@ -193,19 +237,19 @@ const SearchResultItem = ({ item, isSelected, onClick, searchQuery }) => {
 
       {/* Action Icon */}
       <div
-        className={`flex-shrink-0 transition-all duration-300 ${
+        className={`relative z-10 flex-shrink-0 transition-all duration-200 ${
           isSelected
-            ? "opacity-100 translate-x-0 text-white"
-            : "opacity-0 -translate-x-2"
+            ? "opacity-100 translate-x-0 text-foreground"
+            : "opacity-0 -translate-x-2 pointer-events-none"
         }`}
       >
-        <ArrowRight size={18} />
+        <ArrowRight size={16} />
       </div>
     </motion.div>
   );
 };
 
-// --- 4. MAIN COMPONENT ---
+// --- 5. MAIN COMPONENT ---
 const QuickSearch = ({ open, onOpenChange }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [trending, setTrending] = useState([]);
@@ -213,20 +257,28 @@ const QuickSearch = ({ open, onOpenChange }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // High-performance API cache
   const cacheRef = useRef(new Map());
   const debounceRef = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const router = useRouter();
 
-  // Scroll active item into view
+  // Reset indices on list shifts
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchTerm]);
+
+  // Scroll active item safely into view
   useEffect(() => {
     if (scrollRef.current && selectedIndex >= 0) {
-      const listItems = scrollRef.current.children;
-      const activeItem = listItems[selectedIndex];
-      if (activeItem) {
-        activeItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      const listContainer = scrollRef.current.querySelector(
+        ".results-list-container",
+      );
+      if (listContainer) {
+        const activeItem = listContainer.children[selectedIndex + 1]; // Offset index for the header element
+        if (activeItem) {
+          activeItem.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
       }
     }
   }, [selectedIndex]);
@@ -246,7 +298,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
     }
   }, [open, trending.length]);
 
-  // --- OMNI-SEARCH ENGINE (Exact + Phonetic + Fallback) ---
+  // --- OMNI-SEARCH ENGINE ---
   const fetchOmniSearch = async (query) => {
     const fetchTMDB = async (q) => {
       const res = await fetch(
@@ -259,12 +311,9 @@ const QuickSearch = ({ open, onOpenChange }) => {
 
     const queriesToRun = new Set([query]);
 
-    // Apply permutations if query > 2 chars
     if (query.length > 2) {
-      // 1. Add phonetic variations
       generatePhoneticVariations(query).forEach((v) => queriesToRun.add(v));
 
-      // 2. Add trailing typo fallback (e.g. "Avengers warr" -> "Avengers")
       if (query.includes(" ")) {
         const splitQuery = query.split(" ");
         splitQuery.pop();
@@ -273,10 +322,7 @@ const QuickSearch = ({ open, onOpenChange }) => {
       }
     }
 
-    // Cap to 5 simultaneous requests to respect API limits
     const queriesArray = Array.from(queriesToRun).slice(0, 5);
-
-    // Fire all searches simultaneously via Promise.all
     const responses = await Promise.all(
       queriesArray.map((q) => fetchTMDB(q).catch(() => ({ results: [] }))),
     );
@@ -285,14 +331,12 @@ const QuickSearch = ({ open, onOpenChange }) => {
     const seenIds = new Set();
 
     responses.forEach((res, index) => {
-      // Index 0 is the EXACT typed query. It gets a massive score boost.
       const isExactMatch = index === 0;
 
       (res.results || []).forEach((item) => {
         if (item.media_type === "movie" || item.media_type === "tv") {
           if (!seenIds.has(item.id)) {
             seenIds.add(item.id);
-            // Sort logic: Exact matches stay at top (+10000), phonetics ordered by popularity
             item._sortScore =
               (isExactMatch ? 10000 : 0) + (item.popularity || 0);
             allResults.push(item);
@@ -301,7 +345,6 @@ const QuickSearch = ({ open, onOpenChange }) => {
       });
     });
 
-    // Return the top 8 matches (Merged Exact + Phonetics)
     return allResults.sort((a, b) => b._sortScore - a._sortScore).slice(0, 8);
   };
 
@@ -313,25 +356,20 @@ const QuickSearch = ({ open, onOpenChange }) => {
     if (!q) {
       setSearchResults([]);
       setIsLoading(false);
-      setSelectedIndex(0);
       return;
     }
 
-    // Instantly load from cache if available
     if (cacheRef.current.has(q.toLowerCase())) {
       setSearchResults(cacheRef.current.get(q.toLowerCase()));
-      setSelectedIndex(0);
       return;
     }
 
     setIsLoading(true);
-    // 300ms debounce ensures user finishes typing before we fire Promise.all
     debounceRef.current = setTimeout(async () => {
       try {
         const results = await fetchOmniSearch(q);
         cacheRef.current.set(q.toLowerCase(), results);
         setSearchResults(results);
-        setSelectedIndex(0);
       } catch (err) {
         console.error("Search failed:", err);
       } finally {
@@ -346,6 +384,8 @@ const QuickSearch = ({ open, onOpenChange }) => {
 
   // Keyboard Navigation
   const handleKeyDown = (e) => {
+    if (!currentList.length) return;
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev + 1) % currentList.length);
@@ -356,7 +396,9 @@ const QuickSearch = ({ open, onOpenChange }) => {
       );
     } else if (e.key === "Enter") {
       e.preventDefault();
-      handleSelect(currentList[selectedIndex]);
+      if (currentList[selectedIndex]) {
+        handleSelect(currentList[selectedIndex]);
+      }
     }
   };
 
@@ -371,19 +413,19 @@ const QuickSearch = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 gap-0 w-full max-w-2xl bg-card/95 backdrop-blur-2xl border border-border shadow-[0_0_80px_rgba(0,0,0,0.8)] rounded-[24px] sm:rounded-[28px] overflow-hidden">
+      <DialogContent className="p-0 gap-0 w-full max-w-2xl bg-card/95 backdrop-blur-2xl border border-border shadow-2xl rounded-[24px] overflow-hidden">
         {/* --- HEADER: INPUT FIELD --- */}
-        <div className="relative flex items-center h-16 sm:h-20 px-4 sm:px-6 border-b border-border bg-foreground/[0.02]">
+        <div className="relative flex items-center h-16 sm:h-20 px-4 sm:px-6 border-b border-border bg-muted/20">
           <Search
-            className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-300 ${
+            className={`w-5 h-5 transition-colors duration-300 ${
               isLoading ? "text-primary" : "text-muted-foreground"
             }`}
           />
 
           <input
             ref={inputRef}
-            className="flex-1 h-full bg-transparent border-none outline-none px-3 sm:px-4 text-lg sm:text-xl font-medium text-foreground placeholder-muted-foreground font-sans w-full"
-            placeholder="Search exact titles or phonetics..."
+            className="flex-1 h-full bg-transparent border-none outline-none px-3 sm:px-4 text-base sm:text-lg font-medium text-foreground placeholder-muted-foreground w-full"
+            placeholder="Search titles or phonetics..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -395,25 +437,25 @@ const QuickSearch = ({ open, onOpenChange }) => {
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
           ) : (
-            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
-              <span className="text-xs">ESC</span>
+            <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground select-none">
+              <span>ESC</span>
             </div>
           )}
         </div>
 
         {/* --- BODY: RESULTS --- */}
-        <div className="min-h-[300px] max-h-[60vh] sm:max-h-[500px] flex flex-col">
-          {/* Empty State (No Search Term) -> Show Trending */}
+        <div className="min-h-[340px] max-h-[60vh] sm:max-h-[480px] flex flex-col">
+          {/* Empty State */}
           {!searchTerm && trending.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4 p-8">
-              <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center border border-border">
-                <Command size={32} strokeWidth={1.5} />
+              <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center border border-border">
+                <Command size={24} strokeWidth={1.5} />
               </div>
               <div className="text-center space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Search for anything
                 </p>
-                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wide">
+                <p className="text-xs font-mono uppercase tracking-wide opacity-60">
                   Movies • Series • Anime
                 </p>
               </div>
@@ -423,9 +465,9 @@ const QuickSearch = ({ open, onOpenChange }) => {
           {/* Results Grid */}
           <div className="flex-1 overflow-y-auto p-2 sm:p-3" ref={scrollRef}>
             {currentList.length > 0 ? (
-              <div className="grid gap-1">
+              <div className="grid gap-1 results-list-container">
                 {/* Section Label (Swiss Style) */}
-                <div className="px-3 py-2 text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                <div className="px-3 py-2 text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 select-none">
                   {searchTerm ? (
                     <>
                       <Layers size={12} className="text-primary" /> Matches &
@@ -433,11 +475,11 @@ const QuickSearch = ({ open, onOpenChange }) => {
                     </>
                   ) : (
                     <>
-                      <TrendingUp size={12} className="text-secondary" />{" "}
-                      Trending Today
+                      <TrendingUp size={12} className="text-sky-500" /> Trending
+                      Today
                     </>
                   )}
-                  <div className="h-px bg-border flex-1" />
+                  <div className="h-px bg-border/60 flex-1" />
                 </div>
 
                 <AnimatePresence mode="popLayout">
@@ -455,18 +497,17 @@ const QuickSearch = ({ open, onOpenChange }) => {
             ) : (
               !isLoading &&
               searchTerm && (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 py-10">
-                  <div className="w-16 h-16 rounded-3xl bg-muted flex items-center justify-center border border-border">
-                    <Search size={28} className="text-muted-foreground" />
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 py-14">
+                  <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center border border-border">
+                    <Search size={20} />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                    <p className="text-sm font-medium text-foreground mb-1">
                       No matching records found
                     </p>
-                    <p className="text-xs text-muted-foreground max-w-[250px] mx-auto">
-                      Checked exact matches, phonetics, and misspellings, but
-                      couldn't decode{" "}
-                      <span className="text-foreground font-semibold">
+                    <p className="text-xs max-w-[280px] mx-auto text-muted-foreground/80 leading-relaxed">
+                      Checked exact matches, phonetics, and misspellings for{" "}
+                      <span className="text-primary font-semibold">
                         "{searchTerm}"
                       </span>
                       .
@@ -479,14 +520,14 @@ const QuickSearch = ({ open, onOpenChange }) => {
         </div>
 
         {/* --- FOOTER: SPECS --- */}
-        <div className="h-10 sm:h-12 bg-background/80 border-t border-border flex items-center justify-between px-4 sm:px-6 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-          <div className="flex items-center gap-4">
+        <div className="h-11 bg-muted/10 border-t border-border flex items-center justify-between px-4 sm:px-6 text-[10px] font-mono text-muted-foreground uppercase tracking-wider select-none">
+          <div>
             {currentList.length > 0 && (
-              <span>{currentList.length} items found</span>
+              <span>{currentList.length} items cataloged</span>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <span className="hidden md:flex items-center gap-1.5">
               <span className="flex gap-0.5">
                 <ArrowRight size={10} className="-rotate-90" />

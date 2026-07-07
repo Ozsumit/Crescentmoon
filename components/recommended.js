@@ -115,7 +115,7 @@ const RecCard = ({ movie, index }) => {
               ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} 
               ${isHovered ? "scale-110" : "scale-100"}
             `}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
         </div>
@@ -249,7 +249,7 @@ const RecommendedMovies = () => {
       else setIsLoading(true);
 
       const stored = JSON.parse(
-        localStorage.getItem("continueWatching") || "[]"
+        localStorage.getItem("continueWatching") || "[]",
       );
 
       let url = "";
@@ -269,7 +269,7 @@ const RecommendedMovies = () => {
       if (!data.results || data.results.length === 0) {
         setSourceMovie(null);
         const fallbackRes = await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`
+          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`,
         );
         const fallbackData = await fallbackRes.json();
         setMovies(fallbackData.results.slice(0, 10));
@@ -337,7 +337,9 @@ const RecommendedMovies = () => {
       {/* --- EMPTY STATE --- */}
       {!isLoading && movies.length === 0 && (
         <div className="text-center py-20 px-6 border border-dashed border-border rounded-[2rem] mx-4 bg-card">
-          <p className="text-muted-foreground mb-4">No recommendations found.</p>
+          <p className="text-muted-foreground mb-4">
+            No recommendations found.
+          </p>
           <button
             onClick={() => fetchRecommendations(true)}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-full font-bold text-sm"

@@ -66,7 +66,9 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
       whileInView={{ opacity: 1, x: 0, scale: 1 }}
       viewport={{ once: true, margin: "50px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      layout="position"
       className="w-full transform-gpu relative group"
+      style={{ willChange: "transform" }}
     >
       {/* FAVORITE BUTTON */}
       <motion.button
@@ -79,7 +81,7 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
             : "bg-background/30 border-border text-foreground hover:bg-background/60"
         }`}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {isFavorite ? (
             <motion.div
               key="active"
@@ -120,7 +122,7 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
               className={`object-cover transition-all duration-700 ${
                 imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-md"
               } group-hover:scale-110`}
-              onLoad={() => setImageLoaded(true)} // Replaced deprecated onLoadingComplete
+              onLoad={() => setImageLoaded(true)} // Replaced deprecated onLoad
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
           </div>
@@ -169,7 +171,10 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
               whileTap={{ scale: 0.95 }}
               className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm hover:brightness-110 transition-all"
             >
-              <PlayCircle size={14} className="fill-primary-foreground text-primary" />
+              <PlayCircle
+                size={14}
+                className="fill-primary-foreground text-primary"
+              />
               WATCH
             </motion.div>
           </div>

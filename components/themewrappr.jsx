@@ -88,22 +88,23 @@ export default function ThemeWrapper({ children }) {
         .text-card-foreground { color: hsl(var(--card-foreground)) !important; }
         .border-theme { border-color: hsl(var(--border)) !important; }
 
-        /* Smooth transition for theme variables */
-        * {
+        /* Smooth transition for theme variables - targeted for performance */
+        body, .bg-card, .text-card-foreground, .border-theme, .text-foreground, .bg-background {
           transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
       `}</style>
       {/* Custom Cursor */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {showCustomCursor && (
           <motion.div
         ref={cursorRef}
-        className="hidden md:flex fixed top-0 left-0 z-[9999] pointer-events-none items-center justify-center"
+        className="hidden md:flex fixed top-0 left-0 z-[9999] pointer-events-none items-center justify-center transform-gpu"
         style={{
           x: springX,
           y: springY,
           translateX: "-50%",
           translateY: "-50%",
+          willChange: "transform"
         }}
       >
         <motion.div

@@ -16,7 +16,7 @@ const MovieCard = ({ MovieCard }) => {
 
   const getImagePath = () => {
     if (MovieCard.poster_path)
-      return `https://image.tmdb.org/t/p/w500/${MovieCard.poster_path}`;
+      return `https://image.tmdb.org/t/p/w342/${MovieCard.poster_path}`;
     return "https://i.imgur.com/HIYYPtZ.png";
   };
 
@@ -87,9 +87,11 @@ const MovieCard = ({ MovieCard }) => {
       initial="rest"
       whileHover="hover"
       whileTap={{ scale: 0.98 }}
+      layout="position"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       className="relative w-full h-full transform-gpu"
+      style={{ willChange: "transform" }}
     >
       {/* 
          1. THE MAIN LINK WRAPPER 
@@ -111,7 +113,7 @@ const MovieCard = ({ MovieCard }) => {
                 ${imageLoaded ? "opacity-100" : "opacity-0"} 
                 ${isHovered ? "scale-110" : "scale-100"}
             `}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-60" />
         </div>
@@ -193,7 +195,7 @@ const MovieCard = ({ MovieCard }) => {
             }
           `}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             {isFavorite ? (
               <motion.div
                 key="fav"

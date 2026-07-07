@@ -11,6 +11,7 @@ import GenreSelector from "@/components/filter/Filter";
 import HorizontalHomeCard from "./HorHomeCards";
 import HomePagination from "../pagination/HomePagination";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMemo } from "react";
 
 // --- SKELETONS ---
 const CardSkeleton = () => (
@@ -165,9 +166,11 @@ const HomeDisplay = ({ initialData = [] }) => {
   };
 
   // MIXED CONTENT
-  const mixedContent = [...contentData.movies, ...contentData.tvShows].sort(
-    (a, b) => b.popularity - a.popularity,
-  );
+  const mixedContent = useMemo(() => {
+    return [...contentData.movies, ...contentData.tvShows].sort(
+      (a, b) => b.popularity - a.popularity,
+    );
+  }, [contentData.movies, contentData.tvShows]);
 
   const currentType =
     activeTab === "movies" ? "movies" : activeTab === "tv" ? "tvShows" : "all";
@@ -428,7 +431,7 @@ const HomeDisplay = ({ initialData = [] }) => {
       </div>
 
       {/* Scroll To Top */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {showTopBtn && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}

@@ -29,7 +29,7 @@ const FavoriteCard = ({ favoriteItem, viewMode, toggleFavorite }) => {
       if (favoriteItem.media_type === "tv" && !movieData.number_of_seasons) {
         const data = await fetchMovieData(
           favoriteItem.id,
-          favoriteItem.media_type
+          favoriteItem.media_type,
         );
         if (data) {
           setMovieData((prev) => ({
@@ -126,7 +126,7 @@ const FavoriteCard = ({ favoriteItem, viewMode, toggleFavorite }) => {
               className={`object-cover transition-all duration-700 ease-out group-hover:scale-110 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
               }`}
-              onLoadingComplete={() => setImageLoaded(true)}
+              onLoad={() => setImageLoaded(true)}
               onError={(e) => {
                 e.currentTarget.src = "/placeholder.svg";
               }}
