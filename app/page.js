@@ -36,7 +36,7 @@ async function getData() {
 export default async function Home() {
   const data = await getData();
   return (
-    <div className=" m-0 bg-background h-auto">
+    <div className=" m-0 bg-background text-foreground h-auto">
     {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}

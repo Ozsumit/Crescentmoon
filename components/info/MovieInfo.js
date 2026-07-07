@@ -85,14 +85,14 @@ const getIcon = (iconName, props = {}) => {
 
 // --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
-  <div className="flex flex-col bg-white/5 border border-white/5 px-4 py-2.5 rounded-2xl backdrop-blur-md">
+  <div className="flex flex-col bg-foreground/5 border border-border px-4 py-2.5 rounded-2xl backdrop-blur-md">
     <div className={`flex items-center gap-1.5 mb-1 ${colorClass}`}>
       <Icon size={14} />
       <span className="text-[10px] uppercase tracking-widest font-bold opacity-90">
         {label}
       </span>
     </div>
-    <span className="text-sm font-black text-white">{value}</span>
+    <span className="text-sm font-black text-foreground">{value}</span>
   </div>
 );
 
@@ -304,11 +304,11 @@ const MovieInfo = ({
     : `https://image.tmdb.org/t/p/original${MovieDetail.poster_path}`;
 
   return (
-    <div className="min-h-screen lg:h-screen w-full bg-[#0a0a0a] text-neutral-100 font-sans flex flex-col pt-16 lg:pt-0 overflow-x-hidden selection:bg-indigo-500/30">
+    <div className="min-h-screen mt-16 lg:h-screen w-full bg-background text-foreground font-sans flex flex-col pt-18 lg:pt-0 overflow-x-hidden selection:bg-primary/30">
       {/* Cinematic Background Layer */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent lg:w-1/2" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent lg:w-1/2" />
         <img
           src={bgImage}
           className="w-full h-full object-cover blur-[100px] opacity-10 scale-110"
@@ -319,14 +319,14 @@ const MovieInfo = ({
       {/* Main Grid Layout */}
       <div className="relative z-10 flex-1 pt-16 flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:overflow-hidden lg:h-screen">
         {/* === LEFT COLUMN: INFO & CONTROLS === */}
-        <div className="order-2 lg:order-1 lg:col-span-4 bg-[#0a0a0a]/40 backdrop-blur-2xl flex flex-col lg:overflow-y-auto custom-scrollbar h-auto lg:h-full lg:border-r border-white/5 pb-12 lg:pb-0 shadow-2xl">
+        <div className="order-2 lg:order-1 lg:col-span-4 bg-background/40 backdrop-blur-2xl flex flex-col lg:overflow-y-auto custom-scrollbar h-auto lg:h-full lg:border-r border-border pb-12 lg:pb-0 shadow-2xl">
           <div className="p-6 md:p-8 shrink-0">
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-4">
               {genreArr?.slice(0, 3).map((g, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 rounded-lg bg-indigo-500/10 text-[10px] font-bold uppercase tracking-widest text-indigo-400"
+                  className="px-3 py-1 rounded-lg bg-primary/10 text-[10px] font-bold uppercase tracking-widest text-primary"
                 >
                   {g.name || g}
                 </span>
@@ -334,7 +334,7 @@ const MovieInfo = ({
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter leading-[1.1] text-white mb-6">
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter leading-[1.1] text-foreground mb-6">
               {MovieDetail.title}
             </h1>
 
@@ -344,19 +344,19 @@ const MovieInfo = ({
                 icon={Star}
                 value={`${MovieDetail.vote_average?.toFixed(1)}`}
                 label="Rating"
-                colorClass="text-yellow-500"
+                colorClass="text-primary"
               />
               <MetaBadge
                 icon={Clock}
                 value={`${MovieDetail.runtime}m`}
                 label="Runtime"
-                colorClass="text-blue-400"
+                colorClass="text-primary"
               />
               <MetaBadge
                 icon={Calendar}
                 value={MovieDetail.release_date?.split("-")[0]}
                 label="Year"
-                colorClass="text-emerald-400"
+                colorClass="text-secondary-foreground"
               />
             </div>
 
@@ -366,8 +366,8 @@ const MovieInfo = ({
                 onClick={toggleFav}
                 className={`h-12 rounded-xl flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all shadow-lg ${
                   isFavorite
-                    ? "bg-rose-500 text-white shadow-rose-500/20"
-                    : "bg-white text-black hover:bg-neutral-200"
+                    ? "bg-destructive text-destructive-foreground"
+                    : "bg-primary text-primary-foreground hover:opacity-90"
                 }`}
               >
                 <Heart size={14} className={isFavorite ? "fill-current" : ""} />{" "}
@@ -375,28 +375,28 @@ const MovieInfo = ({
               </button>
               <button
                 onClick={share}
-                className="h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all text-white"
+                className="h-12 rounded-xl bg-muted border border-border flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider hover:bg-muted/80 transition-all text-foreground"
               >
                 <Share2 size={14} /> Share
               </button>
               <button
                 onClick={() => setShowDownloadPopup(true)}
-                className="h-12 rounded-xl border border-indigo-600 flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all text-white shadow-lg shadow-indigo-600/20"
+                className="h-12 rounded-xl border border-primary flex items-center justify-center gap-1.5 font-bold text-[10px] uppercase tracking-wider transition-all text-foreground hover:bg-primary/5 shadow-lg shadow-primary/10"
               >
                 <Download size={14} /> Download
               </button>
             </div>
 
             {/* --- IMPROVED MATERIAL SOURCE CARD --- */}
-            <div className="bg-[#121212] rounded-2xl border border-white/5 shadow-xl overflow-hidden mb-8 flex flex-col">
+            <div className="bg-card rounded-2xl border border-border shadow-xl overflow-hidden mb-8 flex flex-col">
               {/* 1. Active Source Display (Header) */}
               {selectedServer && (
-                <div className="p-5 border-b border-white/5 bg-white/[0.02] relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none" />
+                <div className="p-5 border-b border-border bg-foreground/[0.02] relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 blur-[50px] rounded-full pointer-events-none" />
 
                   <div className="flex items-start justify-between relative z-10 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 shrink-0 shadow-inner">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0 shadow-inner">
                         {typeof selectedServer.icon === "string"
                           ? getIcon(selectedServer.icon, {
                               className: "w-5 h-5",
@@ -405,16 +405,16 @@ const MovieInfo = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                             {selectedServer.name}
                           </h3>
                           {selectedServer.name === defaultServerName && (
-                            <span className="bg-yellow-500/10 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                            <span className="bg-amber-500/10 text-amber-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
                               <Star size={8} className="fill-current" /> Default
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-neutral-400 mt-1">
+                        <p className="text-[11px] text-muted-foreground mt-1">
                           {selectedServer.description}
                         </p>
                       </div>
@@ -426,7 +426,7 @@ const MovieInfo = ({
                       {selectedServer.features?.map((f, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-1 bg-[#1a1a1a] text-neutral-300 border border-white/5 rounded-md text-[9px] uppercase font-bold tracking-wider"
+                          className="px-2.5 py-1 bg-muted text-muted-foreground border border-border rounded-md text-[9px] uppercase font-bold tracking-wider"
                         >
                           {f}
                         </span>
@@ -435,7 +435,7 @@ const MovieInfo = ({
                     {isMounted && selectedServer.name !== defaultServerName && (
                       <button
                         onClick={() => handleSetDefault(selectedServer.name)}
-                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg ml-auto border border-indigo-500/20"
+                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-lg ml-auto border border-primary/20"
                       >
                         <Star size={12} /> Set Default
                       </button>
@@ -445,12 +445,12 @@ const MovieInfo = ({
               )}
 
               {/* 2. Available Sources Grid (Body) */}
-              <div className="p-5 bg-[#0a0a0a]/50">
+              <div className="p-5 bg-background/50">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                     <Server size={12} /> Change Source
                   </span>
-                  <span className="text-[10px] font-bold text-neutral-500 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                  <span className="text-[10px] font-bold text-muted-foreground bg-foreground/5 px-2 py-0.5 rounded-full border border-border">
                     {sources.length} Options
                   </span>
                 </div>
@@ -467,21 +467,21 @@ const MovieInfo = ({
                           flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border transition-all duration-200 text-left group
                           ${
                             active
-                              ? "bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.05)]"
-                              : "bg-[#161616] border-white/5 hover:border-white/10 hover:bg-white/5"
+                              ? "bg-primary/10 border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.05)]"
+                              : "bg-muted border-border hover:border-foreground/10 hover:bg-foreground/5"
                           }
                         `}
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
                           <div
-                            className={`shrink-0 transition-colors ${active ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-400"}`}
+                            className={`shrink-0 transition-colors ${active ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`}
                           >
                             {typeof s.icon === "string"
                               ? getIcon(s.icon, { className: "w-4 h-4" })
                               : s.icon}
                           </div>
                           <span
-                            className={`text-[11px] font-semibold truncate transition-colors ${active ? "text-indigo-100" : "text-neutral-400 group-hover:text-neutral-200"}`}
+                            className={`text-[11px] font-semibold truncate transition-colors ${active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}
                           >
                             {s.name}
                           </span>
@@ -489,7 +489,7 @@ const MovieInfo = ({
                         {isDefault && (
                           <Star
                             size={10}
-                            className={`shrink-0 ${active ? "text-yellow-500 fill-yellow-500" : "text-neutral-600 fill-neutral-600"}`}
+                            className={`shrink-0 ${active ? "text-amber-500 fill-amber-500" : "text-muted-foreground/30 fill-muted-foreground/30"}`}
                           />
                         )}
                       </button>
@@ -500,7 +500,7 @@ const MovieInfo = ({
             </div>
 
             {/* --- TABS --- */}
-            <div className="flex gap-1 p-1 bg-white/5 rounded-2xl w-fit mb-6">
+            <div className="flex gap-1 p-1 bg-muted rounded-2xl w-fit mb-6">
               {["overview", "cast", "reviews", "related"].map((tab) => (
                 <button
                   key={tab}
@@ -510,7 +510,7 @@ const MovieInfo = ({
                   {activeTab === tab && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-white/10 rounded-xl z-0"
+                      className="absolute inset-0 bg-primary/10 rounded-xl z-0"
                       transition={{
                         type: "spring",
                         stiffness: 400,
@@ -519,7 +519,7 @@ const MovieInfo = ({
                     />
                   )}
                   <span
-                    className={`relative z-10 ${activeTab === tab ? "text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                    className={`relative z-10 ${activeTab === tab ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
                   >
                     {tab}
                   </span>
@@ -538,14 +538,14 @@ const MovieInfo = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <p className="text-sm leading-relaxed text-neutral-300 font-medium">
+                    <p className="text-sm leading-relaxed text-muted-foreground font-medium">
                       {MovieDetail.overview}
                     </p>
-                    <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
-                      <span className="text-[10px] font-mono uppercase text-neutral-500 tracking-widest">
+                    <div className="mt-8 p-4 rounded-xl bg-foreground/5 border border-border flex flex-col gap-1">
+                      <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
                         Original Title
                       </span>
-                      <span className="text-sm font-bold text-white">
+                      <span className="text-sm font-bold text-foreground">
                         {MovieDetail.original_title}
                       </span>
                     </div>
@@ -564,9 +564,9 @@ const MovieInfo = ({
                     {cast.map((c) => (
                       <div
                         key={c.id}
-                        className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/5 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-2xl bg-foreground/[0.02] border border-border hover:bg-foreground/5 transition-colors group"
                       >
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-[#121212]">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-muted">
                           <img
                             src={
                               c.profile_path
@@ -578,10 +578,10 @@ const MovieInfo = ({
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-bold text-white truncate">
+                          <div className="text-sm font-bold text-foreground truncate">
                             {c.name}
                           </div>
-                          <div className="text-[10px] text-neutral-400 uppercase tracking-wide truncate mt-0.5">
+                          <div className="text-[10px] text-muted-foreground uppercase tracking-wide truncate mt-0.5">
                             {c.character}
                           </div>
                         </div>
@@ -603,22 +603,22 @@ const MovieInfo = ({
                       reviews.map((r) => (
                         <div
                           key={r.id}
-                          className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 text-sm relative"
+                          className="p-5 rounded-2xl bg-muted border border-border text-sm relative"
                         >
-                          <div className="font-bold text-white mb-3 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs shadow-lg">
+                          <div className="font-bold text-foreground mb-3 flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs shadow-md">
                               {r.author[0].toUpperCase()}
                             </div>
                             {r.author}
                           </div>
-                          <p className="text-neutral-300 leading-relaxed text-xs">
+                          <p className="text-muted-foreground leading-relaxed text-xs">
                             "{r.content.slice(0, 250)}
                             {r.content.length > 250 ? "..." : ""}"
                           </p>
                         </div>
                       ))
                     ) : (
-                      <div className="text-neutral-500 text-sm flex items-center justify-center h-32 bg-white/[0.02] rounded-2xl border border-white/5">
+                      <div className="text-muted-foreground text-sm flex items-center justify-center h-32 bg-muted rounded-2xl border border-border">
                         No reviews available yet.
                       </div>
                     )}
@@ -639,23 +639,23 @@ const MovieInfo = ({
                         <a
                           key={m.id}
                           href={`/movie/${m.id}`}
-                          className="aspect-[2/3] relative group cursor-pointer overflow-hidden rounded-xl border border-white/5 block bg-[#121212] shadow-lg"
+                          className="aspect-[2/3] relative group cursor-pointer overflow-hidden rounded-xl border border-border block bg-muted shadow-lg"
                         >
                           <img
                             src={`https://image.tmdb.org/t/p/w300${m.poster_path || m.backdrop_path}`}
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                             alt={m.title}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
                           <div className="absolute bottom-3 left-3 right-3">
-                            <div className="text-xs font-bold text-white line-clamp-2 leading-tight">
+                            <div className="text-xs font-bold text-foreground line-clamp-2 leading-tight">
                               {m.title}
                             </div>
                           </div>
                         </a>
                       ))
                     ) : (
-                      <div className="col-span-full text-neutral-500 text-sm flex items-center justify-center h-32 bg-white/[0.02] rounded-2xl border border-white/5">
+                      <div className="col-span-full text-muted-foreground text-sm flex items-center justify-center h-32 bg-muted rounded-2xl border border-border">
                         No related movies found.
                       </div>
                     )}
@@ -667,12 +667,12 @@ const MovieInfo = ({
         </div>
 
         {/* === RIGHT COLUMN: PURE PLAYER STAGE === */}
-        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col items-center justify-center relative p-0 lg:p-8 min-h-[35vh] sm:min-h-[50vh] lg:h-full bg-black">
+        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col items-center justify-center relative p-0 lg:p-8 min-h-[35vh] sm:min-h-[50vh] lg:h-full bg-background">
           {/* Ambient Glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-purple-500/10 opacity-60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-60 pointer-events-none" />
 
           {/* Player Container */}
-          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_rgba(0,0,0,1)] lg:border border-white/10 z-10 bg-[#050505] lg:ring-1 ring-white/5 group">
+          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_accent/10] lg:border border-border z-10 bg-background lg:ring-1 ring-border group">
             {isMounted && iframeSrc ? (
               <iframe
                 src={iframeSrc}
@@ -682,8 +682,8 @@ const MovieInfo = ({
                 title="Player"
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-neutral-500 text-sm gap-4 absolute inset-0 z-0">
-                <div className="w-10 h-10 rounded-full border-2 border-white/10 border-t-indigo-500 animate-spin" />
+              <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground text-sm gap-4 absolute inset-0 z-0">
+                <div className="w-10 h-10 rounded-full border-2 border-border border-t-primary animate-spin" />
                 Initializing Player...
               </div>
             )}
@@ -698,7 +698,7 @@ const MovieInfo = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1e1e1e] border border-white/10 text-white px-5 py-3.5 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-3 min-w-[250px] justify-center"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border text-foreground px-5 py-3.5 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-3 min-w-[250px] justify-center"
           >
             <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Check size={12} />
@@ -713,20 +713,20 @@ const MovieInfo = ({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-6 right-6 z-[100] w-[340px] bg-[#1a1a1a] border border-white/10 p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+            className="fixed bottom-6 right-6 z-[100] w-[340px] bg-card border border-border p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           >
             <div className="flex gap-4 items-start">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 border border-amber-500/20">
                 <ShieldAlert className="text-amber-500" size={18} />
               </div>
               <div className="flex-1 pt-0.5">
-                <h4 className="font-bold text-white text-sm mb-1">
+                <h4 className="font-bold text-foreground text-sm mb-1">
                   Adblock Recommended
                 </h4>
-                <p className="text-xs text-neutral-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Third-party sources may contain popups. We strongly advise
                   using{" "}
-                  <span className="text-indigo-400 font-bold">
+                  <span className="text-primary font-bold">
                     uBlock Origin
                   </span>
                   .
@@ -734,7 +734,7 @@ const MovieInfo = ({
               </div>
               <button
                 onClick={dismissAd}
-                className="text-neutral-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-1.5 transition-colors"
+                className="text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-full p-1.5 transition-colors"
               >
                 <X size={14} />
               </button>
@@ -754,33 +754,33 @@ const MovieInfo = ({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl h-[80vh] bg-[#0c0c0c] border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
+              className="relative w-full max-w-4xl h-[80vh] bg-background border border-border rounded-2xl overflow-hidden flex flex-col shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-foreground/[0.02]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
                     <Download size={16} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-white uppercase tracking-wider">
+                    <h3 className="font-bold text-sm text-foreground uppercase tracking-wider">
                       Download Options
                     </h3>
-                    <p className="text-[10px] text-neutral-400">
+                    <p className="text-[10px] text-muted-foreground">
                       Access download links via VidVault
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowDownloadPopup(false)}
-                  className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-colors"
+                  className="text-muted-foreground hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-full p-2 transition-colors"
                 >
                   <X size={16} />
                 </button>
               </div>
 
               {/* Iframe Body */}
-              <div className="flex-1 bg-[#050505] relative">
+              <div className="flex-1 bg-background relative">
                 <iframe
                   src={`https://vidvault.ru/movie/${id}`}
                   className="w-full h-full absolute inset-0 z-10 border-0"

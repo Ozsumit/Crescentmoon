@@ -534,11 +534,11 @@ const ContactArcade = () => {
   }, [uploadProgress]);
 
   return (
-    <div className="min-h-screen bg-[#F3F3F3] mt-20 text-neutral-900 font-sans flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background mt-20 text-foreground font-sans flex flex-col relative overflow-hidden">
       {/* Navbar / HUD */}
       <nav className="w-full p-6 flex flex-col md:flex-row justify-between items-center z-20 gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-white">
+          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-primary-foreground">
             <Terminal size={24} />
           </div>
           <div>
@@ -547,11 +547,11 @@ const ContactArcade = () => {
               <span
                 className={`w-2 h-2 rounded-full ${
                   gameState === "PLAYING"
-                    ? "bg-green-500 animate-pulse"
-                    : "bg-neutral-300"
+                    ? "bg-primary animate-pulse"
+                    : "bg-muted"
                 }`}
               ></span>
-              <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-500">
+              <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground">
                 {gameState === "IDLE"
                   ? "Systems Online"
                   : `Defense Mode: Active`}
@@ -561,22 +561,22 @@ const ContactArcade = () => {
         </div>
 
         {/* Upload Bar (Only visible when game is focused or playing) */}
-        <div className="w-full max-w-md bg-white p-3 rounded-2xl border border-neutral-200 shadow-sm flex items-center gap-4">
+        <div className="w-full max-w-md bg-card p-3 rounded-2xl border border-border shadow-sm flex items-center gap-4">
           <div className="flex-1">
-            <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-neutral-400">
+            <div className="flex justify-between text-[10px] font-bold mb-1 uppercase text-muted-foreground">
               <span>Decryption Progress</span>
               <span>{Math.floor(uploadProgress)}%</span>
             </div>
-            <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${uploadProgress}%` }}
-                className="h-full bg-black"
+                className="h-full bg-primary"
               />
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-bold uppercase text-neutral-400">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">
               Score
             </p>
             <p className="font-mono font-bold">{uiScore}</p>
@@ -588,29 +588,29 @@ const ContactArcade = () => {
         {/* LEFT: Contact Information */}
         <div className="lg:col-span-4 flex flex-col gap-4 h-full overflow-y-auto pr-2">
           {/* 1. PUBLIC INFO (Always Visible) */}
-          <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-sm relative group overflow-hidden">
+          <div className="bg-card rounded-2xl p-6 border border-border shadow-sm relative group overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <Mail size={80} />
             </div>
             <h3 className="font-bold text-lg mb-1">Get in Touch</h3>
-            <p className="text-neutral-500 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               Available for freelance projects and consulting.
             </p>
 
             <div className="space-y-4 relative z-10">
               <div>
-                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
                   Email
                 </p>
                 <a
-                  href="mailto:hello@agency.com"
+                  href="mailto:sumitp@sumit.info.np"
                   className="text-lg font-medium hover:underline decoration-2"
                 >
-                  hello@agency.com
+                  sumitp@sumit.info.np
                 </a>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">
                   Socials
                 </p>
                 <div className="flex gap-3">
@@ -618,7 +618,7 @@ const ContactArcade = () => {
                     href="https://x.com/ozsumit"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <Twitter size={18} />
                   </a>
@@ -626,7 +626,7 @@ const ContactArcade = () => {
                     href="https://github.com/ozsumit"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <Github size={18} />
                   </a>
@@ -634,7 +634,7 @@ const ContactArcade = () => {
                     href="https://linkedin.com/in/ozsumit"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <Linkedin size={18} />
                   </a>
@@ -642,7 +642,7 @@ const ContactArcade = () => {
                     href="https://figma.com/@ozsumit"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                    className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <span className="font-bold text-lg">F</span>
                   </a>
@@ -655,8 +655,8 @@ const ContactArcade = () => {
           <div
             className={`p-6 rounded-2xl border-2 transition-all duration-500 relative overflow-hidden ${
               unlockedPremium.cellphone
-                ? "bg-black text-white border-black"
-                : "bg-neutral-100 border-dashed border-neutral-300"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-muted border-dashed border-border"
             }`}
           >
             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -669,23 +669,23 @@ const ContactArcade = () => {
               {unlockedPremium.cellphone ? (
                 <Unlock size={16} />
               ) : (
-                <Lock size={16} className="text-neutral-400" />
+                <Lock size={16} className="text-muted-foreground" />
               )}
             </div>
 
             {unlockedPremium.cellphone ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <p className="text-2xl font-mono font-bold">+1 (555) 928-400</p>
-                <p className="text-xs text-neutral-500 mt-2">
+                <p className="text-2xl font-mono font-bold">+977 XXXXXXXXXX</p>
+                <p className="text-xs text-primary-foreground/70 mt-2">
                   VIP Priority Support Line
                 </p>
               </motion.div>
             ) : (
               <div>
                 <p className="text-2xl font-mono font-bold blur-sm opacity-30">
-                  +1 (555) 000-000
+                  +977 XXXXXXXXXX
                 </p>
-                <p className="text-xs text-neutral-400 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Play game to decrypt (50%)
                 </p>
               </div>
@@ -696,8 +696,8 @@ const ContactArcade = () => {
           <div
             className={`p-6 rounded-2xl border-2 transition-all duration-500 ${
               unlockedPremium.vipCode
-                ? "bg-yellow-400 text-black border-yellow-400"
-                : "bg-neutral-100 border-dashed border-neutral-300"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-muted border-dashed border-border"
             }`}
           >
             <div className="flex justify-between items-start mb-4">
@@ -710,7 +710,7 @@ const ContactArcade = () => {
               {unlockedPremium.vipCode ? (
                 <Unlock size={16} />
               ) : (
-                <Lock size={16} className="text-neutral-400" />
+                <Lock size={16} className="text-muted-foreground" />
               )}
             </div>
 
@@ -734,7 +734,7 @@ const ContactArcade = () => {
                 <p className="text-3xl font-black blur-sm opacity-20">
                   XXXXXXXX
                 </p>
-                <p className="text-xs text-neutral-400 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Play game to decrypt (100%)
                 </p>
               </div>
@@ -743,12 +743,12 @@ const ContactArcade = () => {
         </div>
 
         {/* RIGHT: Game Area */}
-        <div className="lg:col-span-8 relative flex flex-col h-full bg-white rounded-[2rem] border-4 border-neutral-200 shadow-xl overflow-hidden">
+        <div className="lg:col-span-8 relative flex flex-col h-full bg-card rounded-[2rem] border-4 border-border shadow-xl overflow-hidden">
           {/* Health Bar Overlay */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-neutral-100 z-10">
+          <div className="absolute top-0 left-0 w-full h-1 bg-muted z-10">
             <motion.div
               animate={{ width: `${health}%` }}
-              className={`h-full ${health < 30 ? "bg-red-500" : "bg-black"}`}
+              className={`h-full ${health < 30 ? "bg-destructive" : "bg-primary"}`}
             />
           </div>
 
@@ -768,46 +768,46 @@ const ContactArcade = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center p-8 z-20"
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center p-8 z-20"
               >
-                <div className="bg-white p-8 rounded-3xl shadow-2xl border border-neutral-200 text-center max-w-sm w-full">
+                <div className="bg-card p-8 rounded-3xl shadow-2xl border border-border text-center max-w-sm w-full">
                   <div className="flex justify-center gap-4 mb-6">
-                    <div className="p-3 bg-neutral-100 rounded-lg">
-                      <Crosshair size={24} />
+                    <div className="p-3 bg-muted rounded-lg">
+                      <Crosshair size={24} className="text-primary" />
                     </div>
-                    <div className="p-3 bg-neutral-100 rounded-lg">
-                      <Shield size={24} />
+                    <div className="p-3 bg-muted rounded-lg">
+                      <Shield size={24} className="text-primary" />
                     </div>
                   </div>
 
-                  <h2 className="text-3xl font-black tracking-tight mb-2">
+                  <h2 className="text-3xl font-black tracking-tight mb-2 text-foreground">
                     DECRYPT DATA
                   </h2>
-                  <p className="text-neutral-500 mb-6 text-sm">
+                  <p className="text-muted-foreground mb-6 text-sm">
                     Reach 50% & 100% upload to unlock the VIP phone line and
                     discount code.
                   </p>
 
-                  <div className="flex justify-center gap-8 mb-8 text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                  <div className="flex justify-center gap-8 mb-8 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                     <div className="flex flex-col items-center gap-2">
                       <div className="flex gap-1">
-                        <div className="w-6 h-6 border rounded border-neutral-300 flex items-center justify-center">
+                        <div className="w-6 h-6 border rounded border-border flex items-center justify-center">
                           W
                         </div>
-                        <div className="w-6 h-6 border rounded border-neutral-300 flex items-center justify-center">
+                        <div className="w-6 h-6 border rounded border-border flex items-center justify-center">
                           A
                         </div>
-                        <div className="w-6 h-6 border rounded border-neutral-300 flex items-center justify-center">
+                        <div className="w-6 h-6 border rounded border-border flex items-center justify-center">
                           S
                         </div>
-                        <div className="w-6 h-6 border rounded border-neutral-300 flex items-center justify-center">
+                        <div className="w-6 h-6 border rounded border-border flex items-center justify-center">
                           D
                         </div>
                       </div>
                       <span>Move</span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
-                      <div className="w-24 h-6 border rounded border-neutral-300 flex items-center justify-center">
+                      <div className="w-24 h-6 border rounded border-border flex items-center justify-center">
                         MOUSE
                       </div>
                       <span>Aim</span>
@@ -816,7 +816,7 @@ const ContactArcade = () => {
 
                   <button
                     onClick={startGame}
-                    className="w-full py-4 bg-black text-white font-bold rounded-xl hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 hover:scale-105 transition-all flex items-center justify-center gap-2"
                   >
                     START DECRYPTION
                   </button>
@@ -832,18 +832,18 @@ const ContactArcade = () => {
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 z-30 flex items-center justify-center"
               >
-                <div className="bg-white p-8 rounded-3xl shadow-2xl border border-red-100 text-center max-w-sm w-full">
+                <div className="bg-card p-8 rounded-3xl shadow-2xl border border-destructive/20 text-center max-w-sm w-full">
                   <AlertTriangle
                     size={48}
-                    className="text-red-500 mx-auto mb-4"
+                    className="text-destructive mx-auto mb-4"
                   />
-                  <h2 className="text-2xl font-black mb-2">CONNECTION LOST</h2>
-                  <p className="text-neutral-500 mb-6 text-sm">
+                  <h2 className="text-2xl font-black mb-2 text-foreground">CONNECTION LOST</h2>
+                  <p className="text-muted-foreground mb-6 text-sm">
                     You reached {Math.floor(uploadProgress)}% decryption.
                   </p>
                   <button
                     onClick={startGame}
-                    className="w-full py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-black transition-colors"
+                    className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-all"
                   >
                     RETRY
                   </button>
@@ -856,34 +856,34 @@ const ContactArcade = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="absolute inset-0 bg-white/95 backdrop-blur-md z-30 flex flex-col items-center justify-center"
+                className="absolute inset-0 bg-background/95 backdrop-blur-md z-30 flex flex-col items-center justify-center"
               >
                 <div className="text-center">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-black"
+                    className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg text-primary-foreground"
                   >
-                    <Star size={40} fill="black" />
+                    <Star size={40} fill="currentColor" />
                   </motion.div>
-                  <h2 className="text-4xl font-black tracking-tight mb-2">
+                  <h2 className="text-4xl font-black tracking-tight mb-2 text-foreground">
                     ALL DATA UNLOCKED
                   </h2>
-                  <p className="text-neutral-500 mb-8">
+                  <p className="text-muted-foreground mb-8">
                     You have full access to our VIP channels.
                   </p>
                   <div className="flex gap-4 justify-center">
                     <button
                       onClick={() =>
-                        (window.location.href = "mailto:hello@agency.com")
+                        (window.location.href = "mailto:sumitp@sumit.info.np")
                       }
-                      className="px-6 py-3 bg-black text-white rounded-full font-bold"
+                      className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-bold"
                     >
                       Claim Reward
                     </button>
                     <button
                       onClick={startGame}
-                      className="px-6 py-3 border border-neutral-300 rounded-full font-bold hover:bg-neutral-50"
+                      className="px-6 py-3 border border-border rounded-full font-bold hover:bg-muted text-foreground transition-all"
                     >
                       Play Again
                     </button>

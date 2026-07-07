@@ -97,10 +97,10 @@ const MovieCard = ({ MovieCard }) => {
       */}
       <Link
         href={linkPath}
-        className="block w-full aspect-[2/3] relative rounded-[2rem] overflow-hidden shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5"
+        className="block w-full aspect-[2/3] relative rounded-[2rem] overflow-hidden shadow-2xl bg-card ring-1 ring-border"
       >
         {/* IMAGE */}
-        <div className="absolute inset-0 z-0 bg-neutral-900">
+        <div className="absolute inset-0 z-0 bg-muted">
           <Image
             src={getImagePath()}
             alt={title}
@@ -111,15 +111,15 @@ const MovieCard = ({ MovieCard }) => {
                 ${imageLoaded ? "opacity-100" : "opacity-0"} 
                 ${isHovered ? "scale-110" : "scale-100"}
             `}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-60" />
         </div>
 
         {/* EXPANDING INFO SHEET (Bottom) */}
         <motion.div
           variants={sheetVariants}
-          className="absolute bottom-2 left-2 right-2 backdrop-blur-xl border border-white/10 rounded-[1.8rem] overflow-hidden z-20 shadow-lg flex flex-col justify-end"
+          className="absolute bottom-2 left-2 right-2 backdrop-blur-xl border border-border rounded-[1.8rem] overflow-hidden z-20 shadow-lg flex flex-col justify-end"
         >
           <div className="px-4 pt-4 pb-2">
             {/* Header Row */}
@@ -130,8 +130,8 @@ const MovieCard = ({ MovieCard }) => {
                     px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1
                     ${
                       isTV
-                        ? "bg-[#d0bcff] text-[#381e72]"
-                        : "bg-[#bceeff] text-[#001f2a]"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground"
                     }
                   `}
                 >
@@ -140,15 +140,15 @@ const MovieCard = ({ MovieCard }) => {
                 </span>
 
                 {MovieCard.vote_average > 0 && (
-                  <div className="flex items-center gap-1 text-xs font-bold text-[#ffdcc2]">
-                    <Star size={12} className="fill-[#ffdcc2]" />
+                  <div className="flex items-center gap-1 text-xs font-bold text-accent-foreground">
+                    <Star size={12} className="fill-current" />
                     <span>{MovieCard.vote_average.toFixed(1)}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <h3 className="text-lg font-bold leading-tight line-clamp-1 text-white mb-1">
+            <h3 className="text-lg font-bold leading-tight line-clamp-1 text-foreground mb-1">
               {title}
             </h3>
           </div>
@@ -156,12 +156,12 @@ const MovieCard = ({ MovieCard }) => {
           {/* Description & Watch Button (Expandable) */}
           <motion.div variants={contentVariants}>
             <div className="px-4 pb-4">
-              <p className="text-xs text-neutral-300 line-clamp-3 leading-relaxed mb-4">
+              <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
                 {MovieCard.overview || "No description available."}
               </p>
 
-              <div className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
-                <Play size={16} className="fill-[#07210b]" />
+              <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
+                <Play size={16} className="fill-current" />
                 <span>Watch Now</span>
               </div>
             </div>
@@ -174,7 +174,7 @@ const MovieCard = ({ MovieCard }) => {
          We moved this OUTSIDE the Link so the button actually clicks
       */}
       <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
-        <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+        <div className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg border border-border">
           {formatDate(MovieCard.release_date || MovieCard.first_air_date)}
         </div>
 
@@ -185,11 +185,11 @@ const MovieCard = ({ MovieCard }) => {
           whileTap={{ scale: 0.9 }}
           className={`
             pointer-events-auto  /* <--- ADD THIS HERE */
-            w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-colors duration-200 cursor-pointer
+            w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-border backdrop-blur-md transition-colors duration-200 cursor-pointer
             ${
               isFavorite
-                ? "bg-[#ffb4ab] text-[#690005]"
-                : "bg-black/40 text-white hover:bg-white hover:text-black"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background/40 border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground"
             }
           `}
         >

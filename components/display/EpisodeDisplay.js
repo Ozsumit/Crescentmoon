@@ -11,8 +11,8 @@ const EpisodeDisplay = ({ EpisodeInfos, seriesId }) => {
       seriesId,
     });
     return (
-      <div className="p-12 text-center border border-white/5 rounded-[2rem] bg-white/5">
-        <p className="text-neutral-500 font-mono uppercase">
+      <div className="p-12 text-center border border-border rounded-[2rem] bg-muted/5">
+        <p className="text-muted-foreground font-mono uppercase">
           Unable to load episodes
         </p>
       </div>
@@ -55,9 +55,9 @@ const EpisodeCard = ({ episodeinfo, seriesId }) => {
 
   return (
     <Link href={episodeLink} legacyBehavior>
-      <a className="group relative bg-[#0A0A0A] border border-white/5 rounded-[2rem] overflow-hidden flex flex-col hover:border-white/20 transition-all duration-300">
+      <a className="group relative bg-card border border-border rounded-[2rem] overflow-hidden flex flex-col hover:border-foreground/20 transition-all duration-300">
         {/* Episode Image */}
-        <div className="relative aspect-video w-full overflow-hidden bg-neutral-900">
+        <div className="relative aspect-video w-full overflow-hidden bg-muted">
           <img
             src={imageUrl}
             alt={name || `Episode ${episode_number}`}
@@ -66,17 +66,17 @@ const EpisodeCard = ({ episodeinfo, seriesId }) => {
           />
 
           {/* Dark Overlay on Hover */}
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+          <div className="absolute inset-0 bg-background/20 group-hover:bg-background/40 transition-colors" />
 
           {/* Play Button */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-full">
-              <Play className="w-6 h-6 text-white fill-current" />
+            <div className="bg-background/10 backdrop-blur-md border border-border p-4 rounded-full">
+              <Play className="w-6 h-6 text-foreground fill-current" />
             </div>
           </div>
 
           {/* Badge */}
-          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md text-[10px] font-mono text-white uppercase tracking-widest">
+          <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm border border-border px-2 py-1 rounded-md text-[10px] font-mono text-foreground uppercase tracking-widest">
             S{season_number} E{episode_number}
           </div>
         </div>
@@ -84,10 +84,10 @@ const EpisodeCard = ({ episodeinfo, seriesId }) => {
         {/* Episode Info */}
         <div className="p-5 flex flex-col flex-1">
           <div className="mb-3">
-            <h3 className="font-bold text-white text-lg leading-tight group-hover:text-neutral-300 transition-colors line-clamp-1">
+            <h3 className="font-bold text-foreground text-lg leading-tight group-hover:text-muted-foreground transition-colors line-clamp-1">
               {name || `Episode ${episode_number}`}
             </h3>
-            <div className="flex items-center gap-3 mt-2 text-xs font-mono text-neutral-500 uppercase tracking-wide">
+            <div className="flex items-center gap-3 mt-2 text-xs font-mono text-muted-foreground uppercase tracking-wide">
               {runtime && (
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-3 h-3" />
@@ -104,7 +104,7 @@ const EpisodeCard = ({ episodeinfo, seriesId }) => {
           </div>
 
           {overview && (
-            <p className="text-sm text-neutral-400 font-light line-clamp-2 leading-relaxed mt-auto">
+            <p className="text-sm text-muted-foreground font-light line-clamp-2 leading-relaxed mt-auto">
               {overview}
             </p>
           )}

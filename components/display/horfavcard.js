@@ -28,7 +28,7 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
       if (favoriteItem.media_type === "tv" && !movieData.number_of_seasons) {
         const data = await fetchMovieData(
           favoriteItem.id,
-          favoriteItem.media_type
+          favoriteItem.media_type,
         );
         if (data) {
           setMovieData((prev) => ({
@@ -96,8 +96,8 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
   // --- LOADING STATE ---
   if (isLoading && !movieData.title && !movieData.name) {
     return (
-      <div className="w-full h-48 bg-neutral-900/50 border border-white/5 rounded-2xl flex items-center justify-center animate-pulse">
-        <span className="text-[10px] font-mono text-neutral-600 uppercase">
+      <div className="w-full h-48 bg-muted border border-border rounded-2xl flex items-center justify-center animate-pulse">
+        <span className="text-[10px] font-mono text-muted-foreground uppercase">
           Loading_Asset...
         </span>
       </div>
@@ -109,7 +109,7 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative w-full bg-neutral-900/60 backdrop-blur-sm border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-neutral-900/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50"
+      className="group relative w-full bg-card backdrop-blur-sm border border-border rounded-2xl overflow-hidden transition-all duration-300 hover:bg-card/80 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50"
     >
       <Link href={getLink()} className="flex flex-col sm:flex-row h-full">
         {/* --- LEFT: IMAGE SPINE --- */}
@@ -122,7 +122,7 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
             className={`object-cover transition-all duration-700 ease-in-out group-hover:scale-105 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
             onError={(e) => {
               e.currentTarget.src = "/placeholder.svg";
             }}
@@ -134,7 +134,7 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
 
           {/* Type Badge (Absolute on Mobile, Hidden on Desktop as it moves to text area) */}
           <div className="absolute top-3 left-3 sm:hidden">
-            <div className="px-2 py-1 bg-black/60 backdrop-blur-md rounded border border-white/10 text-[10px] font-bold text-white uppercase">
+            <div className="px-2 py-1 bg-background/60 backdrop-blur-md rounded border border-border text-[10px] font-bold text-foreground uppercase">
               {isTV ? "TV" : "MOV"}
             </div>
           </div>
@@ -146,24 +146,24 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
           <div className="flex justify-between items-start gap-4">
             <div>
               {/* Meta Row (Swiss Style) */}
-              <div className="flex flex-wrap items-center gap-3 mb-2 text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+              <div className="flex flex-wrap items-center gap-3 mb-2 text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
                 <span
                   className={`flex items-center gap-1.5 ${
-                    isTV ? "text-rose-400" : "text-indigo-400"
+                    isTV ? "text-secondary" : "text-primary"
                   }`}
                 >
                   {isTV ? <Tv size={12} /> : <Film size={12} />}
                   {isTV ? "Series" : "Movie"}
                 </span>
-                <span className="w-px h-3 bg-white/10" />
+                <span className="w-px h-3 bg-border" />
                 <span className="flex items-center gap-1.5">
                   <Calendar size={12} />
                   {getYear()}
                 </span>
                 {movieData.vote_average > 0 && (
                   <>
-                    <span className="w-px h-3 bg-white/10" />
-                    <span className="flex items-center gap-1.5 text-yellow-500">
+                    <span className="w-px h-3 bg-border" />
+                    <span className="flex items-center gap-1.5 text-accent-foreground">
                       <Star size={12} fill="currentColor" />
                       {movieData.vote_average.toFixed(1)}
                     </span>
@@ -172,7 +172,7 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
               </div>
 
               {/* Title */}
-              <h3 className="text-xl md:text-2xl font-black text-white leading-tight group-hover:text-indigo-100 transition-colors">
+              <h3 className="text-xl md:text-2xl font-black text-foreground leading-tight group-hover:text-primary transition-colors">
                 {renderTitle()}
               </h3>
             </div>
@@ -180,12 +180,12 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
             {/* Favorite Action */}
             <button
               onClick={handleFavoriteToggle}
-              className="flex-shrink-0 p-2.5 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-all active:scale-95 group/heart"
+              className="flex-shrink-0 p-2.5 rounded-full bg-foreground/5 border border-border hover:bg-foreground/10 text-muted-foreground hover:text-primary transition-all active:scale-95 group/heart"
             >
               <Heart
                 size={18}
                 className={`transition-colors duration-300 ${
-                  isFavorite ? "fill-red-500 text-red-500" : ""
+                  isFavorite ? "fill-primary text-primary" : ""
                 }`}
               />
             </button>
@@ -193,20 +193,20 @@ const HorizontalfavCard = ({ favoriteItem, toggleFavorite }) => {
 
           {/* Overview */}
           <div className="mt-4 mb-6 flex-1">
-            <p className="text-sm text-neutral-400 line-clamp-2 md:line-clamp-3 leading-relaxed">
+            <p className="text-sm text-muted-foreground line-clamp-2 md:line-clamp-3 leading-relaxed">
               {movieData.overview || "No overview available for this title."}
             </p>
           </div>
 
           {/* Footer / CTA */}
-          <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-neutral-600 uppercase">
+          <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
+            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-muted-foreground uppercase">
               ID: {movieData.id}
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider group/link">
+            <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase tracking-wider group/link">
               <span>View Details</span>
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover/link:bg-white/20 transition-colors">
+              <div className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center group-hover/link:bg-foreground/20 transition-colors">
                 <ArrowUpRight
                   size={12}
                   className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform"

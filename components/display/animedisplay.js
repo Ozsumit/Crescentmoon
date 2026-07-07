@@ -118,7 +118,7 @@ const AnimeDisplay = () => {
 
     return (
       <Link href={`/anime?id=${anime.id}`} key={anime.id}>
-        <div className="bg-slate-800/80 rounded-xl h-[14rem] cursor-pointer sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl relative group">
+        <div className="bg-card rounded-xl h-[14rem] cursor-pointer sm:h-auto overflow-hidden shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-border relative group">
           <div className="block relative">
             <div
               className={`relative ${
@@ -132,29 +132,29 @@ const AnimeDisplay = () => {
                 onLoad={() => setImageLoaded(true)}
               />
             </div>
-            <div className="absolute top-2 left-2 bg-black/40 text-white/90 px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm">
+            <div className="absolute top-2 left-2 bg-background/40 text-foreground px-3 py-1 rounded-md text-xs font-semibold backdrop-blur-sm border border-border">
               {anime.type || "TV"}
             </div>
           </div>
 
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-white">
+          <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-300 flex flex-col justify-center items-center p-4 text-center text-foreground backdrop-blur-sm">
             <p className="text-sm mb-3 text-shadow-sm line-clamp-3">
               {anime.synopsis || "No synopsis available"}
             </p>
-            <button className="flex items-center text-xs sm:text-sm hover:text-blue-400 transition-colors">
+            <button className="flex items-center text-xs sm:text-sm hover:text-primary transition-colors font-bold uppercase tracking-wider">
               <Info size={16} className="mr-2" />
               More Details
             </button>
           </div>
 
           <div className="p-4">
-            <h3 className="text-center text-slate-200 font-semibold text-base mb-2 line-clamp-1">
+            <h3 className="text-center text-foreground font-semibold text-base mb-2 line-clamp-1">
               {anime.title}
             </h3>
 
-            <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-slate-400">
+            <div className="flex flex-col lg:flex-row justify-between items-center text-xs text-muted-foreground">
               <div className="flex items-center">
-                <Star size={14} className="mr-1 text-yellow-500" />
+                <Star size={14} className="mr-1 text-accent-foreground fill-current" />
                 <span>
                   {anime.score ? `${anime.score.toFixed(1)}/10` : "N/A"}
                 </span>
@@ -173,16 +173,16 @@ const AnimeDisplay = () => {
               e.stopPropagation();
               toggleFavorite(anime);
             }}
-            className="absolute top-2 right-2 z-20 bg-black/50 rounded-full p-2 hover:bg-black/70 transition-colors"
+            className="absolute top-2 right-2 z-20 bg-background/50 rounded-full p-2 hover:bg-background/70 transition-colors border border-border"
             aria-label={
               isFavorite ? "Remove from favorites" : "Add to favorites"
             }
           >
             <Heart
               size={20}
-              fill={isFavorite ? "red" : "none"}
-              stroke={isFavorite ? "red" : "white"}
-              className="transition-colors"
+              fill={isFavorite ? "hsl(var(--primary))" : "none"}
+              stroke={isFavorite ? "hsl(var(--primary))" : "currentColor"}
+              className={`transition-colors ${isFavorite ? "text-primary" : "text-foreground"}`}
             />
           </button>
         </div>
@@ -192,9 +192,9 @@ const AnimeDisplay = () => {
 
   return (
     <div className="w-full px-2 sm:px-4 md:px-6 mb-8 mt-12 lg:px-8 xl:px-12">
-      <div className="bg-slate-900/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-card/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-border">
         <div className="p-4 sm:p-6 md:p-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-600 truncate">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-center mb-6 text-foreground tracking-tighter uppercase">
             {activeGenres.length > 0
               ? `${activeGenres.map((g) => g.name).join(", ")} Anime`
               : "Popular Anime"}
@@ -204,12 +204,12 @@ const AnimeDisplay = () => {
             <div className="flex flex-wrap justify-end items-center gap-2 sm:gap-4">
               <button
                 onClick={() => setIsGenreMenuOpen(!isGenreMenuOpen)}
-                className="flex items-center space-x-2 bg-indigo-600/80 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+                className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-full hover:opacity-90 transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20"
               >
                 <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="text-xs sm:text-sm">Filter Genres</span>
                 {activeGenres.length > 0 && (
-                  <span className="ml-2 bg-white text-indigo-600 rounded-full px-2 py-0.5 text-xs">
+                  <span className="ml-2 bg-primary-foreground text-primary rounded-full px-2 py-0.5 text-xs">
                     {activeGenres.length}
                   </span>
                 )}
@@ -218,7 +218,7 @@ const AnimeDisplay = () => {
               {activeGenres.length > 0 && (
                 <button
                   onClick={clearGenres}
-                  className="text-slate-400 hover:text-white flex items-center space-x-1 text-xs sm:text-sm"
+                  className="text-muted-foreground hover:text-foreground flex items-center space-x-1 text-xs sm:text-sm font-bold uppercase tracking-widest transition-colors"
                 >
                   <X className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>Clear Filters</span>
@@ -227,16 +227,16 @@ const AnimeDisplay = () => {
             </div>
 
             {isGenreMenuOpen && (
-              <div className="absolute z-50 mt-2 p-4 bg-slate-800 rounded-lg shadow-xl border border-slate-700 max-h-96 overflow-y-auto">
+              <div className="absolute z-50 mt-2 p-6 bg-card border border-border rounded-[2rem] shadow-2xl max-h-96 overflow-y-auto backdrop-blur-2xl">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {genres.map((genre) => (
                     <button
                       key={genre.mal_id}
                       onClick={() => toggleGenre(genre)}
-                      className={`px-3 py-2 rounded-md text-sm ${
+                      className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
                         activeGenres.some((g) => g.mal_id === genre.mal_id)
-                          ? "bg-indigo-600 text-white"
-                          : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted text-muted-foreground border-border hover:bg-foreground/5 hover:text-foreground"
                       }`}
                     >
                       {genre.name}
@@ -249,13 +249,13 @@ const AnimeDisplay = () => {
 
           {isLoading && (
             <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-              <span className="ml-3 text-indigo-500 text-sm">Loading...</span>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              <span className="ml-3 text-primary text-sm font-mono uppercase tracking-widest">Loading...</span>
             </div>
           )}
 
           {error && (
-            <div className="text-center py-8 text-red-500">{error}</div>
+            <div className="text-center py-8 text-destructive font-bold uppercase tracking-widest">{error}</div>
           )}
 
           {!isLoading && !error && (
@@ -267,21 +267,21 @@ const AnimeDisplay = () => {
           )}
 
           {!isLoading && !error && totalPages > 1 && (
-            <div className="mt-6 flex justify-center gap-2">
+            <div className="mt-8 flex justify-center items-center gap-4">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 bg-indigo-600/80 text-white rounded-md disabled:opacity-50 hover:bg-indigo-700 transition-colors"
+                className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-30 hover:opacity-90 transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20"
               >
                 Previous
               </button>
-              <span className="px-4 py-2 text-white">
-                Page {page} of {totalPages}
+              <span className="text-foreground font-mono text-sm font-bold">
+                {page} / {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 bg-indigo-600/80 text-white rounded-md disabled:opacity-50 hover:bg-indigo-700 transition-colors"
+                className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-30 hover:opacity-90 transition-all font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20"
               >
                 Next
               </button>

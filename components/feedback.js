@@ -16,7 +16,7 @@ const TypeChip = ({ active, onClick, icon: Icon, label }) => (
     onClick={onClick}
     className={`
       relative px-2 sm:px-3 py-2.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-1.5 flex-1 justify-center overflow-hidden border min-h-[44px] sm:min-h-0
-      ${active ? "border-white bg-white text-black" : "border-white/10 bg-transparent text-neutral-400 hover:bg-white/5"}
+      ${active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-transparent text-muted-foreground hover:bg-foreground/5"}
     `}
   >
     <span className="relative z-10 flex items-center gap-1.5 whitespace-nowrap">
@@ -68,23 +68,23 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
   // --- Dynamic Styles based on Component Type & Theme ---
   const pulseDotClass = isPopup
     ? theme.pulse
-    : "bg-white/20";
+    : "bg-primary/20";
 
   const successContainerClass = isPopup
     ? "flex flex-col items-center justify-center py-8 sm:py-10 text-center"
-    : `flex flex-col items-center justify-center py-8 sm:py-10 text-center border border-white/10 rounded-2xl bg-white/5`;
+    : `flex flex-col items-center justify-center py-8 sm:py-10 text-center border border-border rounded-2xl bg-foreground/5`;
 
   const focusBorderClass = isPopup
-    ? `focus:border-white/40`
-    : "focus:border-white/40";
+    ? `focus:border-primary/40`
+    : "focus:border-primary/40";
 
   const submitBtnClass = isPopup
     ? `${theme.accent} ${theme.accentText} shadow-[0_0_15px_rgba(255,255,255,0.2)]`
-    : "bg-[#c3f0c2] text-black hover:bg-[#8bfca9]";
+    : "bg-primary text-primary-foreground hover:opacity-90";
 
   return (
     <>
-      <h3 className={`text-[11px] sm:text-xs font-mono uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isPopup ? theme.text : "text-neutral-500"}`}>
+      <h3 className={`text-[11px] sm:text-xs font-mono uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isPopup ? theme.text : "text-muted-foreground"}`}>
         <span
           className={`w-2 h-2 rounded-full animate-pulse ${pulseDotClass}`}
         ></span>
@@ -101,13 +101,13 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
               exit={{ opacity: 0, y: -10 }}
               className={successContainerClass}
             >
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3 sm:mb-4">
-                <CheckCircle2 size={24} className="text-green-400" />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/20 flex items-center justify-center mb-3 sm:mb-4">
+                <CheckCircle2 size={24} className="text-primary" />
               </div>
-              <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-1">
+              <h3 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider mb-1">
                 Transmission Sent
               </h3>
-              <p className="text-[11px] sm:text-xs text-neutral-400">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 Thank you. The developer has received your logs.
               </p>
             </motion.div>
@@ -151,7 +151,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                     exit={{ opacity: 0, height: 0 }}
                     className="flex flex-col items-start gap-1 overflow-hidden"
                   >
-                    <div className="flex gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                    <div className="flex gap-1 bg-foreground/5 p-1 rounded-xl border border-border">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -160,7 +160,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                             setFormData({ ...formData, rating: star })
                           }
                           // Increased padding for mobile touch targets
-                          className={`p-2 sm:p-1.5 rounded-lg transition-all ${formData.rating >= star ? "text-yellow-400" : "text-neutral-600 hover:text-neutral-400"}`}
+                          className={`p-2 sm:p-1.5 rounded-lg transition-all ${formData.rating >= star ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           <Star
                             size={18}
@@ -185,7 +185,7 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className={`w-full bg-white/5 border border-white/10 rounded-xl p-3 sm:p-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all resize-none ${focusBorderClass}`}
+                  className={`w-full bg-foreground/5 border border-border rounded-xl p-3 sm:p-3.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:bg-foreground/10 transition-all resize-none ${focusBorderClass}`}
                 />
                 {/* Changed to flex-col on mobile, flex-row on larger screens */}
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -196,14 +196,14 @@ const FeedbackFormCore = ({ isPopup = false, onSuccessfulSubmit }) => {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className={`flex-1 min-h-[44px] sm:min-h-0 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:bg-white/10 transition-all ${focusBorderClass}`}
+                    className={`flex-1 min-h-[44px] sm:min-h-0 bg-foreground/5 border border-border rounded-xl p-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:bg-foreground/10 transition-all ${focusBorderClass}`}
                   />
                   <button
                     type="submit"
                     disabled={isSubmitting || !formData.message.trim()}
                     className={`
                       min-h-[44px] sm:min-h-0 py-3 sm:py-0 px-6 rounded-xl flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest transition-all shrink-0
-                      ${isSubmitting || !formData.message.trim() ? "bg-white/5 text-neutral-500 cursor-not-allowed" : submitBtnClass}
+                      ${isSubmitting || !formData.message.trim() ? "bg-foreground/5 text-muted-foreground cursor-not-allowed" : submitBtnClass}
                     `}
                   >
                     {isSubmitting ? (

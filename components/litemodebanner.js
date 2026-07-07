@@ -29,19 +29,19 @@ export default function LiteModeBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-amber-500/10  border-amber-500/20  sticky top-0 left-0 right-0 z-[101] border-b transition-all duration-300   text-amber-200/90 text-xs md:text-sm py-2 px-4 flex justify-between items-center gap-2">
+    <div className="bg-primary/10 border-primary/20 sticky top-0 left-0 right-0 z-[101] border-b transition-all duration-300 text-primary text-xs md:text-sm py-2 px-4 flex justify-between items-center gap-2 backdrop-blur-md">
       <div className="w-full text-center">
-        <span>Page lagging too much? </span>
+        <span className="opacity-80">Page lagging too much? </span>
         <a
           href={liteUrl}
-          className="underline font-semibold hover:text-amber-100 transition-colors ml-1"
+          className="underline font-bold hover:opacity-80 transition-colors ml-1"
         >
           Switch to Lite Mode
         </a>
       </div>
       <button
         onClick={handleDismiss}
-        className="text-amber-400 hover:text-amber-200 focus:outline-none px-1"
+        className="text-primary hover:opacity-70 focus:outline-none px-1 font-bold"
         aria-label="Dismiss banner"
       >
         ✕

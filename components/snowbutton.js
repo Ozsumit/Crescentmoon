@@ -86,8 +86,8 @@ export default function SnowButton() {
           group
           ${
             isSnowing
-              ? "bg-neutral-900 text-white shadow-xl hover:bg-neutral-800"
-              : "bg-white text-neutral-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
+              ? "bg-primary text-primary-foreground shadow-xl hover:opacity-90"
+              : "bg-card text-foreground border border-border shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
           }
           hover:scale-[1.02] active:scale-95
         `}
@@ -98,8 +98,8 @@ export default function SnowButton() {
             w-2 h-2 rounded-full transition-colors duration-300
             ${
               isSnowing
-                ? "bg-red-500 animate-pulse"
-                : "bg-neutral-300 group-hover:bg-neutral-900"
+                ? "bg-destructive animate-pulse"
+                : "bg-muted group-hover:bg-primary"
             }
           `}
         />

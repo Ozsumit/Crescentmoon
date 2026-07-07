@@ -122,7 +122,7 @@ const Favorites = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-1 bg-white/10 overflow-hidden rounded-full">
+          <div className="w-16 h-1 bg-muted overflow-hidden rounded-full">
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: "100%" }}
@@ -144,17 +144,17 @@ const Favorites = () => {
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
 
       {/* Ambient Glows */}
-      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 max-w-[2000px]">
         {/* --- PAGE HEADER (Swiss Style) --- */}
-        <header className="mb-12 flex flex-col md:flex-row items-end justify-between gap-6 border-b border-white/5 pb-8">
+        <header className="mb-12 flex flex-col md:flex-row items-end justify-between gap-6 border-b border-border pb-8">
           <div>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-2"
+              className="text-5xl md:text-7xl font-black tracking-tighter text-foreground mb-2"
             >
               ARCHIVE
             </motion.h1>
@@ -162,7 +162,7 @@ const Favorites = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-sm md:text-base font-mono text-neutral-500 uppercase tracking-widest"
+              className="text-sm md:text-base font-mono text-muted-foreground uppercase tracking-widest"
             >
               Personal Collection • {favorites.length} Items
             </motion.p>
@@ -174,12 +174,12 @@ const Favorites = () => {
               {
                 label: "Movies",
                 count: favorites.filter((i) => i.release_date).length,
-                color: "text-indigo-400",
+                color: "text-primary",
               },
               {
                 label: "Series",
                 count: favorites.filter((i) => i.first_air_date).length,
-                color: "text-rose-400",
+                color: "text-secondary-foreground",
               },
             ].map((stat, i) => (
               <motion.div
@@ -187,12 +187,12 @@ const Favorites = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
-                className="px-5 py-3 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm"
+                className="px-5 py-3 bg-card border border-border rounded-xl backdrop-blur-sm shadow-sm"
               >
                 <div className={`text-2xl font-bold ${stat.color}`}>
                   {stat.count}
                 </div>
-                <div className="text-[10px] font-mono text-neutral-500 uppercase">
+                <div className="text-[10px] font-mono text-muted-foreground uppercase">
                   {stat.label}
                 </div>
               </motion.div>
@@ -209,8 +209,8 @@ const Favorites = () => {
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 overflow-hidden"
             >
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-center justify-center">
-                <p className="text-red-400 font-mono text-sm">ERROR: {error}</p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center justify-center">
+                <p className="text-destructive font-mono text-sm">ERROR: {error}</p>
               </div>
             </motion.div>
           )}
@@ -225,8 +225,8 @@ const Favorites = () => {
         />
 
         {/* --- FOOTER --- */}
-        <footer className="mt-20 border-t border-white/5 pt-8 text-center md:text-left">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-neutral-600 uppercase tracking-widest">
+        <footer className="mt-20 border-t border-border pt-8 text-center md:text-left">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
             <span>Database_Version: 2.4.0</span>
             <span>Last_Sync: {new Date().toLocaleDateString()}</span>
           </div>

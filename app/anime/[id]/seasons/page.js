@@ -139,7 +139,7 @@ const CustomVideoPlayer = ({ src, poster, onError, onNext }) => {
           <div className="flex items-center gap-4">
             <button
               onClick={togglePlay}
-              className="text-white hover:text-indigo-400"
+              className="text-white hover:text-primary"
             >
               {isPlaying ? (
                 <Pause className="w-6 h-6" />
@@ -151,7 +151,7 @@ const CustomVideoPlayer = ({ src, poster, onError, onNext }) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMute}
-                className="text-white hover:text-indigo-400"
+                className="text-white hover:text-primary"
               >
                 {isMuted ? (
                   <VolumeX className="w-6 h-6" />
@@ -176,13 +176,13 @@ const CustomVideoPlayer = ({ src, poster, onError, onNext }) => {
           <div className="flex items-center gap-4">
             <button
               onClick={onNext}
-              className="text-white hover:text-indigo-400"
+              className="text-white hover:text-primary"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
             <button
               onClick={toggleFullscreen}
-              className="text-white hover:text-indigo-400"
+              className="text-white hover:text-primary"
             >
               <Maximize className="w-6 h-6" />
             </button>
@@ -201,7 +201,7 @@ const EpisodeCard = ({ episode, onPlay, viewMode, anime, isPlaying }) => {
 
   if (viewMode === "grid") {
     return (
-      <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-colors group">
+      <Card className="bg-card/50 border-border/50 hover:bg-card/70 transition-colors group">
         <CardContent className="p-0">
           <div className="relative aspect-video">
             <img
@@ -212,22 +212,22 @@ const EpisodeCard = ({ episode, onPlay, viewMode, anime, isPlaying }) => {
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <button
                 onClick={() => onPlay(episode)}
-                className="bg-indigo-600 p-3 rounded-full transform scale-90 group-hover:scale-100 transition-transform"
+                className="bg-primary p-3 rounded-full transform scale-90 group-hover:scale-100 transition-transform"
               >
-                <PlayCircle className="w-8 h-8 text-white" />
+                <PlayCircle className="w-8 h-8 text-primary-foreground" />
               </button>
             </div>
             {isPlaying && (
-              <div className="absolute top-2 right-2 bg-indigo-600 px-2 py-1 rounded text-xs text-white">
+              <div className="absolute top-2 right-2 bg-primary px-2 py-1 rounded text-xs text-primary-foreground">
                 Now Playing
               </div>
             )}
           </div>
           <div className="p-4">
-            <h3 className="text-lg font-medium text-white">
+            <h3 className="text-lg font-medium text-foreground">
               Episode {episode.mal_id}
             </h3>
-            <p className="text-slate-400 text-sm mt-1 line-clamp-2">
+            <p className="text-muted-foreground text-sm mt-1 line-clamp-2">
               {episode.title}
             </p>
           </div>
@@ -238,8 +238,8 @@ const EpisodeCard = ({ episode, onPlay, viewMode, anime, isPlaying }) => {
 
   return (
     <Card
-      className={`bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-colors group ${
-        isPlaying ? "border-l-4 border-l-indigo-600" : ""
+      className={`bg-card/50 border-border/50 hover:bg-card/70 transition-colors group ${
+        isPlaying ? "border-l-4 border-l-primary" : ""
       }`}
     >
       <CardContent className="p-4 flex gap-4">
@@ -259,23 +259,23 @@ const EpisodeCard = ({ episode, onPlay, viewMode, anime, isPlaying }) => {
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-medium text-white flex items-center gap-2">
+              <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
                 Episode {episode.mal_id}
                 {isPlaying && (
-                  <span className="bg-indigo-600 px-2 py-1 rounded text-xs">
+                  <span className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs">
                     Now Playing
                   </span>
                 )}
               </h3>
-              <p className="text-xl font-semibold text-white mt-1">
+              <p className="text-xl font-semibold text-foreground mt-1">
                 {episode.title}
               </p>
             </div>
-            <span className="text-slate-400 text-sm">
+            <span className="text-muted-foreground text-sm">
               {utils.formatDate(episode.aired)}
             </span>
           </div>
-          <p className="text-slate-400 mt-2 line-clamp-2">
+          <p className="text-muted-foreground mt-2 line-clamp-2">
             {episode.synopsis || "No synopsis available"}
           </p>
         </div>
@@ -466,10 +466,10 @@ const AnimeSeasonPage = ({ params }) => {
   // Loading and error states
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto" />
-          <p className="mt-4 text-slate-400 text-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto" />
+          <p className="mt-4 text-muted-foreground text-lg">
             Loading anime details...
           </p>
         </div>
@@ -479,14 +479,14 @@ const AnimeSeasonPage = ({ params }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center text-red-500 max-w-md mx-auto p-6 bg-slate-800 rounded-lg">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center text-destructive max-w-md mx-auto p-6 bg-card border border-border rounded-lg">
           <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Error Loading Content</h2>
-          <p className="text-slate-400">{error}</p>
+          <h2 className="text-xl font-semibold mb-2 text-foreground">Error Loading Content</h2>
+          <p className="text-muted-foreground">{error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-colors"
           >
             Go Back
           </button>
@@ -496,7 +496,7 @@ const AnimeSeasonPage = ({ params }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-background">
       {/* Enhanced Hero Section */}
       <div className="relative h-[60vh]">
         <div
@@ -506,14 +506,14 @@ const AnimeSeasonPage = ({ params }) => {
             opacity: 0.3,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-900">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 to-background">
           <div className="container mx-auto px-4 h-full flex items-center">
             <div className="flex flex-col md:flex-row gap-8">
               <div className="relative group">
                 <img
                   src={anime?.images?.jpg?.large_image_url}
                   alt={anime?.title}
-                  className="w-48 h-72 rounded-lg shadow-2xl group-hover:shadow-indigo-500/25 transition-shadow"
+                  className="w-48 h-72 rounded-lg shadow-2xl group-hover:shadow-primary/25 transition-shadow"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                   <Info className="w-8 h-8 text-white" />
@@ -521,22 +521,22 @@ const AnimeSeasonPage = ({ params }) => {
               </div>
               <div className="flex flex-col justify-center gap-6 max-w-2xl">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+                  <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
                     {anime?.title}
                   </h1>
-                  <h2 className="text-xl text-slate-400">
+                  <h2 className="text-xl text-muted-foreground">
                     {anime?.title_japanese}
                   </h2>
                 </div>
-                <p className="text-slate-300 text-lg leading-relaxed line-clamp-3">
+                <p className="text-foreground/80 text-lg leading-relaxed line-clamp-3">
                   {anime?.synopsis}
                 </p>
-                <div className="flex flex-wrap gap-4 text-slate-300">
-                  <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full">
+                <div className="flex flex-wrap gap-4 text-muted-foreground">
+                  <span className="flex items-center gap-2 bg-card/50 px-3 py-1 rounded-full border border-border">
                     <Calendar className="w-4 h-4" />
                     {anime?.aired?.string}
                   </span>
-                  <span className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full">
+                  <span className="flex items-center gap-2 bg-card/50 px-3 py-1 rounded-full border border-border">
                     <Star className="w-4 h-4 text-yellow-500" />
                     <span className={utils.getColorByScore(anime?.score)}>
                       {anime?.score}
@@ -545,7 +545,7 @@ const AnimeSeasonPage = ({ params }) => {
                   {anime?.genres?.map((genre) => (
                     <span
                       key={genre.mal_id}
-                      className="bg-slate-800/50 px-3 py-1 rounded-full text-sm"
+                      className="bg-card/50 px-3 py-1 rounded-full text-sm border border-border"
                     >
                       {genre.name}
                     </span>
@@ -560,13 +560,13 @@ const AnimeSeasonPage = ({ params }) => {
       {/* Video Player Section */}
       {selectedEpisode && (
         <div id="video-player" className="container mx-auto px-4 py-8">
-          <div className="bg-slate-800 rounded-lg overflow-hidden">
-            <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="p-4 border-b border-border flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-medium text-white">
+                <h3 className="text-lg font-medium text-foreground">
                   Episode {selectedEpisode.mal_id}: {selectedEpisode.title}
                 </h3>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {utils.formatDate(selectedEpisode.aired)}
                 </p>
               </div>
@@ -585,8 +585,8 @@ const AnimeSeasonPage = ({ params }) => {
             {isLoadingVideo ? (
               <div className="flex items-center justify-center h-[60vh]">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto" />
-                  <p className="mt-4 text-slate-400">Loading video...</p>
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto" />
+                  <p className="mt-4 text-muted-foreground">Loading video...</p>
                 </div>
               </div>
             ) : videoSrc ? (
@@ -597,7 +597,7 @@ const AnimeSeasonPage = ({ params }) => {
                 onNext={handleNextEpisode}
               />
             ) : (
-              <div className="flex items-center justify-center h-[60vh] text-slate-400">
+              <div className="flex items-center justify-center h-[60vh] text-muted-foreground">
                 <AlertCircle className="w-6 h-6 mr-2" />
                 Unable to load video. Please try again.
               </div>
@@ -610,8 +610,8 @@ const AnimeSeasonPage = ({ params }) => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white">Episodes</h2>
-            <p className="text-slate-400 mt-1">
+            <h2 className="text-2xl font-bold text-foreground">Episodes</h2>
+            <p className="text-muted-foreground mt-1">
               {episodes.length} episodes available
             </p>
           </div>
@@ -619,19 +619,19 @@ const AnimeSeasonPage = ({ params }) => {
             type="single"
             value={viewMode}
             onValueChange={(value) => value && setViewMode(value)}
-            className="bg-slate-800 p-1 rounded-lg"
+            className="bg-card border border-border p-1 rounded-lg"
           >
             <ToggleGroupItem
               value="list"
               aria-label="List view"
-              className="data-[state=on]:bg-indigo-600 data-[state=on]:text-white"
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               <List className="w-4 h-4" />
             </ToggleGroupItem>
             <ToggleGroupItem
               value="grid"
               aria-label="Grid view"
-              className="data-[state=on]:bg-indigo-600 data-[state=on]:text-white"
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               <Grid className="w-4 h-4" />
             </ToggleGroupItem>
@@ -662,14 +662,14 @@ const AnimeSeasonPage = ({ params }) => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded bg-card border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             First
           </button>
           <button
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded bg-card border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -680,10 +680,10 @@ const AnimeSeasonPage = ({ params }) => {
                 <button
                   key={pageNumber}
                   onClick={() => setCurrentPage(pageNumber)}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-4 py-2 rounded border ${
                     currentPage === pageNumber
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-card border-border text-muted-foreground hover:bg-accent"
                   }`}
                 >
                   {pageNumber}
@@ -697,14 +697,14 @@ const AnimeSeasonPage = ({ params }) => {
               setCurrentPage((prev) => Math.min(totalPages, prev + 1))
             }
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded bg-card border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded bg-card border border-border text-muted-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Last
           </button>

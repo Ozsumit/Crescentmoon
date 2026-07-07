@@ -96,7 +96,7 @@ const RecCard = ({ movie, index }) => {
       whileHover="hover"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-[#0a0a0a] ring-1 ring-white/5 isolate transform-gpu"
+      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border isolate transform-gpu"
     >
       {/* 1. THE MAIN LINK */}
       <Link
@@ -104,7 +104,7 @@ const RecCard = ({ movie, index }) => {
         className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden block"
         tabIndex={0}
       >
-        <div className="absolute inset-0 bg-neutral-900">
+        <div className="absolute inset-0 bg-muted">
           <Image
             src={getImagePath()}
             alt={title}
@@ -115,22 +115,22 @@ const RecCard = ({ movie, index }) => {
               ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} 
               ${isHovered ? "scale-110" : "scale-100"}
             `}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
         </div>
 
         {/* Info Sheet */}
         <motion.div
           className="absolute bottom-0 left-0 right-0 p-2 z-10"
-          initial={{ backgroundColor: "rgba(10, 10, 10, 0)" }}
+          initial={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
           animate={{
             backgroundColor: isHovered
-              ? "rgba(10, 10, 10, 0)" // Kept transparent as per your code
-              : "rgba(10, 10, 10, 0)",
+              ? "rgba(0, 0, 0, 0)" // Kept transparent as per your code
+              : "rgba(0, 0, 0, 0)",
           }}
         >
-          <div className="backdrop-blur-xl border border-white/10 rounded-[1.5rem] overflow-hidden shadow-lg bg-black/20">
+          <div className="backdrop-blur-xl border border-border rounded-[1.5rem] overflow-hidden shadow-lg bg-card/20">
             <div className="px-4 pt-4 pb-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -139,22 +139,22 @@ const RecCard = ({ movie, index }) => {
                       px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm
                       ${
                         isTV
-                          ? "bg-[#d0bcff] text-[#381e72]"
-                          : "bg-[#bceeff] text-[#001f2a]"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
                       }
                     `}
                   >
                     {isTV ? "Series" : "Movie"}
                   </span>
                   {movie.vote_average > 0 && (
-                    <div className="flex items-center gap-1 text-xs font-bold text-[#ffdcc2]">
-                      <Star size={12} className="fill-[#ffdcc2]" />
+                    <div className="flex items-center gap-1 text-xs font-bold text-accent-foreground">
+                      <Star size={12} className="fill-current" />
                       <span>{movie.vote_average.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
               </div>
-              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-white mb-1">
+              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-foreground mb-1">
                 {title}
               </h3>
             </div>
@@ -162,12 +162,12 @@ const RecCard = ({ movie, index }) => {
               <div className="px-4 pb-4 flex flex-col gap-3">
                 <motion.p
                   variants={itemFade}
-                  className="text-xs text-neutral-300 line-clamp-3 leading-relaxed"
+                  className="text-xs text-muted-foreground line-clamp-3 leading-relaxed"
                 >
                   {movie.overview || "No description available."}
                 </motion.p>
-                <div className="w-full py-3 rounded-xl bg-[#c3f0c2] text-[#07210b] font-bold text-sm flex items-center justify-center gap-2">
-                  <Play size={16} className="fill-[#07210b]" />
+                <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2">
+                  <Play size={16} className="fill-current" />
                   <span>Watch Now</span>
                 </div>
               </div>
@@ -178,7 +178,7 @@ const RecCard = ({ movie, index }) => {
 
       {/* 2. FLOATING UI LAYER */}
       <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
-        <div className="bg-white/90 backdrop-blur-md text-black text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+        <div className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg border border-border">
           {formatDate(releaseDate)}
         </div>
 
@@ -191,8 +191,8 @@ const RecCard = ({ movie, index }) => {
             w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300
             ${
               isFavorite
-                ? "bg-[#ffb4ab] border-[#ffb4ab] text-[#690005]"
-                : "bg-black/30 border-white/20 text-white hover:bg-white hover:text-black hover:border-white"
+                ? "bg-primary border-primary text-primary-foreground"
+                : "bg-background/30 border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground"
             }
           `}
         >
@@ -249,7 +249,7 @@ const RecommendedMovies = () => {
       else setIsLoading(true);
 
       const stored = JSON.parse(
-        localStorage.getItem("continueWatching") || "[]"
+        localStorage.getItem("continueWatching") || "[]",
       );
 
       let url = "";
@@ -269,7 +269,7 @@ const RecommendedMovies = () => {
       if (!data.results || data.results.length === 0) {
         setSourceMovie(null);
         const fallbackRes = await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`
+          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`,
         );
         const fallbackData = await fallbackRes.json();
         setMovies(fallbackData.results.slice(0, 10));
@@ -293,17 +293,17 @@ const RecommendedMovies = () => {
       {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 px-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[#c3f0c2] text-xs font-mono font-bold tracking-widest uppercase">
+          <div className="flex items-center gap-2 text-primary text-xs font-mono font-bold tracking-widest uppercase">
             <Sparkles size={14} />
             <span>AI Curation</span>
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-none">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-none">
             {sourceMovie ? "Because you watched..." : "Trending for you"}
           </h2>
 
           {sourceMovie && (
-            <p className="text-neutral-500 text-lg font-medium truncate max-w-md">
+            <p className="text-muted-foreground text-lg font-medium truncate max-w-md">
               &quot;{sourceMovie}&quot;
             </p>
           )}
@@ -312,7 +312,7 @@ const RecommendedMovies = () => {
         <button
           onClick={() => fetchRecommendations(true)}
           disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-bold uppercase tracking-wide text-neutral-400 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted hover:bg-muted/80 border border-border text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-all active:scale-95 disabled:opacity-50"
         >
           <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
           <span>Refresh</span>
@@ -336,11 +336,13 @@ const RecommendedMovies = () => {
 
       {/* --- EMPTY STATE --- */}
       {!isLoading && movies.length === 0 && (
-        <div className="text-center py-20 px-6 border border-dashed border-white/10 rounded-[2rem] mx-4 bg-[#0a0a0a]">
-          <p className="text-neutral-500 mb-4">No recommendations found.</p>
+        <div className="text-center py-20 px-6 border border-dashed border-border rounded-[2rem] mx-4 bg-card">
+          <p className="text-muted-foreground mb-4">
+            No recommendations found.
+          </p>
           <button
             onClick={() => fetchRecommendations(true)}
-            className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm"
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-full font-bold text-sm"
           >
             Try Again
           </button>

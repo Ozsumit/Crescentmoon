@@ -23,7 +23,7 @@ export default function ThemeWrapper({ children }) {
     window.addEventListener("mousemove", handleMouseMove);
 
     const handleMouseOver = (e) => {
-      if (e.target.closest("a, button, .interactive-card")) setIsHovering(true);
+      if (e.target.closest("a, button, .interactive-card, select, input, [role='button']")) setIsHovering(true);
       else setIsHovering(false);
     };
     window.addEventListener("mouseover", handleMouseOver);
@@ -67,28 +67,30 @@ export default function ThemeWrapper({ children }) {
           --input: ${currentTheme.colors.input};
           --ring: ${currentTheme.colors.ring};
           --accent-custom: ${accentColor};
+          --radius: 1.5rem;
         }
 
         body {
           background-color: hsl(${currentTheme.colors.background}) !important;
           color: hsl(${currentTheme.colors.foreground}) !important;
+          transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        .text-indigo-400 { color: var(--accent-custom) !important; }
-        .text-indigo-500 { color: var(--accent-custom) !important; }
-        .text-indigo-600 { color: var(--accent-custom) !important; }
-        .bg-indigo-400 { background-color: var(--accent-custom) !important; }
-        .bg-indigo-500 { background-color: var(--accent-custom) !important; }
-        .bg-indigo-600 { background-color: var(--accent-custom) !important; }
-        .border-indigo-400 { border-color: var(--accent-custom) !important; }
-        .border-indigo-500 { border-color: var(--accent-custom) !important; }
-        .border-indigo-600 { border-color: var(--accent-custom) !important; }
+        /* Override common Tailwind Indigo classes with the custom accent color */
+        .text-indigo-400, .text-indigo-500, .text-indigo-600 { color: var(--accent-custom) !important; }
+        .bg-indigo-400, .bg-indigo-500, .bg-indigo-600 { background-color: var(--accent-custom) !important; }
+        .border-indigo-400, .border-indigo-500, .border-indigo-600 { border-color: var(--accent-custom) !important; }
         .ring-indigo-500 { --tw-ring-color: var(--accent-custom) !important; }
         .shadow-indigo-600\/20 { --tw-shadow-color: color-mix(in srgb, var(--accent-custom), transparent 80%) !important; }
 
+        /* Generic element theming */
+        .bg-card { background-color: hsl(var(--card)) !important; }
+        .text-card-foreground { color: hsl(var(--card-foreground)) !important; }
+        .border-theme { border-color: hsl(var(--border)) !important; }
+
         /* Smooth transition for theme variables */
         * {
-          transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+          transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
       `}</style>
       {/* Custom Cursor */}
@@ -96,7 +98,7 @@ export default function ThemeWrapper({ children }) {
         {showCustomCursor && (
           <motion.div
         ref={cursorRef}
-        className="hidden md:flex fixed top-0 left-0 z-50 pointer-events-none items-center justify-center"
+        className="hidden md:flex fixed top-0 left-0 z-[9999] pointer-events-none items-center justify-center"
         style={{
           x: springX,
           y: springY,
@@ -106,21 +108,15 @@ export default function ThemeWrapper({ children }) {
       >
         <motion.div
           animate={{
-            scale: isHovering ? 1 : 0.5,
-            width: isHovering ? "3rem" : "1rem",
-            height: isHovering ? "3rem" : "1rem",
-            border: isHovering
-              ? "1px solid rgba(0,0,0,0.2)"
-              : "0px solid transparent",
-            backgroundColor: isHovering ? "transparent" : "black",
+            scale: isHovering ? 1.5 : 1,
+            width: isHovering ? "2.5rem" : "1rem",
+            height: isHovering ? "2.5rem" : "1rem",
+            border: "2px solid var(--accent-custom)",
+            backgroundColor: isHovering ? "transparent" : "var(--accent-custom)",
           }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="rounded-full flex items-center justify-center"
+          className="rounded-full flex items-center justify-center mix-blend-difference"
         >
-            <motion.div
-              animate={{ opacity: isHovering ? 1 : 0 }}
-              className="w-1 h-1 bg-black rounded-full"
-            />
           </motion.div>
         </motion.div>
         )}

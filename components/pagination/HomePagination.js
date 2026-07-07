@@ -73,7 +73,7 @@ const HomePagination = ({ page, setPage, totalPages }) => {
         viewport={{ once: true }}
         className="
           flex items-center gap-2 p-2 
-          bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/10 
+          bg-card/80 backdrop-blur-xl border border-border
           rounded-full shadow-2xl
         "
       >
@@ -88,7 +88,7 @@ const HomePagination = ({ page, setPage, totalPages }) => {
         </PaginationButton>
 
         {/* NUMBER ROW (Hidden on very small screens) */}
-        <div className="hidden sm:flex items-center gap-1 px-2 border-l border-r border-white/5 mx-1">
+        <div className="hidden sm:flex items-center gap-1 px-2 border-l border-r border-border mx-1">
           <AnimatePresence mode="popLayout">
             {paginationRange?.map((pageNumber, index) => {
               if (pageNumber === DOTS) {
@@ -116,8 +116,8 @@ const HomePagination = ({ page, setPage, totalPages }) => {
         </div>
 
         {/* MOBILE PAGE INDICATOR (Replaces numbers on mobile) */}
-        <div className="sm:hidden px-4 font-mono text-xs text-neutral-400">
-          <span className="text-white font-bold">{page}</span> / {totalPages}
+        <div className="sm:hidden px-4 font-mono text-xs text-muted-foreground">
+          <span className="text-foreground font-bold">{page}</span> / {totalPages}
         </div>
 
         {/* NEXT BUTTON */}
@@ -133,13 +133,13 @@ const HomePagination = ({ page, setPage, totalPages }) => {
 
       {/* --- PROGRESS INDICATOR (Bottom) --- */}
       <div className="flex flex-col items-center gap-2">
-        <span className="text-xs font-mono text-neutral-500 tracking-widest uppercase">
+        <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">
           Viewing Page {page} of {totalPages}
         </span>
         {/* Simple Progress Bar */}
-        <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
+        <div className="w-32 h-1 bg-foreground/10 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-[#c3f0c2]"
+            className="h-full bg-primary"
             initial={{ width: 0 }}
             animate={{ width: `${(page / totalPages) * 100}%` }}
             transition={{ type: "spring", stiffness: 100, damping: 20 }}
@@ -169,8 +169,8 @@ const PaginationButton = ({
         ${disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}
         ${
           variant === "primary"
-            ? "bg-white text-black hover:bg-[#c3f0c2]" // "Material You" Green Accent
-            : "bg-transparent text-white hover:bg-white/10"
+            ? "bg-primary text-primary-foreground hover:opacity-90"
+            : "bg-transparent text-foreground hover:bg-foreground/10"
         }
       `}
     >
@@ -186,19 +186,19 @@ const PaginationNumber = ({ children, active, onClick }) => {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       animate={{
-        backgroundColor: active ? "#c3f0c2" : "transparent",
-        color: active ? "#000000" : "#a3a3a3",
+        backgroundColor: active ? "hsl(var(--primary))" : "transparent",
+        color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
       }}
       className={`
         relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full text-sm font-bold font-mono transition-colors
-        hover:text-white
+        hover:text-foreground
       `}
     >
       {/* Active Indicator Dot (Optional Flair) */}
       {active && (
         <motion.div
           layoutId="active-dot"
-          className="absolute -bottom-1 w-1 h-1 bg-white rounded-full sm:hidden"
+          className="absolute -bottom-1 w-1 h-1 bg-primary rounded-full sm:hidden"
         />
       )}
       {children}

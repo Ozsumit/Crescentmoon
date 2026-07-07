@@ -22,7 +22,7 @@ export const WelcomeModalTrigger = ({ children, onClick, className = "" }) => {
     <>
       <button
         onClick={handleClick}
-        className={`bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition ${className}`}
+        className={`bg-primary hover:opacity-90 text-primary-foreground font-semibold py-2 px-4 rounded-lg transition ${className}`}
       >
         {children || "Open Welcome Modal"}
       </button>
@@ -240,16 +240,16 @@ const WelcomeModal = ({ onClose, isTriggered = false }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 overflow-hidden">
-      <div className="bg-gray-900/80 backdrop-blur-lg z-20 text-gray-200 rounded-2xl shadow-2xl w-full max-w-md mx-auto relative overflow-hidden">
+      <div className="bg-card/80 backdrop-blur-lg z-20 text-card-foreground rounded-2xl shadow-2xl w-full max-w-md mx-auto relative overflow-hidden border border-border">
         <div className="p-6 pt-4 z-40 relative">
           <div className="flex items-center mb-4">
             {currentSectionData.icon}
-            <h3 className="text-lg text-left font-semibold text-indigo-400">
+            <h3 className="text-lg text-left font-semibold text-primary">
               {currentSectionData.title}
             </h3>
           </div>
 
-          <ul className="text-gray-300 text-left text-sm space-y-2 z-40 pl-4 list-disc mb-6">
+          <ul className="text-muted-foreground text-left text-sm space-y-2 z-40 pl-4 list-disc mb-6">
             {currentSectionData.items.map(renderListItem)}
           </ul>
 
@@ -258,7 +258,7 @@ const WelcomeModal = ({ onClose, isTriggered = false }) => {
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full ${
-                  index === currentSection ? "bg-indigo-500" : "bg-gray-600"
+                  index === currentSection ? "bg-primary" : "bg-muted"
                 }`}
               />
             ))}
@@ -268,7 +268,7 @@ const WelcomeModal = ({ onClose, isTriggered = false }) => {
             {currentSection > 0 && (
               <button
                 onClick={handlePrevious}
-                className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition w-1/2 flex items-center justify-center"
+                className="bg-muted hover:bg-accent text-foreground font-semibold py-2 px-4 rounded-lg transition w-1/2 flex items-center justify-center border border-border"
               >
                 <ChevronLeft className="mr-2 w-5 h-5" />
                 Previous
@@ -281,9 +281,9 @@ const WelcomeModal = ({ onClose, isTriggered = false }) => {
                 ${
                   isNextButtonDisabled
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-indigo-700"
+                    : "hover:opacity-90"
                 }
-                bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg transition flex-1 flex items-center justify-center
+                bg-primary text-primary-foreground font-semibold py-2 px-4 rounded-lg transition flex-1 flex items-center justify-center
               `}
             >
               {currentSection < sections.length - 1
@@ -303,14 +303,14 @@ const WelcomeModal = ({ onClose, isTriggered = false }) => {
           className="object-contain -z-10 sm:-bottom-32 bottom-[-50%]"
         />
         <div className="fixed bottom-[22rem] sm:bottom-4 top-50 left-1 sm:left-14 right-4 z-10">
-          <div className="bg-gray-800 bg-opacity-90 rounded-xl p-3 max-w-[50vw] relative">
+          <div className="bg-popover bg-opacity-90 rounded-xl p-3 max-w-[50vw] relative border border-border">
             <div
               className="absolute -right-2 top-[50%] bottom-[50%] rotate-90 sm:-top-2 sm:left-[50%] sm:right-[50%] sm:rotate-0 w-0 h-0 
                 border-l-8 border-l-transparent
                 border-r-8 border-r-transparent
-                border-b-8 border-gray-800 border-opacity-90"
+                border-b-8 border-popover border-opacity-90"
             ></div>
-            <p className="text-sm text-white">
+            <p className="text-sm text-popover-foreground">
               {currentSectionData.characterDialog}
             </p>
           </div>
