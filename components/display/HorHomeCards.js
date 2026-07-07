@@ -66,7 +66,9 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
       whileInView={{ opacity: 1, x: 0, scale: 1 }}
       viewport={{ once: true, margin: "50px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      layout="position"
       className="w-full transform-gpu relative group"
+      style={{ willChange: "transform" }}
     >
       {/* FAVORITE BUTTON */}
       <motion.button
@@ -79,7 +81,7 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
             : "bg-background/30 border-border text-foreground hover:bg-background/60"
         }`}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {isFavorite ? (
             <motion.div
               key="active"

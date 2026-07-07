@@ -16,7 +16,7 @@ const TvCards = ({ TvCard }) => {
 
   const getImagePath = () => {
     if (TvCard.poster_path)
-      return `https://image.tmdb.org/t/p/w500/${TvCard.poster_path}`;
+      return `https://image.tmdb.org/t/p/w342/${TvCard.poster_path}`;
     return "https://i.imgur.com/HIYYPtZ.png"; // Fallback
   };
 
@@ -87,9 +87,11 @@ const TvCards = ({ TvCard }) => {
       initial="rest"
       whileHover="hover"
       whileTap={{ scale: 0.98 }}
+      layout="position"
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       className="relative w-full h-full transform-gpu"
+      style={{ willChange: "transform" }}
     >
       {/* 
          1. MAIN LINK AREA 
@@ -188,7 +190,7 @@ const TvCards = ({ TvCard }) => {
             }
           `}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             {isFavorite ? (
               <motion.div
                 key="fav"
