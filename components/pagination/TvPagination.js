@@ -23,9 +23,9 @@ const Pagination = ({
         href={`${basePath}${pageNumber}`}
         className={`${
           currentPage === pageNumber
-            ? "bg-indigo-600 text-white font-bold"
-            : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-        } px-4 py-2 rounded-md transition-all ease-in-out duration-300`}
+            ? "bg-primary text-primary-foreground font-bold"
+            : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+        } px-4 py-2 rounded-md transition-all ease-in-out duration-300 border border-border`}
         aria-label={`Go to page ${pageNumber}`}
       >
         {pageNumber}
@@ -42,8 +42,8 @@ const Pagination = ({
           className={`${
             currentPage <= 1
               ? "pointer-events-none opacity-50"
-              : "hover:bg-indigo-600"
-          } bg-gray-800 px-4 py-2 rounded-md text-white transition-all ease-in-out duration-300`}
+              : "hover:bg-primary/20"
+          } bg-muted px-4 py-2 rounded-md text-foreground transition-all ease-in-out duration-300 border border-border`}
           aria-label="Previous Page"
         >
           Previous
@@ -60,8 +60,8 @@ const Pagination = ({
           className={`${
             currentPage >= totalPages
               ? "pointer-events-none opacity-50"
-              : "hover:bg-indigo-600"
-          } bg-gray-800 px-4 py-2 rounded-md text-white transition-all ease-in-out duration-300`}
+              : "hover:bg-primary/20"
+          } bg-muted px-4 py-2 rounded-md text-foreground transition-all ease-in-out duration-300 border border-border`}
           aria-label="Next Page"
         >
           Next
@@ -69,7 +69,7 @@ const Pagination = ({
       </div>
 
       {/* Page Indicator */}
-      <div className="text-lg font-semibold text-indigo-600">
+      <div className="text-lg font-semibold text-primary">
         Page {currentPage} of {totalPages}
       </div>
     </div>

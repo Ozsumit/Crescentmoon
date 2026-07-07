@@ -20,8 +20,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-      <div className="bg-white p-8 rounded-3xl border border-neutral-200 shadow-sm w-80">
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="bg-card p-8 rounded-3xl border border-border shadow-sm w-80">
         <h1 className="text-xl font-bold mb-6">Admin Access</h1>
 
         {/* Wrap in a form to satisfy browser standards */}
@@ -30,7 +30,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border rounded-xl mb-4 bg-neutral-50"
+            className="w-full p-3 border rounded-xl mb-4 bg-background"
             placeholder="Password"
             required
             autoComplete="off" // Tells browser not to store/suggest
@@ -38,7 +38,7 @@ export default function LoginPage() {
           />
           <button
             type="submit"
-            className="w-full bg-neutral-900 text-white py-3 rounded-xl hover:bg-neutral-800 transition"
+            className="w-full bg-primary text-primary-foreground py-3 rounded-xl hover:bg-primary/90 transition"
           >
             Access
           </button>

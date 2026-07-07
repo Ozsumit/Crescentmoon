@@ -91,7 +91,7 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
       }`}
     >
       {playVideo && trailerKey ? (
-        <div className="absolute inset-0 w-full h-full bg-black">
+        <div className="absolute inset-0 w-full h-full bg-background">
           <motion.iframe
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.8 }}
@@ -103,11 +103,11 @@ const MoreLikeThisCard = memo(({ item, index, isActive, onHover }) => {
             allow="autoplay; encrypted-media"
             title="Trailer"
           />
-          <div className="absolute top-3 right-3 bg-black/40 p-2 rounded-full backdrop-blur-md z-20 border border-white/10">
+          <div className="absolute top-3 right-3 bg-background/40 p-2 rounded-full backdrop-blur-md z-20 border border-border">
             {isMuted ? (
-              <VolumeX size={14} className="text-white" />
+              <VolumeX size={14} className="text-foreground" />
             ) : (
-              <Volume2 size={14} className="text-white" />
+              <Volume2 size={14} className="text-foreground" />
             )}
           </div>
         </div>
@@ -390,7 +390,7 @@ const MovieModalComponent = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] flex justify-center overflow-y-auto bg-black/60 backdrop-blur-md sm:p-6 md:p-12 p-0"
+      className="fixed inset-0 z-[99999] flex justify-center overflow-y-auto bg-background/60 backdrop-blur-md sm:p-6 md:p-12 p-0"
       onClick={onClose}
     >
       <motion.div
@@ -466,12 +466,12 @@ const MovieModalComponent = ({
                 className={`flex items-center gap-3 px-6 py-3.5 rounded-full font-bold text-lg border transition-all duration-300 backdrop-blur-xl active:scale-95
                   ${
                     isFavorite
-                      ? "bg-[#f3c0c2]/20 text-[#f3c0c2] border-[#f3c0c2]/50 hover:bg-[#f3c0c2]/30"
-                      : "bg-black/40 text-white border-white/20 hover:bg-white/10 hover:border-white/40"
+                      ? "bg-primary/20 text-primary border-primary/50 hover:bg-primary/30"
+                      : "bg-background/40 text-foreground border-border/20 hover:bg-foreground/10 hover:border-border/40"
                   }`}
               >
                 {isFavorite ? (
-                  <Heart size={22} strokeWidth={3} fill="#f3c0c2" />
+                  <Heart size={22} strokeWidth={3} fill="currentColor" />
                 ) : (
                   <Plus size={22} strokeWidth={2.5} />
                 )}
@@ -546,7 +546,7 @@ const MovieModalComponent = ({
             {isLoadingTV || isLoadingEpisodes ? (
               <div className="animate-pulse space-y-4 mt-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-28 bg-white/5 rounded-2xl w-full" />
+                  <div key={i} className="h-28 bg-muted rounded-2xl w-full" />
                 ))}
               </div>
             ) : (
@@ -559,8 +559,8 @@ const MovieModalComponent = ({
                     }
                     key={ep.id}
                   >
-                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-foreground/5 transition-all duration-300 group cursor-pointer border border-transparent hover:border-border">
-                      <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-[#111] shadow-lg">
+                    <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-2xl bg-transparent hover:bg-muted transition-all duration-300 group cursor-pointer border border-transparent hover:border-border">
+                      <div className="relative w-full sm:w-48 aspect-video rounded-xl overflow-hidden shrink-0 bg-background shadow-lg border border-border">
                         <Image
                           src={getImageUrl(
                             ep.still_path || movie.backdrop_path,
@@ -571,10 +571,10 @@ const MovieModalComponent = ({
                           sizes="200px"
                           className="object-cover group-hover:scale-110 transition-transform duration-700"
                         />
-                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                        <div className="absolute inset-0 bg-background/10 group-hover:bg-transparent transition-colors duration-500" />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-black/50 p-3 rounded-full border border-white/20 backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                            <Play size={20} className="fill-white text-white" />
+                          <div className="bg-background/50 p-3 rounded-full border border-border backdrop-blur-md shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                            <Play size={20} className="fill-foreground text-foreground" />
                           </div>
                         </div>
                       </div>
@@ -616,7 +616,7 @@ const MovieModalComponent = ({
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div
                   key={i}
-                  className="aspect-[2/3] bg-white/5 rounded-[1.5rem] animate-pulse"
+                  className="aspect-[2/3] bg-muted rounded-[1.5rem] animate-pulse"
                 />
               ))}
             </div>
@@ -720,7 +720,7 @@ const HomeCard = memo(({ MovieCard }) => {
           role="button"
           onKeyDown={(e) => e.key === "Enter" && setIsModalOpen(true)}
         >
-          <div className="absolute inset-0 bg-neutral-900">
+          <div className="absolute inset-0 bg-muted">
             <Image
               src={getImagePath()}
               alt={title}
@@ -732,7 +732,7 @@ const HomeCard = memo(({ MovieCard }) => {
               } ${isHovered ? "scale-110" : "scale-100"}`}
               onLoad={() => setImageLoaded(true)}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
           </div>
 
           <motion.div

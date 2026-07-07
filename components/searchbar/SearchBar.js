@@ -47,21 +47,21 @@ const SearchBar = ({
       <div
         className={`
           relative flex items-center w-full h-[4.5rem] 
-          bg-[#1c1c1e] 
+          bg-card
           rounded-full 
           transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
-          border border-white/10
+          border border-border
           ${
             isFocused
-              ? "shadow-[0_0_0_4px_rgba(99,102,241,0.15)] border-indigo-500/50 scale-[1.02]"
-              : "shadow-2xl shadow-black/50 hover:border-white/20"
+              ? "shadow-[0_0_0_4px_hsl(var(--primary)/0.15)] border-primary/50 scale-[1.02]"
+              : "shadow-2xl shadow-black/50 hover:border-foreground/20"
           }
         `}
       >
         {/* Left Icon (Search Decoration) */}
-        <div className="absolute left-6 text-neutral-500 pointer-events-none">
+        <div className="absolute left-6 text-muted-foreground pointer-events-none">
           <Search
-            className={`w-6 h-6 transition-colors duration-300 ${isFocused ? "text-indigo-400" : "text-neutral-500"}`}
+            className={`w-6 h-6 transition-colors duration-300 ${isFocused ? "text-primary" : "text-muted-foreground"}`}
             strokeWidth={2.5}
           />
         </div>
@@ -77,9 +77,9 @@ const SearchBar = ({
             bg-transparent 
             border-none 
             outline-none 
-            text-white text-lg font-medium tracking-tight
+            text-foreground text-lg font-medium tracking-tight
             pl-16 pr-32
-            placeholder:text-neutral-600
+            placeholder:text-muted-foreground/50
             rounded-full
           "
           onChange={handleTyping}
@@ -94,7 +94,7 @@ const SearchBar = ({
           {/* Loading Spinner */}
           {isLoading && (
             <div className="animate-in fade-in zoom-in duration-300 mr-2">
-              <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
             </div>
           )}
 
@@ -104,8 +104,8 @@ const SearchBar = ({
               onClick={clearSearch}
               className="
                 p-2 rounded-full 
-                text-neutral-500 
-                hover:bg-neutral-800 hover:text-white 
+                text-muted-foreground
+                hover:bg-accent hover:text-foreground
                 transition-all duration-200
                 active:scale-90
               "
@@ -125,7 +125,7 @@ const SearchBar = ({
               transition-all duration-300 ease-out
               ${
                 searchValue.trim()
-                  ? "bg-white text-black hover:scale-110 active:scale-95 rotate-0 opacity-100"
+                  ? "bg-primary text-primary-foreground hover:scale-110 active:scale-95 rotate-0 opacity-100"
                   : "bg-transparent text-transparent scale-50 rotate-[-45deg] opacity-0 pointer-events-none"
               }
             `}

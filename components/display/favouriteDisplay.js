@@ -66,18 +66,18 @@ const FavoriteDisplay = ({
   return (
     <div className="w-full max-w-[2000px] mx-auto">
       {/* --- SWISS HEADER / CONTROL DECK --- */}
-      <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/5 rounded-t-3xl overflow-hidden mb-1">
-        <div className="flex flex-col lg:flex-row items-stretch border-b border-white/5">
+      <div className="bg-card/50 backdrop-blur-xl border border-border rounded-t-3xl overflow-hidden mb-1">
+        <div className="flex flex-col lg:flex-row items-stretch border-b border-border">
           {/* 1. TITLE BLOCK */}
-          <div className="flex items-center gap-4 px-8 py-6 border-b lg:border-b-0 lg:border-r border-white/5 bg-white/[0.02]">
-            <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400">
+          <div className="flex items-center gap-4 px-8 py-6 border-b lg:border-b-0 lg:border-r border-border bg-foreground/[0.02]">
+            <div className="p-3 bg-primary/10 rounded-xl text-primary">
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
+              <h2 className="text-xl font-bold text-foreground tracking-tight">
                 My Collection
               </h2>
-              <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mt-0.5">
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mt-0.5">
                 {filteredFavorites.length} ITEMS SAVED
               </p>
             </div>
@@ -85,7 +85,7 @@ const FavoriteDisplay = ({
 
           {/* 2. FILTER TABS (Material Motion) */}
           <div className="flex-1 flex items-center justify-center p-4 lg:p-0">
-            <div className="flex bg-neutral-950/50 p-1.5 rounded-full border border-white/5 relative">
+            <div className="flex bg-background/50 p-1.5 rounded-full border border-border relative">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -94,14 +94,14 @@ const FavoriteDisplay = ({
                     onClick={() => onTabChange(tab.id)}
                     className={`relative px-5 py-2 rounded-full text-sm font-medium transition-colors z-10 flex items-center gap-2 ${
                       isActive
-                        ? "text-white"
-                        : "text-neutral-500 hover:text-neutral-300"
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="activeFilterTab"
-                        className="absolute inset-0 bg-neutral-800 rounded-full border border-white/10 shadow-sm"
+                        className="absolute inset-0 bg-muted rounded-full border border-border shadow-sm"
                         transition={{
                           type: "spring",
                           bounce: 0.2,
@@ -118,19 +118,19 @@ const FavoriteDisplay = ({
           </div>
 
           {/* 3. ACTIONS (View Toggle & Export) */}
-          <div className="flex items-center justify-end divide-x divide-white/5 border-t lg:border-t-0 lg:border-l border-white/5">
+          <div className="flex items-center justify-end divide-x divide-border border-t lg:border-t-0 lg:border-l border-border">
             {/* View Switcher */}
             <div className="flex items-center gap-1 px-6 py-4">
-              <span className="hidden sm:block text-[10px] font-mono text-neutral-600 uppercase tracking-widest mr-3">
+              <span className="hidden sm:block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mr-3">
                 View_Mode
               </span>
-              <div className="flex bg-neutral-950 rounded-lg p-1 border border-white/5">
+              <div className="flex bg-background rounded-lg p-1 border border-border">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-md transition-all ${
                     viewMode === "grid"
-                      ? "bg-white/10 text-white shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-300"
+                      ? "bg-foreground/10 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   aria-label="Grid View"
                 >
@@ -140,8 +140,8 @@ const FavoriteDisplay = ({
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-md transition-all ${
                     viewMode === "list"
-                      ? "bg-white/10 text-white shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-300"
+                      ? "bg-foreground/10 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   aria-label="List View"
                 >
@@ -154,10 +154,10 @@ const FavoriteDisplay = ({
             <button
               onClick={handleSaveAsPicture}
               disabled={isSaving || filteredFavorites.length === 0}
-              className="hidden sm:flex items-center justify-center gap-3 px-8 py-4 h-full text-neutral-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="hidden sm:flex items-center justify-center gap-3 px-8 py-4 h-full text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {isSaving ? (
-                <div className="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full" />
+                <div className="animate-spin w-4 h-4 border-2 border-border border-t-primary rounded-full" />
               ) : (
                 <Download
                   size={18}
@@ -175,12 +175,12 @@ const FavoriteDisplay = ({
       {/* --- CONTENT CONTAINER --- */}
       <div
         ref={favoriteContainerRef}
-        className="bg-neutral-950 min-h-[500px] border border-white/5 rounded-b-3xl p-6 md:p-8 relative"
+        className="bg-background min-h-[500px] border border-border rounded-b-3xl p-6 md:p-8 relative"
       >
         {/* Decorative Grid Lines (Swiss Style) */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
-        <div className="absolute top-0 left-8 bottom-0 w-px bg-white/5 hidden md:block" />
-        <div className="absolute top-0 right-8 bottom-0 w-px bg-white/5 hidden md:block" />
+        <div className="absolute top-0 left-8 bottom-0 w-px bg-border hidden md:block" />
+        <div className="absolute top-0 right-8 bottom-0 w-px bg-border hidden md:block" />
 
         <AnimatePresence mode="wait">
           {filteredFavorites.length > 0 ? (
@@ -219,26 +219,26 @@ const FavoriteDisplay = ({
               animate={{ opacity: 1 }}
               className="h-[400px] flex flex-col items-center justify-center text-center relative z-10"
             >
-              <div className="w-24 h-24 bg-neutral-900 rounded-3xl border border-white/5 flex items-center justify-center mb-6 relative group">
-                <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-24 h-24 bg-muted rounded-3xl border border-border flex items-center justify-center mb-6 relative group">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Archive
-                  className="text-neutral-700 group-hover:text-indigo-400 transition-colors"
+                  className="text-muted-foreground group-hover:text-primary transition-colors"
                   size={40}
                   strokeWidth={1.5}
                 />
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">
+              <h3 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
                 Collection Empty
               </h3>
-              <p className="text-neutral-500 max-w-sm mx-auto mb-8">
+              <p className="text-muted-foreground max-w-sm mx-auto mb-8">
                 You haven't saved any{" "}
                 {activeTab === "all" ? "items" : activeTab} to your collection
                 yet.
               </p>
 
-              <div className="flex items-center gap-2 text-[10px] font-mono text-neutral-600 uppercase tracking-widest border border-white/5 px-3 py-1.5 rounded bg-neutral-900">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground uppercase tracking-widest border border-border px-3 py-1.5 rounded bg-muted">
+                <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
                 System_Status: Awaiting_Input
               </div>
             </motion.div>

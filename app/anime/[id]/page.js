@@ -115,10 +115,10 @@ const AnimeDetailsPage = ({ params }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-          <p className="mt-4 text-slate-400">Loading anime details...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading anime details...</p>
         </div>
       </div>
     );
@@ -126,12 +126,12 @@ const AnimeDetailsPage = ({ params }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-red-500 text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-destructive text-center">
           <p className="text-xl">{error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-colors"
           >
             Go Back
           </button>
@@ -142,12 +142,12 @@ const AnimeDetailsPage = ({ params }) => {
 
   if (!anime) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-red-500 text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-destructive text-center">
           <p className="text-xl">No anime details available.</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-colors"
           >
             Go Back
           </button>
@@ -158,21 +158,21 @@ const AnimeDetailsPage = ({ params }) => {
 
   const RelatedAnimeSection = () => (
     <div className="mt-8">
-      <h3 className="text-xl font-semibold text-white mb-4">Related Anime</h3>
+      <h3 className="text-xl font-semibold text-foreground mb-4">Related Anime</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {related.map((relation) => (
           <div
             key={relation.entry[0].mal_id}
-            className="bg-slate-800/50 p-4 rounded-lg shadow-lg"
+            className="bg-card border border-border p-4 rounded-lg shadow-lg"
           >
-            <h4 className="text-indigo-400 font-medium mb-2">
+            <h4 className="text-primary font-medium mb-2">
               {relation.relation}
             </h4>
             {relation.entry.map((entry) => (
               <Link
                 href={`/anime/${entry.mal_id}`}
                 key={entry.mal_id}
-                className="flex items-center text-slate-300 hover:text-indigo-400 transition-colors"
+                className="flex items-center text-muted-foreground hover:text-primary transition-colors"
               >
                 <div
                   className="w-16 h-16 bg-cover bg-center rounded mr-4"
@@ -192,7 +192,7 @@ const AnimeDetailsPage = ({ params }) => {
 
   const RecommendationsSection = () => (
     <div className="mt-8">
-      <h3 className="text-xl font-semibold text-white mb-4">Recommendations</h3>
+      <h3 className="text-xl font-semibold text-foreground mb-4">Recommendations</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {recommendations.slice(0, 10).map((rec) => (
           <Link
@@ -200,7 +200,7 @@ const AnimeDetailsPage = ({ params }) => {
             key={rec.entry.mal_id}
             className="group"
           >
-            <Card className="bg-slate-800/50 border-slate-700/50 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <Card className="bg-card/50 border-border/50 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-0">
                 <div className="relative">
                   <img
@@ -223,7 +223,7 @@ const AnimeDetailsPage = ({ params }) => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 pb-12">
+    <div className="min-h-screen bg-background pb-12">
       {/* Hero Section with Backdrop */}
       <div
         className="relative h-[60vh] bg-cover bg-center"
@@ -231,11 +231,11 @@ const AnimeDetailsPage = ({ params }) => {
           backgroundImage: `url(${anime.images?.jpg?.large_image_url})`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/90 to-slate-900/50">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/50">
           <div className="container mx-auto px-4 h-full flex flex-col justify-end pb-8">
             <button
               onClick={() => router.back()}
-              className="absolute top-4 left-4 text-white flex items-center space-x-2 hover:text-indigo-400 transition-colors"
+              className="absolute top-4 left-4 text-white flex items-center space-x-2 hover:text-primary transition-colors"
             >
               <ArrowLeft size={20} />
               <span>Back</span>
@@ -251,10 +251,10 @@ const AnimeDetailsPage = ({ params }) => {
               </div>
 
               <div className="flex-1">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                   {anime.title}
                 </h1>
-                <div className="flex flex-wrap gap-4 text-sm text-slate-300">
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-yellow-500 mr-1" />
                     <span>{anime.score || "N/A"}</span>
@@ -280,9 +280,9 @@ const AnimeDetailsPage = ({ params }) => {
 
       {/* Content Section */}
       <div className="container mx-auto px-4 -mt-6">
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6">
+        <div className="bg-card/50 backdrop-blur-xl rounded-xl p-6 border border-border">
           {/* Tabs */}
-          <div className="flex space-x-4 mb-6 border-b border-slate-700 overflow-x-auto">
+          <div className="flex space-x-4 mb-6 border-b border-border overflow-x-auto">
             {["overview", "characters", "staff", "seasons"].map((tab) => (
               <button
                 key={tab}
@@ -295,8 +295,8 @@ const AnimeDetailsPage = ({ params }) => {
                 }}
                 className={`pb-3 px-4 text-sm font-medium capitalize transition-colors whitespace-nowrap ${
                   activeTab === tab
-                    ? "text-indigo-400 border-b-2 border-indigo-400"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tab}
@@ -309,121 +309,121 @@ const AnimeDetailsPage = ({ params }) => {
             {activeTab === "overview" && (
               <>
                 <div className="prose prose-invert max-w-none">
-                  <h3 className="text-xl font-semibold text-white mb-4">
+                  <h3 className="text-xl font-semibold text-foreground mb-4">
                     Synopsis
                   </h3>
-                  <p className="text-slate-300 leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed">
                     {anime.synopsis}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-4">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">
                       Information
                     </h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Type:</span>
-                        <span className="text-white">{anime.type}</span>
+                        <Tag className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Type:</span>
+                        <span className="text-foreground">{anime.type}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Status:</span>
-                        <span className="text-white">{anime.status}</span>
+                        <Globe className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Status:</span>
+                        <span className="text-foreground">{anime.status}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Rating:</span>
-                        <span className="text-white">{anime.rating}</span>
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Rating:</span>
+                        <span className="text-foreground">{anime.rating}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Aired:</span>
-                        <span className="text-white">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Aired:</span>
+                        <span className="text-foreground">
                           {anime.aired?.string}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Play className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Episodes:</span>
-                        <span className="text-white">{anime.episodes}</span>
+                        <Play className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Episodes:</span>
+                        <span className="text-foreground">{anime.episodes}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Duration:</span>
-                        <span className="text-white">{anime.duration}</span>
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Duration:</span>
+                        <span className="text-foreground">{anime.duration}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Score:</span>
-                        <span className="text-white">{anime.score}</span>
+                        <Star className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Score:</span>
+                        <span className="text-foreground">{anime.score}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Members:</span>
-                        <span className="text-white">{anime.members}</span>
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Members:</span>
+                        <span className="text-foreground">{anime.members}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-400">Favorites:</span>
-                        <span className="text-white">{anime.favorites}</span>
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Favorites:</span>
+                        <span className="text-foreground">{anime.favorites}</span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-4">
+                    <h3 className="text-xl font-semibold text-foreground mb-4">
                       Genres
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {anime.genres?.map((genre) => (
                         <span
                           key={genre.mal_id}
-                          className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm"
+                          className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm border border-primary/20"
                         >
                           {genre.name}
                         </span>
                       ))}
                     </div>
 
-                    <h3 className="text-xl font-semibold text-white mb-4 mt-6">
+                    <h3 className="text-xl font-semibold text-foreground mb-4 mt-6">
                       Producers
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {anime.producers?.map((producer) => (
                         <span
                           key={producer.mal_id}
-                          className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm"
+                          className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm border border-primary/20"
                         >
                           {producer.name}
                         </span>
                       ))}
                     </div>
 
-                    <h3 className="text-xl font-semibold text-white mb-4 mt-6">
+                    <h3 className="text-xl font-semibold text-foreground mb-4 mt-6">
                       Studios
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {anime.studios?.map((studio) => (
                         <span
                           key={studio.mal_id}
-                          className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm"
+                          className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm border border-primary/20"
                         >
                           {studio.name}
                         </span>
                       ))}
                     </div>
 
-                    <h3 className="text-xl font-semibold text-white mb-4 mt-6">
+                    <h3 className="text-xl font-semibold text-foreground mb-4 mt-6">
                       Themes
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {anime.themes?.map((theme) => (
                         <span
                           key={theme.mal_id}
-                          className="px-3 py-1 bg-indigo-500/20 text-indigo-400 rounded-full text-sm"
+                          className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm border border-primary/20"
                         >
                           {theme.name}
                         </span>
@@ -442,7 +442,7 @@ const AnimeDetailsPage = ({ params }) => {
                 {characters.map((char) => (
                   <Card
                     key={char.character.mal_id}
-                    className="bg-slate-800/50 border-slate-700/50 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                    className="bg-card/50 border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     <CardContent className="p-4">
                       <img
@@ -450,12 +450,12 @@ const AnimeDetailsPage = ({ params }) => {
                         alt={char.character.name}
                         className="w-full h-48 object-cover rounded-lg mb-3"
                       />
-                      <h4 className="text-white font-medium text-sm mb-1">
+                      <h4 className="text-foreground font-medium text-sm mb-1">
                         {char.character.name}
                       </h4>
-                      <p className="text-slate-400 text-xs">{char.role}</p>
+                      <p className="text-muted-foreground text-xs">{char.role}</p>
                       {char.voice_actors?.length > 0 && (
-                        <p className="text-slate-500 text-xs mt-1">
+                        <p className="text-muted-foreground/60 text-xs mt-1">
                           VA: {char.voice_actors[0].person.name}
                         </p>
                       )}
@@ -470,7 +470,7 @@ const AnimeDetailsPage = ({ params }) => {
                 {staff.map((person) => (
                   <Card
                     key={person.person.mal_id}
-                    className="bg-slate-800/50 border-slate-700/50 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                    className="bg-card/50 border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     <CardContent className="p-4">
                       <img
@@ -478,10 +478,10 @@ const AnimeDetailsPage = ({ params }) => {
                         alt={person.person.name}
                         className="w-full h-48 object-cover rounded-lg mb-3"
                       />
-                      <h4 className="text-white font-medium text-sm mb-1">
+                      <h4 className="text-foreground font-medium text-sm mb-1">
                         {person.person.name}
                       </h4>
-                      <p className="text-slate-400 text-xs">
+                      <p className="text-muted-foreground text-xs">
                         {person.positions.join(", ")}
                       </p>
                     </CardContent>

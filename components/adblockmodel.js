@@ -141,30 +141,30 @@ const AdblockerModal = () => {
 
   return (
     <div className="ad-container adsbox banner-ad" data-ad="true">
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-        <div className="bg-gray-900 text-gray-200 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-6 relative">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="bg-card text-foreground rounded-2xl shadow-2xl border border-border w-full max-w-md mx-auto p-6 relative">
           <button
             onClick={handleClose}
-            className="absolute top-3 right-3 text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors"
             aria-label="Close modal"
           >
             ✕
           </button>
 
           <div className="flex flex-col items-center text-center">
-            <ShieldAlert className="text-orange-500 mb-4" size={48} />
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <ShieldAlert className="text-primary mb-4" size={48} />
+            <h2 className="text-2xl font-bold text-foreground mb-4">
               Enhance Your Browsing Experience
             </h2>
 
-            <div className="bg-gray-800 rounded-xl p-4 mb-4 text-left w-full">
+            <div className="bg-muted rounded-xl p-4 mb-4 text-left w-full border border-border">
               <div className="flex items-center mb-2">
-                <Info className="text-blue-500 mr-2" size={20} />
-                <h3 className="text-lg font-semibold text-indigo-400">
+                <Info className="text-primary mr-2" size={20} />
+                <h3 className="text-lg font-semibold text-primary">
                   Ad-Free Recommendation
                 </h3>
               </div>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Our website is safe, but we recommend installing an adblocker to
                 enhance your browsing experience and protect your privacy.
               </p>
@@ -175,7 +175,7 @@ const AdblockerModal = () => {
                 href="https://chrome.google.com/webstore/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center"
+                className="bg-primary text-primary-foreground font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center hover:opacity-90"
               >
                 <ExternalLink className="mr-2" size={20} />
                 Install uBlock Origin (Chrome)
@@ -185,7 +185,7 @@ const AdblockerModal = () => {
                 href="https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center"
+                className="bg-primary text-primary-foreground font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center hover:opacity-90"
               >
                 <ExternalLink className="mr-2" size={20} />
                 Install uBlock Origin (Firefox)
@@ -195,7 +195,7 @@ const AdblockerModal = () => {
                 href="https://www.opera.com/mobile"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center"
+                className="bg-secondary text-secondary-foreground font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center hover:opacity-90"
               >
                 <ExternalLink className="mr-2" size={20} />
                 Download Opera Mobile
@@ -204,7 +204,7 @@ const AdblockerModal = () => {
 
             <button
               onClick={handleClose}
-              className="mt-4 text-gray-400 hover:text-white underline"
+              className="mt-4 text-muted-foreground hover:text-foreground underline"
             >
               Close and Continue
             </button>

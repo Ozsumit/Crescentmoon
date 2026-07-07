@@ -132,7 +132,7 @@ const Footer = () => {
           </div>
 
           {/* Movie of the Day (Takes up 4 columns) */}
-          <div className="md:col-span-4 p-8 md:p-12 flex flex-col justify-between min-h-[300px] relative group overflow-hidden">
+          <div className="md:col-span-4 p-8 md:p-12 flex flex-col bg-transparent justify-between min-h-[300px] relative group overflow-hidden">
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 text-xs font-mono uppercase text-muted-foreground">
@@ -163,13 +163,13 @@ const Footer = () => {
             {/* Subtle Backdrop Image */}
             {movieOfTheDay && (
               <>
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/40 z-0" />
+                {/* <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/40 z-0" />
                 <Image
                   src={`https://image.tmdb.org/t/p/w500/${movieOfTheDay.poster_path}`}
                   alt="Backdrop"
                   fill
                   className="object-cover opacity-20 group-hover:opacity-30 group-hover:scale-105 transition-all duration-700 z-[-1] grayscale group-hover:grayscale-0"
-                />
+                /> */}
               </>
             )}
           </div>
