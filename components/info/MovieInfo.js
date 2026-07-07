@@ -304,7 +304,7 @@ const MovieInfo = ({
     : `https://image.tmdb.org/t/p/original${MovieDetail.poster_path}`;
 
   return (
-    <div className="min-h-screen lg:h-screen w-full bg-background text-foreground font-sans flex flex-col pt-16 lg:pt-0 overflow-x-hidden selection:bg-primary/30">
+    <div className="min-h-screen mt-16 lg:h-screen w-full bg-background text-foreground font-sans flex flex-col pt-18 lg:pt-0 overflow-x-hidden selection:bg-primary/30">
       {/* Cinematic Background Layer */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
@@ -667,12 +667,12 @@ const MovieInfo = ({
         </div>
 
         {/* === RIGHT COLUMN: PURE PLAYER STAGE === */}
-        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col items-center justify-center relative p-0 lg:p-8 min-h-[35vh] sm:min-h-[50vh] lg:h-full bg-black">
+        <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col items-center justify-center relative p-0 lg:p-8 min-h-[35vh] sm:min-h-[50vh] lg:h-full bg-background">
           {/* Ambient Glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-60 pointer-events-none" />
 
           {/* Player Container */}
-          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_rgba(0,0,0,1)] lg:border border-border z-10 bg-background lg:ring-1 ring-border group">
+          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_accent/10] lg:border border-border z-10 bg-background lg:ring-1 ring-border group">
             {isMounted && iframeSrc ? (
               <iframe
                 src={iframeSrc}

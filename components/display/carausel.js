@@ -32,17 +32,17 @@ const SpotlightCarousel = () => {
   // --- SKELETON LOADER ---
   const SpotlightSkeleton = () => (
     <div className="relative w-full h-[100svh] bg-background overflow-hidden">
-      <div className="absolute inset-0 bg-muted animate-pulse" />
+      <div className="absolute inset-0 bg-muted/50 animate-pulse" />
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 z-20">
         <div className="flex flex-col md:flex-row items-end gap-8 mb-8 md:mb-0">
           <div className="flex-1 space-y-6 w-full max-w-4xl">
             <div className="space-y-4">
-              <div className="w-3/4 h-16 md:h-24 bg-foreground/10 rounded-3xl animate-pulse" />
-              <div className="w-1/2 h-16 md:h-24 bg-foreground/10 rounded-3xl animate-pulse" />
+              <div className="w-3/4 h-12 md:h-20 bg-foreground/10 rounded-2xl animate-pulse" />
+              <div className="w-1/2 h-12 md:h-20 bg-foreground/10 rounded-2xl animate-pulse" />
             </div>
             <div className="flex gap-4">
-              <div className="w-24 h-10 bg-foreground/10 rounded-full animate-pulse" />
-              <div className="w-24 h-10 bg-foreground/10 rounded-full animate-pulse" />
+              <div className="w-32 h-12 bg-foreground/10 rounded-xl animate-pulse" />
+              <div className="w-32 h-12 bg-foreground/10 rounded-xl animate-pulse" />
             </div>
           </div>
         </div>
@@ -88,7 +88,7 @@ const SpotlightCarousel = () => {
       const response = await fetch(URL);
       const data = await response.json();
       const trailer = data.results.find(
-        (video) => video.type === "Trailer" && video.site === "YouTube"
+        (video) => video.type === "Trailer" && video.site === "YouTube",
       );
       if (trailer) {
         setTrailers((prev) => ({ ...prev, [id]: trailer.key }));
@@ -123,7 +123,6 @@ const SpotlightCarousel = () => {
       if (!trailers[currentItem.id]) {
         fetchTrailer(currentItem.id, currentItem.media_type);
       }
-      // Pre-fetch next trailer
       const nextSlide = (currentSlide + 1) % spotlights.length;
       const nextItem = spotlights[nextSlide];
       if (!trailers[nextItem.id]) {
@@ -157,7 +156,11 @@ const SpotlightCarousel = () => {
 
   if (!isMounted || isLoading) return <SpotlightSkeleton />;
   if (!spotlights.length)
-    return <div className="bg-background text-foreground p-10">No content available</div>;
+    return (
+      <div className="bg-background text-foreground p-10 flex h-[100svh] items-center justify-center">
+        No content available
+      </div>
+    );
 
   const currentItem = spotlights[currentSlide];
   const title = currentItem.title || currentItem.name || "Untitled";
@@ -185,7 +188,7 @@ const SpotlightCarousel = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-0 bg-background"
         >
           {posterPath && (
             <Image
@@ -193,32 +196,89 @@ const SpotlightCarousel = () => {
               alt={title}
               fill
               className={`object-cover transition-opacity duration-1000 ${
-                showTrailer ? "opacity-0" : "opacity-60"
+                showTrailer ? "opacity-0" : "opacity-100 dark:opacity-80"
               }`}
               priority
             />
           )}
 
-          {/* Vignette & Gradients */}
-          <div className="absolute inset-0 opacity-[0.05] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/20 to-transparent z-10" />
+          {/* Subtle noise texture */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+
+          {/* DYNAMIC LIGHT & DARK GRADIENT OVERLAYS
+            Using explicit semi-transparent black in light mode to force high-contrast white text legibility 
+            on colorful/bright backdrops, and native theme color transitions for dark mode.
+          */}
+
+          {/* Mobile Overlay */}
+          <div
+            className="
+              absolute inset-0 z-10 pointer-events-none
+              bg-gradient-to-t
+              from-black/80 via-black/40 to-transparent
+              dark:from-background dark:via-background/70 dark:to-transparent
+              md:hidden
+            "
+          />
+
+          {/* Desktop Bottom Overlay */}
+          <div
+            className="
+              hidden md:block
+              absolute inset-x-0 bottom-0 h-3/4
+              z-10 pointer-events-none
+              bg-gradient-to-t
+              from-black/85 via-black/30 to-transparent
+              dark:from-background dark:via-background/80 dark:to-transparent
+            "
+          />
+
+          {/* Desktop Left Overlay */}
+          <div
+            className="
+              hidden md:block
+              absolute inset-y-0 left-0 w-full lg:w-2/3
+              z-10 pointer-events-none
+              bg-gradient-to-r
+              from-black/70 via-black/20 to-transparent
+              dark:from-background dark:via-background/70 dark:to-transparent
+            "
+          />
+
+          {/* Top Overlay */}
+          <div
+            className="
+              absolute inset-x-0 top-0 h-32
+              z-10 pointer-events-none
+              bg-gradient-to-b
+              from-black/40 to-transparent
+              dark:from-background/60 dark:to-transparent
+            "
+          />
+
+          {/* Cinematic Vignette */}
+          <div
+            className="
+              absolute inset-0
+              pointer-events-none
+              z-10
+              bg-[radial-gradient(circle_at_18%_70%,transparent_0%,transparent_40%,rgba(0,0,0,.4)_100%)]
+              dark:bg-[radial-gradient(circle_at_18%_70%,transparent_0%,transparent_30%,rgba(0,0,0,.6)_100%)]
+            "
+          />
 
           {trailerKey && !isMobile && (
             <div
-              className={`absolute inset-0 transition-opacity duration-1000 ${
+              className={`absolute inset-0 z-0 transition-opacity duration-1000 ${
                 showTrailer ? "opacity-100" : "opacity-0"
               }`}
             >
               <iframe
-                ref={videoRef}
                 className="absolute w-full h-[140%] -top-[20%] pointer-events-none scale-110"
-                src={`https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&autoplay=1&mute=${
-                  isMuted ? 1 : 0
-                }&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&vq=hd1080&rel=0&playsinline=1`}
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&vq=hd1080&rel=0&playsinline=1`}
                 allow="autoplay; encrypted-media"
-                allowFullScreen
                 title="Trailer"
+                loading="lazy"
               />
             </div>
           )}
@@ -226,10 +286,13 @@ const SpotlightCarousel = () => {
       </AnimatePresence>
 
       {/* --- CONTENT LAYER --- */}
-      <div className="relative z-30 h-full flex flex-col justify-end pb-12 px-6 md:px-12 lg:px-16 max-w-[2400px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+      {/* Text color targets uniform high contrast white-spectrum on light mode (due to dark scrim) 
+        and theme standard adaptive tokens on native dark mode configurations.
+      */}
+      <div className="relative z-30 h-full flex flex-col justify-end pb-12 px-6 md:px-12 lg:px-16 max-w-[2400px] mx-auto pointer-events-none">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end w-full">
           {/* --- LEFT: METADATA & TITLE --- */}
-          <div className="md:col-span-8 lg:col-span-7 space-y-6 md:space-y-8 mb-6">
+          <div className="md:col-span-8 lg:col-span-7 space-y-6 md:space-y-8 mb-6 pointer-events-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -239,56 +302,60 @@ const SpotlightCarousel = () => {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="space-y-6"
               >
-                {/* METADATA CHIPS (Rating Moved Here) */}
                 <div className="flex flex-wrap items-center gap-3">
-                  {/* Type Chip */}
+                  {/* Media Type Badge */}
                   <div
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border flex items-center gap-2
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border flex items-center gap-2 backdrop-blur-md
                     ${
                       isTV
-                        ? "bg-primary/10 text-primary border-primary/20"
-                        : "bg-secondary/10 text-secondary-foreground border-secondary/20"
+                        ? "bg-primary/20 text-primary border-primary/30 dark:bg-primary/10 dark:text-primary dark:border-primary/20"
+                        : "bg-white/10 text-white border-white/20 dark:bg-secondary/20 dark:text-secondary-foreground dark:border-secondary/30"
                     }`}
                   >
                     {isTV ? <Tv size={14} /> : <Film size={14} />}
                     {isTV ? "Series" : "Movie"}
                   </div>
 
-                  {/* Year Chip */}
-                  <div className="px-3 py-1.5 rounded-md text-xs font-medium uppercase tracking-wider bg-foreground/5 border border-border text-muted-foreground flex items-center gap-2">
+                  {/* Calendar Badge */}
+                  <div className="px-3 py-1.5 rounded-lg text-xs font-medium uppercase tracking-wider bg-black/30 border border-white/10 text-white dark:bg-foreground/5 dark:border-border dark:text-foreground backdrop-blur-md flex items-center gap-2">
                     <Calendar size={14} />
                     {releaseYear}
                   </div>
 
-                  {/* RATING CHIP (New Location) */}
+                  {/* Rating Badge */}
                   {rating !== "N/A" && (
-                    <div className="px-3 py-1.5 rounded-md text-xs font-bold bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 flex items-center gap-1.5">
-                      <Star size={14} className="fill-yellow-400" />
+                    <div className="px-3 py-1.5 rounded-lg text-xs font-bold bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 backdrop-blur-md flex items-center gap-1.5">
+                      <Star
+                        size={14}
+                        className="fill-yellow-400 stroke-yellow-400"
+                      />
                       <span>{rating}</span>
                     </div>
                   )}
                 </div>
 
-                {/* TITLE */}
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-foreground drop-shadow-2xl">
+                {/* Title: Ensured crystal clear readability */}
+                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] md:leading-[0.95] text-white dark:text-foreground drop-shadow-sm">
                   {title}
                 </h1>
 
-                {/* DESCRIPTION */}
-                <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3">
+                {/* Description: High readability opacity adjustments */}
+                <p className="text-white/85 dark:text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3 font-medium dark:font-normal">
                   {description}
                 </p>
 
-                {/* BUTTONS */}
-                <div className="flex flex-wrap items-center gap-4 pt-2">
+                <div className="flex flex-wrap items-center gap-4 pt-4">
                   <Link href={href}>
-                    <button className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-bold tracking-tight hover:scale-105 hover:opacity-90 transition-all duration-300 shadow-lg shadow-primary/20">
-                      <Play size={20} className="fill-primary-foreground" />
+                    <button className="group flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-bold tracking-tight hover:scale-105 hover:bg-primary/90 transition-all duration-300 shadow-xl shadow-primary/25">
+                      <Play
+                        size={20}
+                        className="fill-primary-foreground group-hover:scale-110 transition-transform"
+                      />
                       <span>Play Now</span>
                     </button>
                   </Link>
 
-                  <button className="px-6 py-3.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border backdrop-blur-md transition-colors font-medium text-foreground flex items-center gap-2">
+                  <button className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-card/40 dark:hover:bg-card/60 dark:border-border dark:text-foreground backdrop-blur-xl transition-all font-medium flex items-center gap-2 shadow-lg shadow-black/5">
                     <Info size={20} />
                     <span>More Info</span>
                   </button>
@@ -297,23 +364,22 @@ const SpotlightCarousel = () => {
             </AnimatePresence>
           </div>
 
-          {/* --- RIGHT: CONTROL DASHBOARD (Progress & Counter Moved Here) --- */}
-          <div className="md:col-span-4 lg:col-span-5 flex flex-col items-end justify-end space-y-4">
+          {/* --- RIGHT: CONTROL DASHBOARD --- */}
+          <div className="md:col-span-4 lg:col-span-5 flex flex-col items-end justify-end space-y-4 pointer-events-auto">
             <div className="flex items-center gap-3">
-              {/* SLIDE COUNTER & PROGRESS */}
-              <div className="bg-card/40 backdrop-blur-xl border border-border rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group">
-                <span className="font-mono text-sm font-medium tracking-widest text-muted-foreground relative z-10">
-                  <span className="text-foreground text-lg">
+              {/* Pagination Card */}
+              <div className="bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border backdrop-blur-xl rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group shadow-lg shadow-black/5">
+                <span className="font-mono text-sm font-medium tracking-widest text-white/50 dark:text-muted-foreground relative z-10">
+                  <span className="text-white dark:text-foreground text-lg">
                     {String(currentSlide + 1).padStart(2, "0")}
                   </span>
                   <span className="opacity-50 mx-1">/</span>
                   {String(spotlights.length).padStart(2, "0")}
                 </span>
 
-                {/* Progress Line (Bottom) */}
-                <div className="absolute bottom-0 left-0 h-[3px] bg-foreground/10 w-full">
+                <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 dark:bg-foreground/10 w-full">
                   <motion.div
-                    className="h-full bg-primary shadow-[0_0_10px_var(--accent-custom)]"
+                    className="h-full bg-primary"
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{
@@ -321,47 +387,47 @@ const SpotlightCarousel = () => {
                       ease: "linear",
                       repeat: isPaused ? 0 : Infinity,
                     }}
-                    key={currentSlide} // Reset on slide change
+                    key={currentSlide}
                   />
                 </div>
               </div>
 
-              {/* NAVIGATION CONTROLS */}
-              <div className="h-14 bg-card/40 backdrop-blur-xl border border-border rounded-2xl flex items-center p-1 gap-1">
+              {/* Slider Action Buttons */}
+              <div className="h-14 bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border backdrop-blur-xl rounded-2xl flex items-center p-1 gap-1 shadow-lg shadow-black/5">
                 <button
                   onClick={handlePrevSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white dark:hover:bg-foreground/10 dark:text-muted-foreground dark:hover:text-foreground transition-all"
                 >
                   <ArrowRight size={20} className="rotate-180" />
                 </button>
 
-                <div className="w-[1px] h-6 bg-border" />
+                <div className="w-[1px] h-6 bg-white/10 dark:bg-border" />
 
                 <button
                   onClick={togglePause}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white dark:hover:bg-foreground/10 dark:text-foreground transition-all"
                 >
                   {isPaused ? <Play size={20} /> : <Pause size={20} />}
                 </button>
 
-                <div className="w-[1px] h-6 bg-border" />
+                <div className="w-[1px] h-6 bg-white/10 dark:bg-border" />
 
                 <button
                   onClick={handleNextSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white dark:hover:bg-foreground/10 dark:text-muted-foreground dark:hover:text-foreground transition-all"
                 >
                   <ArrowRight size={20} />
                 </button>
               </div>
             </div>
 
-            {/* MUTE TOGGLE (Separate Floating Bubble) */}
+            {/* Mute/Unmute Layer */}
             {trailerKey && !isMobile && (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={toggleMute}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-card/20 hover:bg-card/60 backdrop-blur-md border border-border text-muted-foreground hover:text-foreground transition-all"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border text-white dark:text-foreground hover:bg-black/60 dark:hover:bg-card/60 backdrop-blur-xl transition-all shadow-lg shadow-black/5"
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </motion.button>

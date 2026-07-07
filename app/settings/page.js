@@ -84,7 +84,9 @@ const SettingsPage = () => {
           <h2 className="text-xl font-bold text-foreground tracking-tight">
             {title}
           </h2>
-          <p className="text-sm text-muted-foreground font-medium">{description}</p>
+          <p className="text-sm text-muted-foreground font-medium">
+            {description}
+          </p>
         </div>
       </div>
       <div className="grid gap-4">{children}</div>
@@ -173,9 +175,18 @@ const SettingsPage = () => {
                       className="w-full aspect-video rounded-lg border border-border overflow-hidden flex"
                       style={{ background: `hsl(${theme.colors.background})` }}
                     >
-                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.primary})` }} />
-                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.secondary})` }} />
-                      <div className="w-1/3 h-full" style={{ background: `hsl(${theme.colors.accent})` }} />
+                      <div
+                        className="w-1/3 h-full"
+                        style={{ background: `hsl(${theme.colors.primary})` }}
+                      />
+                      <div
+                        className="w-1/3 h-full"
+                        style={{ background: `hsl(${theme.colors.secondary})` }}
+                      />
+                      <div
+                        className="w-1/3 h-full"
+                        style={{ background: `hsl(${theme.colors.accent})` }}
+                      />
                     </div>
                     <span
                       className={`text-[10px] font-bold uppercase tracking-tight ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}

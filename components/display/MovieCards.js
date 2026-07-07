@@ -111,7 +111,7 @@ const MovieCard = ({ MovieCard }) => {
                 ${imageLoaded ? "opacity-100" : "opacity-0"} 
                 ${isHovered ? "scale-110" : "scale-100"}
             `}
-            onLoadingComplete={() => setImageLoaded(true)}
+            onLoad={() => setImageLoaded(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent opacity-60" />
         </div>
