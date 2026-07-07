@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Snowfall from "react-snowfall";
+import dynamic from "next/dynamic";
+
+const Snowfall = dynamic(() => import("react-snowfall"), { 
+  ssr: false,
+});
 
 export default function SnowButton() {
   const [isSnowing, setIsSnowing] = useState(false);

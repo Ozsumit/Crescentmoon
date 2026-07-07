@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Tv, Play } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const TvCards = ({ TvCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -49,49 +48,11 @@ const TvCards = ({ TvCard }) => {
     setIsFavorite(favorites.some((item) => item.id === TvCard.id));
   }, [TvCard.id]);
 
-  // --- ANIMATION CONFIGURATION ---
-  const containerVariants = {
-    rest: { scale: 1, y: 0, rotate: 0 },
-    hover: {
-      scale: 1.02,
-      y: -5,
-      rotate: 0.5,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
-    },
-  };
-
-  const sheetVariants = {
-    rest: { backgroundColor: "hsl(var(--card) / 0.6)" },
-    hover: {
-      backgroundColor: "hsl(var(--card) / 0.9)",
-      transition: { duration: 0.3 },
-    },
-  };
-
-  const contentVariants = {
-    rest: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.2, ease: "circOut" },
-    },
-    hover: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "circOut" },
-    },
-  };
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="rest"
-      whileHover="hover"
-      whileTap={{ scale: 0.98 }}
-      layout="position"
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full h-full transform-gpu"
-      style={{ willChange: "transform" }}
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative w-full h-full transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-[1.02] hover:-translate-y-1"
     >
       {/* 
          1. MAIN LINK AREA 
@@ -120,10 +81,7 @@ const TvCards = ({ TvCard }) => {
         </div>
 
         {/* EXPANDING INFO SHEET */}
-        <motion.div
-          variants={sheetVariants}
-          className="absolute bottom-2 left-2 right-2 backdrop-blur-xl border border-border rounded-[1.8rem] overflow-hidden z-20 shadow-lg flex flex-col justify-end"
-        >
+        <div className="absolute bottom-2 left-2 right-2 border backdrop-blur-md border-border rounded-[1.8rem] overflow-hidden z-20 shadow-md flex flex-col justify-end bg-card/60 transition-colors duration-300 group-hover:bg-card/60">
           <div className="px-4 pt-4 pb-2">
             {/* Header Row (Type & Rating) */}
             <div className="flex items-center justify-between mb-2">
@@ -149,19 +107,21 @@ const TvCards = ({ TvCard }) => {
           </div>
 
           {/* Hidden Content */}
-          <motion.div variants={contentVariants}>
-            <div className="px-4 pb-4">
-              <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
-                {TvCard.overview || "No description available."}
-              </p>
+          <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] backdrop-blur-md transition-[grid-template-rows] duration-300 ease-in-out">
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 flex flex-col gap-3">
+                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-1">
+                  {TvCard.overview || "No description available."}
+                </p>
 
-              <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
-                <Play size={16} className="fill-current" />
-                <span>Watch Now</span>
+                <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-all active:scale-[0.98]">
+                  <Play size={16} className="fill-current" />
+                  <span>Watch Now</span>
+                </div>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </Link>
 
       {/* 
@@ -170,19 +130,15 @@ const TvCards = ({ TvCard }) => {
       */}
       <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
         {/* Year Badge */}
-        <div className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg border border-border">
+        <div className="bg-background/95 text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-md border border-border">
           {formatDate(TvCard.first_air_date)}
         </div>
 
         {/* Favorite Button */}
-        <motion.button
-          // Remove "pointerEvents='auto'" from here
+        <button
           onClick={handleFavoriteToggle}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
           className={`
-            pointer-events-auto  /* <--- ADD THIS HERE */
-            w-10 h-10 flex items-center justify-center rounded-full shadow-lg border border-border backdrop-blur-md transition-colors duration-200 cursor-pointer
+            pointer-events-auto w-10 h-10 flex items-center justify-center rounded-full shadow-md border border-border transition-transform duration-300 cursor-pointer hover:scale-110 active:scale-90
             ${
               isFavorite
                 ? "bg-primary text-primary-foreground border-primary"
@@ -190,28 +146,21 @@ const TvCards = ({ TvCard }) => {
             }
           `}
         >
-          <AnimatePresence mode="wait" initial={false}>
+          <div
+            className={`transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${isFavorite ? "scale-100" : "scale-100"}`}
+          >
             {isFavorite ? (
-              <motion.div
-                key="fav"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-              >
-                <Heart size={18} className="fill-[#690005]" />
-              </motion.div>
+              <Heart
+                size={18}
+                className="fill-[#690005] animate-in zoom-in duration-300 text-[#690005]"
+              />
             ) : (
-              <motion.div
-                key="not-fav"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-              >
-                <Heart size={18} />
-              </motion.div>
+              <Heart size={18} className="animate-in zoom-in duration-300" />
             )}
-          </AnimatePresence>
-        </motion.button>
+          </div>
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

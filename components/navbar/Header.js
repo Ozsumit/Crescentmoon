@@ -19,12 +19,6 @@ import {
   ExternalLink,
   AlertCircle,
 } from "lucide-react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
-} from "framer-motion";
 
 // --- PLACEHOLDERS ---
 import Logo from "./Logo";
@@ -47,25 +41,37 @@ const Header = () => {
   const [showDomainNotice, setShowDomainNotice] = useState(true);
 
   const pathname = usePathname();
-  const { scrollY } = useScroll();
   const lastScrollY = useRef(0);
 
-  // --- LOGIC ---
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = lastScrollY.current;
-    const scrolledDown = latest > previous && latest > 50;
-    const isAtTop = latest < 50;
+  // --- HIGH PERFORMANCE SCROLL LISTENER ---
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const latest = window.scrollY;
+          const previous = lastScrollY.current;
+          const scrolledDown = latest > previous && latest > 50;
+          const isAtTop = latest < 50;
 
-    setIsScrolled(!isAtTop);
+          setIsScrolled(!isAtTop);
 
-    // Prevent hiding the header if the mobile menu is open
-    if (scrolledDown && !isMobileMenuOpen) {
-      setIsHidden(true);
-    } else {
-      setIsHidden(false);
-    }
-    lastScrollY.current = latest;
-  });
+          // Prevent hiding the header if the mobile menu is open
+          if (scrolledDown && !isMobileMenuOpen) {
+            setIsHidden(true);
+          } else {
+            setIsHidden(false);
+          }
+          lastScrollY.current = latest;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "unset";
@@ -94,11 +100,10 @@ const Header = () => {
 
   return (
     <>
-      <motion.header
-        initial={{ y: 0 }}
-        animate={isHidden ? { y: "-100%" } : { y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 flex flex-col ${
+      <header
+        className={`fixed top-0 left-0 right-0 z-[100] border-b transition-all duration-300 ease-out flex flex-col ${
+          isHidden ? "-translate-y-full" : "translate-y-0"
+        } ${
           isScrolled || isMobileMenuOpen
             ? "bg-background/80 backdrop-blur-md border-border"
             : "bg-background/95 backdrop-blur-md border-transparent"
@@ -224,13 +229,9 @@ const Header = () => {
         </div>
 
         {/* --- ALTERNATE DOMAIN TICKER --- */}
-        <AnimatePresence>
           {showDomainNotice && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10"
+            <div
+              className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10 transition-all duration-300 opacity-100"
             >
               <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-muted-foreground">
                 <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -271,30 +272,22 @@ const Header = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
 
         {/* --- MOBILE MENU --- */}
-        <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              // top-full forces it to attach perfectly below whichever banners are visible
-              className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border"
+            <div
+              className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border transition-opacity duration-300"
             >
               {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
               <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
                 <nav className="flex flex-col space-y-6">
                   {navLinks.map((item, i) => (
-                    <motion.div
+                    <div
                       key={item.label}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
+                      className="animate-in fade-in slide-in-from-left-4 duration-300"
+                      style={{ animationFillMode: "both", animationDelay: `${i * 50}ms` }}
                     >
                       <Link
                         href={item.href}
@@ -315,7 +308,7 @@ const Header = () => {
                           className="text-foreground opacity-0 group-hover:opacity-100 -rotate-45 group-hover:rotate-0 transition-all"
                         />
                       </Link>
-                    </motion.div>
+                    </div>
                   ))}
                 </nav>
 
@@ -325,10 +318,9 @@ const Header = () => {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-      </motion.header>
+      </header>
 
       {isQuickSearchOpen && (
         <QuickSearch

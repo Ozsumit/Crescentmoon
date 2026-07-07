@@ -1,48 +1,72 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import useSettingsStore from "@/components/settings-store";
 import { SITE_THEMES } from "@/lib/themes";
 
 export default function ThemeWrapper({ children }) {
-  const { accentColor, customCursor: showCustomCursor, siteTheme } = useSettingsStore();
-  const cursorRef = useRef(null);
+  const {
+    accentColor,
+    customCursor: showCustomCursor,
+    siteTheme,
+  } = useSettingsStore();
   const [isHovering, setIsHovering] = useState(false);
-
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 120 };
-  const springX = useSpring(cursorX, springConfig);
-  const springY = useSpring(cursorY, springConfig);
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-
-    const handleMouseOver = (e) => {
-      if (e.target.closest("a, button, .interactive-card, select, input, [role='button']")) setIsHovering(true);
-      else setIsHovering(false);
-    };
-    window.addEventListener("mouseover", handleMouseOver);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseover", handleMouseOver);
-    };
-  }, [cursorX, cursorY]);
 
   const currentTheme = SITE_THEMES[siteTheme] || SITE_THEMES.midnight;
 
+  // Track hover states for interactive targets
+  useEffect(() => {
+    if (!showCustomCursor) return;
+
+    const handleMouseOver = (e) => {
+      const target = e.target;
+      if (
+        target.closest(
+          "a, button, .interactive-card, select, input, textarea, [role='button'], [type='submit']",
+        )
+      ) {
+        setIsHovering(true);
+      } else {
+        setIsHovering(false);
+      }
+    };
+
+    window.addEventListener("mouseover", handleMouseOver);
+    return () => window.removeEventListener("mouseover", handleMouseOver);
+  }, [showCustomCursor]);
+
+  // Clean fallback mapping for colors inside raw SVG strings
+  const primaryColor = `hsl(${currentTheme.colors.primary})`;
+  const accentColorValue = accentColor || `hsl(${currentTheme.colors.accent})`;
+
+  // 1. Raw SVG structures
+  const rawNormalSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="10" stroke="${accentColorValue}" stroke-dasharray="3 2" stroke-opacity="0.6" stroke-width="1.5"/>
+      <circle cx="16" cy="16" r="14" stroke="${accentColorValue}" stroke-opacity="0.15" stroke-width="1"/>
+      <circle cx="16" cy="16" r="3" fill="${accentColorValue}"/>
+    </svg>
+  `.trim();
+
+  const rawHoverSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="5" stroke="${primaryColor}" stroke-dasharray="1 1" stroke-width="1.5"/>
+      <circle cx="16" cy="16" r="15" stroke="${primaryColor}" stroke-opacity="0.5" stroke-width="1"/>
+      <circle cx="16" cy="16" r="4.5" fill="${primaryColor}"/>
+    </svg>
+  `.trim();
+
+  // 2. Strict URL Encoding to prevent browser parsing rejections
+  const normalCursorDataUri = `data:image/svg+xml,${encodeURIComponent(rawNormalSvg)}`;
+  const hoverCursorDataUri = `data:image/svg+xml,${encodeURIComponent(rawHoverSvg)}`;
+
   return (
     <div
-      className={`relative min-h-screen transition-colors duration-700 ${currentTheme.type === 'dark' ? 'dark' : ''}`}
+      className={`relative min-h-screen transition-colors duration-700 ${currentTheme.type === "dark" ? "dark" : ""}`}
       style={{
         "--accent-color": accentColor,
         background: `hsl(${currentTheme.colors.background})`,
-        color: `hsl(${currentTheme.colors.foreground})`
+        color: `hsl(${currentTheme.colors.foreground})`,
       }}
     >
       <style jsx global>{`
@@ -62,7 +86,8 @@ export default function ThemeWrapper({ children }) {
           --accent: ${currentTheme.colors.accent};
           --accent-foreground: ${currentTheme.colors.accentForeground};
           --destructive: ${currentTheme.colors.destructive};
-          --destructive-foreground: ${currentTheme.colors.destructiveForeground};
+          --destructive-foreground: ${currentTheme.colors
+            .destructiveForeground};
           --border: ${currentTheme.colors.border};
           --input: ${currentTheme.colors.input};
           --ring: ${currentTheme.colors.ring};
@@ -70,58 +95,82 @@ export default function ThemeWrapper({ children }) {
           --radius: 1.5rem;
         }
 
+        /* 3. HARDWARE-LEVEL CURSOR REPLACEMENT OVERRIDES */
+        ${showCustomCursor
+          ? `
+          @media (min-width: 768px) {
+            /* Force replacement on the root document level down to all children */
+            html, body, #__next, main, div, p, span, section, h1, h2, h3, h4, h5, h6 {
+              cursor: url("${normalCursorDataUri}") 16 16, auto !important;
+            }
+            
+            /* Handle Interactive states comprehensively */
+            a, button, select, input, textarea, [role='button'], .interactive-card,
+            a *, button *, select *, input *, textarea *, [role='button'] *, .interactive-card * {
+              cursor: url("${hoverCursorDataUri}") 16 16, pointer !important;
+            }
+          }
+        `
+          : ""}
+
         body {
           background-color: hsl(${currentTheme.colors.background}) !important;
           color: hsl(${currentTheme.colors.foreground}) !important;
-          transition: background-color 0.5s ease, color 0.5s ease;
+          transition:
+            background-color 0.5s ease,
+            color 0.5s ease;
         }
 
-        /* Override common Tailwind Indigo classes with the custom accent color */
-        .text-indigo-400, .text-indigo-500, .text-indigo-600 { color: var(--accent-custom) !important; }
-        .bg-indigo-400, .bg-indigo-500, .bg-indigo-600 { background-color: var(--accent-custom) !important; }
-        .border-indigo-400, .border-indigo-500, .border-indigo-600 { border-color: var(--accent-custom) !important; }
-        .ring-indigo-500 { --tw-ring-color: var(--accent-custom) !important; }
-        .shadow-indigo-600\/20 { --tw-shadow-color: color-mix(in srgb, var(--accent-custom), transparent 80%) !important; }
+        .text-indigo-400,
+        .text-indigo-500,
+        .text-indigo-600 {
+          color: var(--accent-custom) !important;
+        }
+        .bg-indigo-400,
+        .bg-indigo-500,
+        .bg-indigo-600 {
+          background-color: var(--accent-custom) !important;
+        }
+        .border-indigo-400,
+        .border-indigo-500,
+        .border-indigo-600 {
+          border-color: var(--accent-custom) !important;
+        }
+        .ring-indigo-500 {
+          --tw-ring-color: var(--accent-custom) !important;
+        }
 
-        /* Generic element theming */
-        .bg-card { background-color: hsl(var(--card)) !important; }
-        .text-card-foreground { color: hsl(var(--card-foreground)) !important; }
-        .border-theme { border-color: hsl(var(--border)) !important; }
+        .shadow-indigo-600\/20 {
+          --tw-shadow-color: color-mix(
+            in srgb,
+            var(--accent-custom),
+            transparent 80%
+          ) !important;
+        }
 
-        /* Smooth transition for theme variables - targeted for performance */
-        body, .bg-card, .text-card-foreground, .border-theme, .text-foreground, .bg-background {
-          transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        .bg-card {
+          background-color: hsl(var(--card)) !important;
+        }
+        .text-card-foreground {
+          color: hsl(var(--card-foreground)) !important;
+        }
+        .border-theme {
+          border-color: hsl(var(--border)) !important;
+        }
+
+        body,
+        .bg-card,
+        .text-card-foreground,
+        .border-theme,
+        .text-foreground,
+        .bg-background {
+          transition:
+            background-color 0.3s ease,
+            border-color 0.3s ease,
+            color 0.3s ease,
+            box-shadow 0.3s ease;
         }
       `}</style>
-      {/* Custom Cursor */}
-      <AnimatePresence initial={false}>
-        {showCustomCursor && (
-          <motion.div
-        ref={cursorRef}
-        className="hidden md:flex fixed top-0 left-0 z-[9999] pointer-events-none items-center justify-center transform-gpu"
-        style={{
-          x: springX,
-          y: springY,
-          translateX: "-50%",
-          translateY: "-50%",
-          willChange: "transform"
-        }}
-      >
-        <motion.div
-          animate={{
-            scale: isHovering ? 1.5 : 1,
-            width: isHovering ? "2.5rem" : "1rem",
-            height: isHovering ? "2.5rem" : "1rem",
-            border: "2px solid var(--accent-custom)",
-            backgroundColor: isHovering ? "transparent" : "var(--accent-custom)",
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="rounded-full flex items-center justify-center mix-blend-difference"
-        >
-          </motion.div>
-        </motion.div>
-        )}
-      </AnimatePresence>
 
       {children}
     </div>

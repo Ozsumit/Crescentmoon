@@ -1,4 +1,3 @@
-// "use client";
 import SpotlightCarousel from "@/components/display/carausel";
 import HomeDisplay from "@/components/display/HomeDisplay";
 import HomeFilter from "@/components/filter/HomeFilter";
@@ -17,7 +16,7 @@ async function getData() {
       next: {
         revalidate: 3600, // Cache for 1 hour
       },
-    }
+    },
   );
 
   if (!resp.ok) {
@@ -37,7 +36,7 @@ export default async function Home() {
   const data = await getData();
   return (
     <div className=" m-0 bg-background text-foreground h-auto">
-    {/* <Title /> */}
+      {/* <Title /> */}
       <SpotlightCarousel />
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */}

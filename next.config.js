@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'react-icons'],
+  },
   images: {
     unoptimized: true, // Prevents Cloudflare Worker resource errors when loading images
     remotePatterns: [

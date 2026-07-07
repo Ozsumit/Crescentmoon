@@ -12,15 +12,15 @@ const Logo = () => {
   return (
     <Link
       href="/"
-      className="group flex items-center gap-2 select-none"
+      className="group flex items-center pgap-2 select-none"
       aria-label="Crescent Moon Home"
     >
-      <div className="relative flex items-end justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-transparent text-foreground transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
+      <div className="  relative flex items-end justify-center w-8 h-8 md:w-10 md:h-10  mt-2 rounded-full bg-transparent text-foreground transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
         <Image
           src={currentTheme.type === "light" ? "/logo-dark.svg" : "/logo.svg"}
           alt="Crescent Moon Logo"
-          width={100}
-          height={100}
+          width={70}
+          height={70}
           priority
         />
 
