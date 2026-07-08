@@ -1,7 +1,7 @@
 import React from "react";
-import MovieCards from "./MovieCards";
+import HomeCard from "./HomeCard";
+import HorizontalHomeCard from "./HorHomeCards";
 import MoviePagination from "../pagination/MoviePagination";
-import { Sparkles } from "lucide-react"; // Optional icon for flair
 
 const MovieDisplay = ({ movies, pageid }) => {
   return (
@@ -12,11 +12,6 @@ const MovieDisplay = ({ movies, pageid }) => {
       <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-10 lg:px-16 py-16">
         {/* --- Header Section --- */}
         <div className="mb-16 flex flex-col items-start gap-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-            <Sparkles size={12} />
-            <span>Discover</span>
-          </div>
-
           <h1 className="text-5xl font-bold tracking-tight md:text-7xl text-foreground">
             Movies
           </h1>
@@ -28,15 +23,17 @@ const MovieDisplay = ({ movies, pageid }) => {
         </div>
 
         {/* --- Card Grid --- */}
-        {/* 
-           Note: We removed 'hover:scale-105' from here because 
-           MovieCards handles its own Framer Motion animation internally.
-        */}
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 xl:gap-8">
+        <div className="hidden md:grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 xl:gap-8">
           {movies.map((movie) => (
             <div key={movie.id} className="w-full h-full">
-              <MovieCards MovieCard={movie} />
+              <HomeCard MovieCard={movie} />
             </div>
+          ))}
+        </div>
+
+        <div className="md:hidden grid grid-cols-1 gap-4">
+          {movies.map((movie) => (
+            <HorizontalHomeCard key={movie.id} MovieCard={movie} />
           ))}
         </div>
 

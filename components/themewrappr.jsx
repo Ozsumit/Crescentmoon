@@ -9,10 +9,21 @@ export default function ThemeWrapper({ children }) {
     accentColor,
     customCursor: showCustomCursor,
     siteTheme,
+    customTheme,
   } = useSettingsStore();
   const [isHovering, setIsHovering] = useState(false);
 
-  const currentTheme = SITE_THEMES[siteTheme] || SITE_THEMES.midnight;
+  const isCustom = siteTheme === "custom";
+  const currentTheme = isCustom
+    ? {
+        name: "Custom",
+        type: "dark", // Always treat custom as dark for simplicity in logic, or detect luminance
+        colors: {
+          ...SITE_THEMES.midnight.colors,
+          ...customTheme,
+        },
+      }
+    : SITE_THEMES[siteTheme] || SITE_THEMES.midnight;
 
   // Track hover states for interactive targets
   useEffect(() => {

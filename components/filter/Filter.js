@@ -69,7 +69,6 @@ const GenreSelector = ({
             {/* Header / Search Area */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2 text-foreground/80">
-                <Sparkles size={16} className="text-primary" />
                 <h3 className="text-sm font-bold uppercase tracking-widest">
                   Filter by Genre
                 </h3>
