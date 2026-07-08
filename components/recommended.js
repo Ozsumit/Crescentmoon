@@ -293,13 +293,8 @@ const RecommendedMovies = () => {
       {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 px-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary text-xs font-mono font-bold tracking-widest uppercase">
-            <Sparkles size={14} />
-            <span>AI Curation</span>
-          </div>
-
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-none">
-            {sourceMovie ? "Because you watched..." : "Trending for you"}
+            {sourceMovie ? "Recommended" : "Trending for you"}
           </h2>
 
           {sourceMovie && (

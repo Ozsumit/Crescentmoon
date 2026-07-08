@@ -18,6 +18,7 @@ import {
   Tv,
   MessageSquare,
   Loader2,
+  Settings2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -158,7 +159,7 @@ const SettingsPage = () => {
             <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">
               Site Theme
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
               {Object.keys(SITE_THEMES).map((themeKey) => {
                 const theme = SITE_THEMES[themeKey];
                 const isActive = settings.siteTheme === themeKey;
@@ -201,7 +202,80 @@ const SettingsPage = () => {
                   </button>
                 );
               })}
+              {/* Custom Theme Button */}
+              <button
+                onClick={() => {
+                  settings.setSiteTheme("custom");
+                  triggerToast();
+                }}
+                className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === "custom" ? "border-primary bg-primary/10 scale-105" : "border-border bg-muted/50 hover:border-primary/50"}`}
+              >
+                <div className="w-full aspect-video rounded-lg border border-border overflow-hidden flex bg-gradient-to-br from-primary to-accent opacity-80" />
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-tight ${settings.siteTheme === "custom" ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                >
+                  Custom
+                </span>
+                {settings.siteTheme === "custom" && (
+                  <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1 shadow-lg">
+                    <Check size={10} className="text-primary-foreground" />
+                  </div>
+                )}
+              </button>
             </div>
+
+            {/* Custom Theme Builder UI */}
+            <AnimatePresence>
+              {settings.siteTheme === "custom" && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-6 border-t border-border mt-6">
+                    <div className="flex items-center gap-2 mb-6">
+                      <Settings2 size={16} className="text-primary" />
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-foreground">
+                        Custom Theme Builder
+                      </h4>
+                    </div>
+                    <div className="grid gap-6">
+                      {[
+                        { label: "Background", key: "background" },
+                        { label: "Primary", key: "primary" },
+                        { label: "Card", key: "card" },
+                        { label: "Border", key: "border" },
+                        { label: "Text", key: "foreground" },
+                      ].map((item) => (
+                        <div key={item.key} className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <label className="text-sm font-medium text-muted-foreground">
+                              {item.label} (HSL)
+                            </label>
+                            <span className="text-[10px] font-mono bg-muted px-2 py-1 rounded">
+                              {settings.customTheme[item.key]}
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            value={settings.customTheme[item.key]}
+                            onChange={(e) =>
+                              settings.setCustomThemeColor(
+                                item.key,
+                                e.target.value,
+                              )
+                            }
+                            className="w-full bg-muted border border-border rounded-xl px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono"
+                            placeholder="e.g. 240 10% 4%"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* <div className="p-6 bg-card border border-border rounded-2xl mb-4">

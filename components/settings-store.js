@@ -28,8 +28,22 @@ const useSettingsStore = create(
       showFeedbackPopup: true,
       feedbackTheme: "classic",
       siteTheme: "space_gray",
+      customTheme: {
+        background: "240 10% 4%",
+        foreground: "240 5% 90%",
+        primary: "260 80% 85%",
+        card: "0 0% 11%",
+        border: "240 10% 18%",
+      },
 
       setAccentColor: (color) => set({ accentColor: color }),
+      setCustomThemeColor: (key, value) =>
+        set((state) => ({
+          customTheme: {
+            ...state.customTheme,
+            [key]: value,
+          },
+        })),
 
       setDefaultMovieServer: (server) => {
         if (typeof window !== "undefined") {
@@ -71,6 +85,13 @@ const useSettingsStore = create(
           showFeedbackPopup: true,
           feedbackTheme: "classic",
           siteTheme: "space_gray",
+          customTheme: {
+            background: "240 10% 4%",
+            foreground: "240 5% 90%",
+            primary: "260 80% 85%",
+            card: "0 0% 11%",
+            border: "240 10% 18%",
+          },
         });
       },
     }),
