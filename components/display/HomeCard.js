@@ -19,10 +19,6 @@ const formatDate = (dateString) => {
   return new Date(dateString).getFullYear();
 };
 
-const MovieModal = dynamic(() => import("./MovieModal"), {
-  ssr: false,
-});
-
 // --- MORE LIKE THIS CARD ---
 const MoreLikeThisCard = memo(
   ({ item, index, isActive, onHover, ...props }) => {
@@ -226,11 +222,11 @@ MoreLikeThisGrid.displayName = "MoreLikeThisGrid";
 const HomeCard = memo(({ MovieCard }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isTV =
     MovieCard.media_type === "tv" || MovieCard.first_air_date !== undefined;
   const title = isTV ? MovieCard.name : MovieCard.title;
+  const linkPath = isTV ? `/series/${MovieCard.id}` : `/movie/${MovieCard.id}`;
 
   const getImagePath = () => {
     if (MovieCard.poster_path)
@@ -269,14 +265,11 @@ const HomeCard = memo(({ MovieCard }) => {
   return (
     <>
       {/* Optimized wrapper using group and pure CSS transformations */}
-      <div
-        className="group relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border transform-gpu cursor-pointer transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1"
-        onClick={() => setIsModalOpen(true)}
-        tabIndex={0}
-        role="button"
-        onKeyDown={(e) => e.key === "Enter" && setIsModalOpen(true)}
-      >
-        <div className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden">
+      <div className="group relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border transform-gpu transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1">
+        <Link
+          href={linkPath}
+          className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden block"
+        >
           <div className="absolute inset-0 bg-muted">
             <Image
               src={getImagePath()}
@@ -315,7 +308,7 @@ const HomeCard = memo(({ MovieCard }) => {
                     )}
                   </div>
                 </div>
-                <h3 className="text-lg font-bold leading-tight line-clamp-1 text-primary mb-1">
+                <h3 className="text-lg font-black leading-tight line-clamp-1 text-foreground mb-1 group-hover:text-primary transition-colors drop-shadow-sm">
                   {title}
                 </h3>
               </div>
@@ -325,7 +318,7 @@ const HomeCard = memo(({ MovieCard }) => {
                 <div className="overflow-hidden">
                   {/* Inner content fades in slightly after the height expands */}
                   <div className="px-4 pb-4 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                    <p className="text-xs text-accent-foreground dark:text-muted-foreground line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed font-medium">
                       {MovieCard.overview || "No description available."}
                     </p>
                     <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform">
@@ -337,7 +330,7 @@ const HomeCard = memo(({ MovieCard }) => {
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
           <div className="bg-background/95 text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-md border border-border">
@@ -368,18 +361,6 @@ const HomeCard = memo(({ MovieCard }) => {
           </button>
         </div>
       </div>
-
-      <AnimatePresence initial={false}>
-        {isModalOpen && (
-          <MovieModal
-            movie={MovieCard}
-            isTV={isTV}
-            isFavorite={isFavorite}
-            toggleFavorite={handleFavoriteToggle}
-            onClose={() => setIsModalOpen(false)}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 });

@@ -258,9 +258,6 @@ const HomeDisplay = ({ initialData = [] }) => {
 
         <div className="relative z-40 flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
           <div className="space-y-2">
-            <span className="block text-xs font-mono text-muted-foreground uppercase tracking-widest pl-1">
-              Browse Library
-            </span>
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
               {activeGenres.length > 0 ? (
                 <span className="text-muted-foreground">Filtered: </span>

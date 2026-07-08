@@ -201,8 +201,155 @@ const SettingsPage = () => {
                   </button>
                 );
               })}
+
+              {/* Custom Theme Option */}
+              <button
+                onClick={() => {
+                  settings.setSiteTheme("custom");
+                  triggerToast();
+                }}
+                className={`group relative p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${settings.siteTheme === "custom" ? "border-primary bg-primary/10 scale-105" : "border-border bg-muted/50 hover:border-primary/50"}`}
+              >
+                <div
+                  className="w-full aspect-video rounded-lg border border-border overflow-hidden flex"
+                  style={{ background: `hsl(${settings.customTheme.background})` }}
+                >
+                  <div
+                    className="w-1/2 h-full"
+                    style={{ background: `hsl(${settings.customTheme.primary})` }}
+                  />
+                  <div
+                    className="w-1/2 h-full"
+                    style={{ background: `hsl(${settings.customTheme.accent})` }}
+                  />
+                </div>
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-tight ${settings.siteTheme === "custom" ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                >
+                  Custom
+                </span>
+                {settings.siteTheme === "custom" && (
+                  <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1 shadow-lg">
+                    <Check size={10} className="text-primary-foreground" />
+                  </div>
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Custom Theme Builder */}
+          {settings.siteTheme === "custom" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="p-6 bg-card border border-border rounded-2xl mb-4 overflow-hidden"
+            >
+              <h3 className="text-sm font-bold text-foreground mb-6 uppercase tracking-wider flex items-center gap-2">
+                <Palette size={16} className="text-primary" />
+                Custom Theme Builder
+              </h3>
+
+              <div className="space-y-8">
+                {/* Primary Color Picker (The Source) */}
+                <div>
+                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 block">
+                    Brand Color (Material You Inspired)
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {[
+                      "#6366f1",
+                      "#f43f5e",
+                      "#10b981",
+                      "#f59e0b",
+                      "#0ea5e9",
+                      "#8b5cf6",
+                      "#ec4899",
+                      "#71717a",
+                    ].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          // Material You style: Derive HSL from a single hex
+                          const tempDiv = document.createElement("div");
+                          tempDiv.style.color = color;
+                          document.body.appendChild(tempDiv);
+                          const computedColor = getComputedStyle(tempDiv).color;
+                          document.body.removeChild(tempDiv);
+
+                          const rgb = computedColor.match(/\d+/g);
+                          if (rgb) {
+                            const r = rgb[0] / 255;
+                            const g = rgb[1] / 255;
+                            const b = rgb[2] / 255;
+                            const max = Math.max(r, g, b),
+                              min = Math.min(r, g, b);
+                            let h,
+                              s,
+                              l = (max + min) / 2;
+
+                            if (max === min) {
+                              h = s = 0;
+                            } else {
+                              const d = max - min;
+                              s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                              switch (max) {
+                                case r:
+                                  h = (g - b) / d + (g < b ? 6 : 0);
+                                  break;
+                                case g:
+                                  h = (b - r) / d + 2;
+                                  break;
+                                case b:
+                                  h = (r - g) / d + 4;
+                                  break;
+                              }
+                              h /= 6;
+                            }
+
+                            const H = Math.round(h * 360);
+                            const S = Math.round(s * 100);
+                            const L = Math.round(l * 100);
+
+                            settings.setCustomTheme({
+                              primary: `${H} ${S}% ${L}%`,
+                              background: `${H} ${Math.min(S, 15)}% 4%`,
+                              card: `${H} ${Math.min(S, 10)}% 8%`,
+                              border: `${H} ${Math.min(S, 10)}% 15%`,
+                              foreground: `${H} 5% 95%`,
+                              accent: `${H} ${S}% ${Math.min(L + 20, 90)}%`,
+                            });
+                            triggerToast();
+                          }
+                        }}
+                        className="w-10 h-10 rounded-full border-2 border-border transition-transform hover:scale-110 active:scale-95"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Detailed Controls */}
+                  {Object.entries(settings.customTheme).map(([key, value]) => (
+                    <div key={key} className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {key} HSL
+                      </label>
+                      <input
+                        type="text"
+                        value={value}
+                        onChange={(e) => {
+                          settings.setCustomTheme({ [key]: e.target.value });
+                        }}
+                        className="w-full bg-muted border border-border rounded-xl px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* <div className="p-6 bg-card border border-border rounded-2xl mb-4">
             <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">

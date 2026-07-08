@@ -9,10 +9,32 @@ export default function ThemeWrapper({ children }) {
     accentColor,
     customCursor: showCustomCursor,
     siteTheme,
+    customTheme,
   } = useSettingsStore();
   const [isHovering, setIsHovering] = useState(false);
 
-  const currentTheme = SITE_THEMES[siteTheme] || SITE_THEMES.midnight;
+  const currentTheme =
+    siteTheme === "custom"
+      ? {
+          name: "Custom",
+          type: "dark",
+          colors: {
+            ...customTheme,
+            primaryForeground: "0 0% 100%",
+            secondary: customTheme.card,
+            secondaryForeground: customTheme.foreground,
+            muted: customTheme.card,
+            mutedForeground: customTheme.foreground,
+            accentForeground: customTheme.foreground,
+            destructive: "0 84% 60%",
+            destructiveForeground: "0 0% 100%",
+            popover: customTheme.background,
+            popoverForeground: customTheme.foreground,
+            input: customTheme.border,
+            ring: customTheme.primary,
+          },
+        }
+      : SITE_THEMES[siteTheme] || SITE_THEMES.midnight;
 
   // Track hover states for interactive targets
   useEffect(() => {
