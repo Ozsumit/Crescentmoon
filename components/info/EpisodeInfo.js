@@ -320,7 +320,7 @@ const EpisodeInfo = ({
     : `https://image.tmdb.org/t/p/original${seriesData.poster_path}`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans pt-[72px] lg:pt-[90px] pb-16 selection:bg-primary/30 relative">
+    <div className="min-h-screen bg-background text-foreground font-sans mt-[2rem] lg:pt-[90px] pb-16 selection:bg-primary/30 relative">
       {/* Cinematic Background Layer */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background z-10" />
@@ -369,7 +369,9 @@ const EpisodeInfo = ({
                     S{selectedEpisode.season_number} E
                     {selectedEpisode.episode_number}
                   </span>
-                  <span className="text-foreground/90">{selectedEpisode.name}</span>
+                  <span className="text-foreground/90">
+                    {selectedEpisode.name}
+                  </span>
                   <span className="text-foreground/30">•</span>
                   <span className="text-muted-foreground flex items-center gap-1">
                     <Clock size={14} /> {selectedEpisode.runtime || 24}m
@@ -835,10 +837,7 @@ const EpisodeInfo = ({
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Third-party sources may contain popups. We strongly advise
                   using{" "}
-                  <span className="text-primary font-bold">
-                    uBlock Origin
-                  </span>
-                  .
+                  <span className="text-primary font-bold">uBlock Origin</span>.
                 </p>
               </div>
               <button

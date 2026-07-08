@@ -133,10 +133,10 @@ const SettingsPage = () => {
       <div className="max-w-3xl mx-auto mt-16">
         <header className="mb-16">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            {/* <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <span className="text-xs font-mono text-primary uppercase tracking-widest">
               Configuration
-            </span>
+            </span> */}
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground mb-4">
             Settings
@@ -204,7 +204,7 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          <div className="p-6 bg-card border border-border rounded-2xl mb-4">
+          {/* <div className="p-6 bg-card border border-border rounded-2xl mb-4">
             <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">
               Accent Color
             </h3>
@@ -226,7 +226,7 @@ const SettingsPage = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <ToggleCard
             icon={MousePointer2}

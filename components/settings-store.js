@@ -27,7 +27,7 @@ const useSettingsStore = create(
       customCursor: false,
       showFeedbackPopup: true,
       feedbackTheme: "classic",
-      siteTheme: "obsidian",
+      siteTheme: "space_gray",
 
       setAccentColor: (color) => set({ accentColor: color }),
 
@@ -70,7 +70,7 @@ const useSettingsStore = create(
           customCursor: true,
           showFeedbackPopup: true,
           feedbackTheme: "classic",
-          siteTheme: "obsidian",
+          siteTheme: "space_gray",
         });
       },
     }),
