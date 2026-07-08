@@ -27,7 +27,15 @@ const useSettingsStore = create(
       customCursor: false,
       showFeedbackPopup: true,
       feedbackTheme: "classic",
-      siteTheme: "obsidian",
+      siteTheme: "space_gray",
+      customTheme: {
+        background: "240 10% 3.9%",
+        foreground: "0 0% 98%",
+        card: "240 10% 3.9%",
+        primary: "240 5.9% 10%",
+        border: "240 3.7% 15.9%",
+        accent: "240 4.8% 95.9%",
+      },
 
       setAccentColor: (color) => set({ accentColor: color }),
 
@@ -51,6 +59,10 @@ const useSettingsStore = create(
       setShowFeedbackPopup: (show) => set({ showFeedbackPopup: show }),
       setFeedbackTheme: (theme) => set({ feedbackTheme: theme }),
       setSiteTheme: (theme) => set({ siteTheme: theme }),
+      setCustomTheme: (theme) =>
+        set((state) => ({
+          customTheme: { ...state.customTheme, ...theme },
+        })),
 
       resetSettings: () => {
         const defaultMovieServer = "Server 1";
@@ -70,7 +82,15 @@ const useSettingsStore = create(
           customCursor: true,
           showFeedbackPopup: true,
           feedbackTheme: "classic",
-          siteTheme: "obsidian",
+          siteTheme: "space_gray",
+          customTheme: {
+            background: "240 10% 3.9%",
+            foreground: "0 0% 98%",
+            card: "240 10% 3.9%",
+            primary: "240 5.9% 10%",
+            border: "240 3.7% 15.9%",
+            accent: "240 4.8% 95.9%",
+          },
         });
       },
     }),

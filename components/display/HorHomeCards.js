@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, Calendar, PlayCircle, Heart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const HorizontalHomeCard = memo(({ MovieCard, className }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -61,47 +60,26 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -10, scale: 0.98 }}
-      whileInView={{ opacity: 1, x: 0, scale: 1 }}
-      viewport={{ once: true, margin: "50px" }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-full transform-gpu relative group"
+    <div
+      className="w-full transform-gpu relative group animate-in fade-in duration-500 ease-out"
     >
       {/* FAVORITE BUTTON */}
-      <motion.button
+      <button
         onClick={handleFavoriteToggle}
-        whileHover={{ scale: 1.15 }}
-        whileTap={{ scale: 0.8 }}
-        className={`absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-md shadow-lg border transition-all duration-300 ease-out ${
+        className={`absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full shadow-md border transition-transform duration-300 ease-out hover:scale-110 active:scale-90 ${
           isFavorite
             ? "bg-destructive border-destructive text-destructive-foreground"
-            : "bg-background/30 border-border text-foreground hover:bg-background/60"
+            : "bg-background/80 border-border text-foreground hover:bg-background"
         }`}
       >
-        <AnimatePresence mode="wait">
-          {isFavorite ? (
-            <motion.div
-              key="active"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            >
-              <Heart size={16} className="fill-rose-500 text-rose-500" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="inactive"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-            >
-              <Heart size={16} className="text-neutral-400" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+        <div className={`transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${isFavorite ? "scale-100" : "scale-100"}`}>
+           {isFavorite ? (
+              <Heart size={16} className="fill-[#690005] animate-in zoom-in duration-300 text-rose-500" />
+           ) : (
+              <Heart size={16} className="text-neutral-400 animate-in zoom-in duration-300" />
+           )}
+        </div>
+      </button>
 
       {/* MAIN CARD LINK */}
       <Link
@@ -165,20 +143,19 @@ const HorizontalHomeCard = memo(({ MovieCard, className }) => {
           </p>
 
           <div className="mt-auto flex justify-end">
-            <motion.div
-              whileTap={{ scale: 0.95 }}
-              className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm hover:brightness-110 transition-all"
+            <div
+              className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition-transform"
             >
               <PlayCircle
                 size={14}
                 className="fill-primary-foreground text-primary"
               />
               WATCH
-            </motion.div>
+            </div>
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 });
 
