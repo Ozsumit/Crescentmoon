@@ -12,10 +12,8 @@ import {
   Search,
   Info,
 } from "lucide-react";
-import MovieCards from "./MovieCards";
 import HorizontalHomeCard from "./HorHomeCards";
 import { Tooltip } from "react-tooltip";
-import HomeCards2 from "./generalcards";
 import HomeCard from "./HomeCard";
 
 const SearchDisplay = ({ media }) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import MovieCards from "./MovieCards";
+import MovieCards from "./HomeCard";
 import MoviePagination from "../pagination/MoviePagination";
 import { Sparkles } from "lucide-react"; // Optional icon for flair
 
@@ -12,11 +12,6 @@ const MovieDisplay = ({ movies, pageid }) => {
       <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-10 lg:px-16 py-16">
         {/* --- Header Section --- */}
         <div className="mb-16 flex flex-col items-start gap-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-            <Sparkles size={12} />
-            <span>Discover</span>
-          </div>
-
           <h1 className="text-5xl font-bold tracking-tight md:text-7xl text-foreground">
             Movies
           </h1>

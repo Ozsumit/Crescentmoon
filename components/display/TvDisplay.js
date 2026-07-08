@@ -1,6 +1,6 @@
 import React from "react";
 import TvPagination from "../pagination/TvPagination";
-import TvCards from "./TvCards";
+import TvCards from "./HomeCard";
 import { Tv } from "lucide-react";
 
 const TvDisplay = ({ series, pageid }) => {
@@ -12,11 +12,6 @@ const TvDisplay = ({ series, pageid }) => {
       <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-10 lg:px-16 py-16">
         {/* --- Header Section --- */}
         <div className="mb-16 flex flex-col items-start gap-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
-            <Tv size={12} />
-            <span>On Air</span>
-          </div>
-
           <h1 className="text-5xl font-bold tracking-tight md:text-7xl text-foreground">
             TV Series
           </h1>
@@ -34,7 +29,7 @@ const TvDisplay = ({ series, pageid }) => {
         >
           {series.map((serie) => (
             <div key={serie.id} className="w-full h-full">
-              <TvCards TvCard={serie} />
+              <TvCards MovieCard={serie} />
             </div>
           ))}
         </div>

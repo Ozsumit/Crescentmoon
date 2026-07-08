@@ -4,225 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Play, Sparkles, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import HomeCards from "./display/HomeCard";
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
-// --- 1. THE REC CARD (Exact Clone of HomeCard Design) ---
-const RecCard = ({ movie, index }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Data Normalization
-  const isTV = movie.media_type === "tv";
-  const title = isTV ? movie.name : movie.title;
-  const linkPath = isTV ? `/series/${movie.id}` : `/movie/${movie.id}`;
-  const releaseDate = movie.release_date || movie.first_air_date;
-
-  const getImagePath = () => {
-    if (movie.poster_path)
-      return `https://image.tmdb.org/t/p/w500/${movie.poster_path}`;
-    return "https://i.imgur.com/HIYYPtZ.png";
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).getFullYear();
-  };
-
-  const handleFavoriteToggle = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    if (isFavorite) {
-      const updated = favorites.filter((item) => item.id !== movie.id);
-      localStorage.setItem("favorites", JSON.stringify(updated));
-    } else {
-      favorites.push(movie);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
-    }
-    setIsFavorite(!isFavorite);
-  };
-
-  useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
-    setIsFavorite(favorites.some((item) => item.id === movie.id));
-  }, [movie.id]);
-
-  // --- ANIMATION VARIANTS (Identical to HomeCard) ---
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    rest: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { duration: 0.5, delay: index * 0.05 }, // Staggered entrance
-    },
-    hover: {
-      scale: 1.02,
-      y: -5,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
-    },
-  };
-
-  const contentStagger = {
-    rest: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.2, when: "afterChildren" },
-    },
-    hover: {
-      height: "auto",
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        staggerChildren: 0.1,
-        when: "beforeChildren",
-      },
-    },
-  };
-
-  const itemFade = {
-    rest: { opacity: 0, y: 10 },
-    hover: { opacity: 1, y: 0 },
-  };
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="rest" // Triggers entrance
-      whileHover="hover"
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="relative w-full aspect-[2/3] rounded-[2rem] shadow-2xl bg-card ring-1 ring-border isolate transform-gpu"
-    >
-      {/* 1. THE MAIN LINK */}
-      <Link
-        href={linkPath}
-        className="absolute inset-0 z-0 rounded-[2rem] overflow-hidden block"
-        tabIndex={0}
-      >
-        <div className="absolute inset-0 bg-muted">
-          <Image
-            src={getImagePath()}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 50vw, 20vw"
-            className={`
-              object-cover transition-all duration-700 ease-out 
-              ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"} 
-              ${isHovered ? "scale-110" : "scale-100"}
-            `}
-            onLoad={() => setImageLoaded(true)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
-        </div>
-
-        {/* Info Sheet */}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 p-2 z-10"
-          initial={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
-          animate={{
-            backgroundColor: isHovered
-              ? "rgba(0, 0, 0, 0)" // Kept transparent as per your code
-              : "rgba(0, 0, 0, 0)",
-          }}
-        >
-          <div className="backdrop-blur-xl border border-border rounded-[1.5rem] overflow-hidden shadow-lg bg-card/20">
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`
-                      px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm
-                      ${
-                        isTV
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground"
-                      }
-                    `}
-                  >
-                    {isTV ? "Series" : "Movie"}
-                  </span>
-                  {movie.vote_average > 0 && (
-                    <div className="flex items-center gap-1 text-xs font-bold text-accent-foreground">
-                      <Star size={12} className="fill-current" />
-                      <span>{movie.vote_average.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <h3 className="text-lg font-bold leading-tight line-clamp-1 text-foreground mb-1">
-                {title}
-              </h3>
-            </div>
-            <motion.div variants={contentStagger}>
-              <div className="px-4 pb-4 flex flex-col gap-3">
-                <motion.p
-                  variants={itemFade}
-                  className="text-xs text-muted-foreground line-clamp-3 leading-relaxed"
-                >
-                  {movie.overview || "No description available."}
-                </motion.p>
-                <div className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2">
-                  <Play size={16} className="fill-current" />
-                  <span>Watch Now</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </Link>
-
-      {/* 2. FLOATING UI LAYER */}
-      <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-start pointer-events-none">
-        <div className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg border border-border">
-          {formatDate(releaseDate)}
-        </div>
-
-        <motion.button
-          onClick={handleFavoriteToggle}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.85 }}
-          className={`
-            pointer-events-auto cursor-pointer
-            w-10 h-10 flex items-center justify-center rounded-full shadow-lg border backdrop-blur-md transition-all duration-300
-            ${
-              isFavorite
-                ? "bg-primary border-primary text-primary-foreground"
-                : "bg-background/30 border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground"
-            }
-          `}
-        >
-          <AnimatePresence mode="wait">
-            {isFavorite ? (
-              <motion.div
-                key="liked"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              >
-                <Heart size={18} className="fill-[#690005]" />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="unliked"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-              >
-                <Heart size={18} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
-    </motion.div>
-  );
-};
 
 // --- 2. SKELETON LOADER ---
 const RecSkeleton = () => (
@@ -293,11 +77,6 @@ const RecommendedMovies = () => {
       {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 px-4">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary text-xs font-mono font-bold tracking-widest uppercase">
-            <Sparkles size={14} />
-            <span>AI Curation</span>
-          </div>
-
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground leading-none">
             {sourceMovie ? "Because you watched..." : "Trending for you"}
           </h2>
@@ -328,7 +107,7 @@ const RecommendedMovies = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4">
           <AnimatePresence mode="popLayout">
             {movies.map((movie, index) => (
-              <RecCard key={movie.id} movie={movie} index={index} />
+              <HomeCards key={movie.id} MovieCard={movie} />
             ))}
           </AnimatePresence>
         </div>
