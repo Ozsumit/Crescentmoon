@@ -14,6 +14,7 @@ import useGenreStore from "@/components/zustand";
 import ContinueWatching from "../continuewatching";
 import RecommendedMovies from "../recommended";
 import GenreSelector from "@/components/filter/Filter";
+import ProviderFilter from "@/components/filter/ProviderFilter";
 import HorizontalHomeCard from "./HorHomeCards";
 import HomePagination from "../pagination/HomePagination";
 
@@ -69,7 +70,14 @@ MobileGrid.displayName = "MobileGrid";
 
 // --- MAIN COMPONENT ---
 const HomeDisplay = ({ initialData = [] }) => {
-  const { activeGenres, toggleGenre, clearGenres } = useGenreStore();
+  const {
+    activeGenres,
+    toggleGenre,
+    clearGenres,
+    activeProviders,
+    toggleProvider,
+    clearProviders,
+  } = useGenreStore();
 
   // Helper logic to cleanly filter out future releases locally
   const isReleased = (item) => {
@@ -82,10 +90,10 @@ const HomeDisplay = ({ initialData = [] }) => {
   };
 
   const [contentData, setContentData] = useState(() => ({
-    movies: initialData.filter(
+    movies: (initialData || []).filter(
       (i) => i.media_type === "movie" && isReleased(i),
     ),
-    tvShows: initialData.filter((i) => i.media_type === "tv" && isReleased(i)),
+    tvShows: (initialData || []).filter((i) => i.media_type === "tv" && isReleased(i)),
   }));
 
   const [activeTab, setActiveTab] = useState("all");
@@ -98,8 +106,8 @@ const HomeDisplay = ({ initialData = [] }) => {
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   const fetchedSignatures = useRef({
-    movies: initialData.length > 0 ? "1-" : null,
-    tvShows: initialData.length > 0 ? "1-" : null,
+    movies: (initialData || []).length > 0 ? "1-" : null,
+    tvShows: (initialData || []).length > 0 ? "1-" : null,
   });
 
   // FIXED: Throttled Scroll Execution using requestAnimationFrame
@@ -122,10 +130,13 @@ const HomeDisplay = ({ initialData = [] }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const fetchContent = useCallback(async (type, page, genres) => {
+  const fetchContent = useCallback(async (type, page, genres, providers) => {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const genreString = genres.map((g) => g.id).join(",");
-    const signature = `${page}-${genreString}`;
+    if (!apiKey) return; // Silent return if no API key
+
+    const genreString = (genres || []).map((g) => g.id).join(",");
+    const providerString = (providers || []).join("|");
+    const signature = `${page}-${genreString}-${providerString}`;
 
     if (fetchedSignatures.current[type] === signature) return;
 
@@ -138,10 +149,15 @@ const HomeDisplay = ({ initialData = [] }) => {
       );
       setError(null);
 
-      const url =
-        genres.length > 0
-          ? `https://api.themoviedb.org/3/discover/${baseUrl}?api_key=${apiKey}&with_genres=${genreString}&page=${page}&language=en-US&sort_by=popularity.desc`
-          : `https://api.themoviedb.org/3/${baseUrl}/popular?api_key=${apiKey}&page=${page}&language=en-US`;
+      let url = "";
+      if ((genres || []).length > 0 || (providers || []).length > 0) {
+        url = `https://api.themoviedb.org/3/discover/${baseUrl}?api_key=${apiKey}&page=${page}&language=en-US&sort_by=popularity.desc`;
+        if (genres?.length > 0) url += `&with_genres=${genreString}`;
+        if (providers?.length > 0)
+          url += `&with_watch_providers=${providerString}&watch_region=US`;
+      } else {
+        url = `https://api.themoviedb.org/3/${baseUrl}/popular?api_key=${apiKey}&page=${page}&language=en-US`;
+      }
 
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Failed to fetch ${type}`);
@@ -179,15 +195,21 @@ const HomeDisplay = ({ initialData = [] }) => {
 
   useEffect(() => {
     if (activeTab === "all") {
-      fetchContent("movies", pageData.movies, activeGenres);
-      fetchContent("tvShows", pageData.tvShows, activeGenres);
+      fetchContent("movies", pageData.movies, activeGenres, activeProviders);
+      fetchContent("tvShows", pageData.tvShows, activeGenres, activeProviders);
     } else {
       const currentType = activeTab === "movies" ? "movies" : "tvShows";
-      fetchContent(currentType, pageData[currentType], activeGenres);
+      fetchContent(
+        currentType,
+        pageData[currentType],
+        activeGenres,
+        activeProviders,
+      );
     }
   }, [
     activeTab,
     activeGenres,
+    activeProviders,
     pageData.movies,
     pageData.tvShows,
     fetchContent,
@@ -207,7 +229,7 @@ const HomeDisplay = ({ initialData = [] }) => {
   );
 
   const mixedContent = useMemo(() => {
-    return [...contentData.movies, ...contentData.tvShows].sort(
+    return [...(contentData.movies || []), ...(contentData.tvShows || [])].sort(
       (a, b) => b.popularity - a.popularity,
     );
   }, [contentData.movies, contentData.tvShows]);
@@ -252,6 +274,7 @@ const HomeDisplay = ({ initialData = [] }) => {
       </section>
 
       <div className="bg-card border border-border rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative contain-layout">
+        <ProviderFilter />
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] transform-gpu" />
         </div>
@@ -262,12 +285,12 @@ const HomeDisplay = ({ initialData = [] }) => {
               Browse Library
             </span>
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
-              {activeGenres.length > 0 ? (
+              {activeGenres?.length > 0 ? (
                 <span className="text-muted-foreground">Filtered: </span>
               ) : (
                 "Trending "
               )}
-              {activeGenres.length > 0
+              {activeGenres?.length > 0
                 ? activeGenres.map((g) => g.name).join(" + ")
                 : "Now"}
             </h2>
@@ -278,14 +301,14 @@ const HomeDisplay = ({ initialData = [] }) => {
               <button
                 onClick={() => setIsGenreMenuOpen(!isGenreMenuOpen)}
                 className={`flex items-center gap-2 px-5 py-3 rounded-full text-sm font-bold tracking-wide transition-all border ${
-                  activeGenres.length > 0
+                  activeGenres?.length > 0
                     ? "bg-primary text-primary-foreground border-primary hover:opacity-90"
                     : "bg-muted text-foreground border-border hover:border-foreground/30"
                 }`}
               >
                 <Filter size={16} />
                 <span>GENRES</span>
-                {activeGenres.length > 0 && (
+                {activeGenres?.length > 0 && (
                   <span className="bg-primary-foreground text-primary w-5 h-5 flex items-center justify-center rounded-full text-[10px]">
                     {activeGenres.length}
                   </span>
@@ -293,13 +316,13 @@ const HomeDisplay = ({ initialData = [] }) => {
               </button>
               <GenreSelector
                 isOpen={isGenreMenuOpen}
-                activeGenres={activeGenres}
+                activeGenres={activeGenres || []}
                 onGenreToggle={toggleGenre}
                 onClearGenres={clearGenres}
               />
             </div>
 
-            {activeGenres.length > 0 && (
+            {activeGenres?.length > 0 && (
               <button
                 onClick={() => {
                   clearGenres();
@@ -386,7 +409,7 @@ const HomeDisplay = ({ initialData = [] }) => {
         </Tabs>
 
         <div className="mt-16 border-t border-border pt-12">
-          {activeTab !== "all" && !isLoading && currentData.length > 0 && (
+          {activeTab !== "all" && !isLoading && (currentData || []).length > 0 && (
             <HomePagination
               page={pageData[currentType]}
               setPage={handlePageChange}
@@ -394,7 +417,7 @@ const HomeDisplay = ({ initialData = [] }) => {
             />
           )}
 
-          {activeGenres.length === 0 && !isLoading && (
+          {(activeGenres || []).length === 0 && !isLoading && (
             <div className="mt-20">
               <RecommendedMovies />
             </div>
