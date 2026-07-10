@@ -14,11 +14,23 @@ const useGenreStore = create(
             : [...state.activeGenres, genre],
         })),
       clearGenres: () => set({ activeGenres: [] }),
+
+      activeProviders: [],
+      toggleProvider: (providerId) =>
+        set((state) => ({
+          activeProviders: (state.activeProviders || []).includes(providerId)
+            ? state.activeProviders.filter((id) => id !== providerId)
+            : [...(state.activeProviders || []), providerId],
+        })),
+      clearProviders: () => set({ activeProviders: [] }),
     }),
     {
       name: "genre-filter-storage", // unique name for localStorage
       // Optional: specify which parts of the state to persist
-      partialize: (state) => ({ activeGenres: state.activeGenres }),
+      partialize: (state) => ({
+        activeGenres: state.activeGenres,
+        activeProviders: state.activeProviders
+      }),
     }
   )
 );
