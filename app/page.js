@@ -1,19 +1,15 @@
 import SpotlightCarousel from "@/components/display/carausel";
 import TopTen from "@/components/display/TopTen";
 import HomeDisplay from "@/components/display/HomeDisplay";
-import HomeFilter from "@/components/filter/HomeFilter";
-import SearchBar from "@/components/searchbar/SearchBar";
-import Title from "@/components/title/Title";
-import TvDisplay from "@/components/display/TvDisplay";
-import WelcomeModal from "@/components/welcome";
+
 import AdblockerModal from "@/components/adblockmodel";
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   if (!apiKey) {
-     console.warn("TMDB API Key is missing. Using fallback mock data.");
-     return Array.from({ length: 20 }).map((_, i) => ({
+    console.warn("TMDB API Key is missing. Using fallback mock data.");
+    return Array.from({ length: 20 }).map((_, i) => ({
       id: `mock-${i}`,
       title: `Trending Item ${i + 1}`,
       name: `Trending Item ${i + 1}`,
@@ -21,10 +17,10 @@ async function getData() {
       backdrop_path: null,
       media_type: i % 2 === 0 ? "movie" : "tv",
       vote_average: 8.5,
-      release_date: new Date().toISOString().split('T')[0],
-      first_air_date: new Date().toISOString().split('T')[0],
+      release_date: new Date().toISOString().split("T")[0],
+      first_air_date: new Date().toISOString().split("T")[0],
       popularity: 1000 - i,
-      overview: "Mock overview for visual verification."
+      overview: "Mock overview for visual verification.",
     }));
   }
 

@@ -20,11 +20,9 @@ import {
   Crown,
   Settings2,
   Download,
-  // Added common lucide icons used for server sources:
   Tv,
   Database,
   Globe,
-  Hd,
   Layers,
   HardDrive,
   Video,
@@ -37,7 +35,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import useSettingsStore from "@/components/settings-store";
 import { MOVIE_SERVERS as DEFAULT_VIDEO_SOURCES } from "@/lib/config";
 
-// Case-insensitive lookup dictionary with typical server fallback options
 const getIcon = (iconName, props = {}) => {
   const icons = {
     play: Play,
@@ -73,7 +70,6 @@ const getIcon = (iconName, props = {}) => {
 
   if (!iconName) return <Play {...props} />;
 
-  // Normalize name to lowercase and strip non-alphanumeric characters (e.g., "hard-drive" -> "harddrive")
   const normalizedKey = iconName
     .toString()
     .toLowerCase()
@@ -83,7 +79,6 @@ const getIcon = (iconName, props = {}) => {
   return <IconComponent {...props} />;
 };
 
-// --- MICRO COMPONENTS ---
 const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
   <div className="flex flex-col bg-foreground/5 border border-border px-4 py-2.5 rounded-2xl backdrop-blur-md">
     <div className={`flex items-center gap-1.5 mb-1 ${colorClass}`}>
@@ -95,8 +90,6 @@ const MetaBadge = ({ icon: Icon, value, label, colorClass }) => (
     <span className="text-sm font-black text-foreground">{value}</span>
   </div>
 );
-
-// --- MAIN COMPONENT ---
 
 const MovieInfo = ({
   MovieDetail,
@@ -120,7 +113,9 @@ const MovieInfo = ({
   const [iframeSrc, setIframeSrc] = useState("");
 
   const [cast, setCast] = useState(initialCast);
-  const [recommendations, setRecommendations] = useState(initialRecommendations);
+  const [recommendations, setRecommendations] = useState(
+    initialRecommendations,
+  );
   const [reviews, setReviews] = useState(initialReviews);
   const [isFavorite, setIsFavorite] = useState(false);
   const [toast, setToast] = useState(null);
@@ -129,8 +124,8 @@ const MovieInfo = ({
   const [showDownloadPopup, setShowDownloadPopup] = useState(false);
 
   const lastSavedTime = useRef(0);
+  const progressCache = useRef(null);
 
-  // --- HYDRATION & STORAGE INIT ---
   useEffect(() => {
     setIsMounted(true);
     const dismissed = sessionStorage.getItem("adblockerNoticeDismissed");
@@ -150,27 +145,50 @@ const MovieInfo = ({
     }
   }, [sources, defaultMovieServer, showAdNotice]);
 
-  // --- DATA FETCHING & PROGRESS TRACKING ---
+  // Establish early connection to the selected server's domain
+  useEffect(() => {
+    if (!iframeSrc) return;
+    try {
+      const urlObj = new URL(iframeSrc);
+      const origin = urlObj.origin;
+
+      const preconnectId = "player-preconnect";
+      let link = document.getElementById(preconnectId);
+      if (!link) {
+        link = document.createElement("link");
+        link.id = preconnectId;
+        link.rel = "preconnect";
+        document.head.appendChild(link);
+      }
+      link.href = origin;
+    } catch (e) {
+      // Fail silently if URL is dynamic/invalid
+    }
+  }, [iframeSrc]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
       setIsFavorite(favs.some((i) => i.id === MovieDetail.id));
 
       const initProgress = () => {
-        const progress = JSON.parse(
-          localStorage.getItem("mediaProgress") || "{}",
-        );
-        if (!progress[id]) {
-          progress[id] = {
-            id,
-            type: "movie",
-            title: MovieDetail.title,
-            poster_path: MovieDetail.poster_path,
-            last_updated: Date.now(),
-            progress: { watched: 0, duration: MovieDetail.runtime * 60 || 1 },
-          };
-          localStorage.setItem("mediaProgress", JSON.stringify(progress));
-        }
+        try {
+          const raw = localStorage.getItem("mediaProgress");
+          const progress = raw ? JSON.parse(raw) : {};
+          progressCache.current = progress;
+
+          if (!progress[id]) {
+            progress[id] = {
+              id,
+              type: "movie",
+              title: MovieDetail.title,
+              poster_path: MovieDetail.poster_path,
+              last_updated: Date.now(),
+              progress: { watched: 0, duration: MovieDetail.runtime * 60 || 1 },
+            };
+            localStorage.setItem("mediaProgress", JSON.stringify(progress));
+          }
+        } catch (err) {}
       };
       initProgress();
 
@@ -184,6 +202,7 @@ const MovieInfo = ({
             data.type === "timeupdate" ||
             data.event === "time" ||
             data.type === "time";
+
           if (
             isTimeUpdate ||
             data.currentTime !== undefined ||
@@ -206,9 +225,7 @@ const MovieInfo = ({
               currentTime > 0 &&
               Math.abs(currentTime - lastSavedTime.current) >= 5
             ) {
-              const progressDict = JSON.parse(
-                localStorage.getItem("mediaProgress") || "{}",
-              );
+              const progressDict = progressCache.current || {};
               progressDict[id] = {
                 id,
                 type: "movie",
@@ -223,6 +240,7 @@ const MovieInfo = ({
                   duration: Number(duration),
                 },
               };
+              progressCache.current = progressDict;
               localStorage.setItem(
                 "mediaProgress",
                 JSON.stringify(progressDict),
@@ -251,7 +269,7 @@ const MovieInfo = ({
       case "path-hyphen-mapi":
         finalUrl = `${url}${id}`;
         break;
-      default: // query or others
+      default:
         finalUrl = `${url}${id}${params || ""}`;
         break;
     }
@@ -259,7 +277,6 @@ const MovieInfo = ({
     setIframeSrc(finalUrl);
   }, [selectedServer, id, isMounted]);
 
-  // --- HANDLERS ---
   const handleServerChange = (server) => {
     setSelectedServer(server);
     sessionStorage.setItem("sessionServerName", server.name);
@@ -305,7 +322,6 @@ const MovieInfo = ({
 
   return (
     <div className="min-h-screen mt-16 lg:h-screen w-full bg-background text-foreground font-sans flex flex-col pt-18 lg:pt-0 overflow-x-hidden selection:bg-primary/30">
-      {/* Cinematic Background Layer */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent lg:w-1/2" />
@@ -316,12 +332,9 @@ const MovieInfo = ({
         />
       </div>
 
-      {/* Main Grid Layout */}
       <div className="relative z-10 flex-1 pt-16 flex flex-col lg:grid lg:grid-cols-12 gap-0 lg:overflow-hidden lg:h-screen">
-        {/* === LEFT COLUMN: INFO & CONTROLS === */}
         <div className="order-2 lg:order-1 lg:col-span-4 bg-background/40 backdrop-blur-2xl flex flex-col lg:overflow-y-auto custom-scrollbar h-auto lg:h-full lg:border-r border-border pb-12 lg:pb-0 shadow-2xl">
           <div className="p-6 md:p-8 shrink-0">
-            {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-4">
               {genreArr?.slice(0, 3).map((g, i) => (
                 <span
@@ -333,12 +346,10 @@ const MovieInfo = ({
               ))}
             </div>
 
-            {/* Title */}
             <h1 className="text-4xl lg:text-5xl font-black tracking-tighter leading-[1.1] text-foreground mb-6">
               {MovieDetail.title}
             </h1>
 
-            {/* Meta Grid */}
             <div className="grid grid-cols-3 gap-3 mb-8">
               <MetaBadge
                 icon={Star}
@@ -360,7 +371,6 @@ const MovieInfo = ({
               />
             </div>
 
-            {/* Action Buttons */}
             <div className="grid grid-cols-3 gap-3 mb-8">
               <button
                 onClick={toggleFav}
@@ -387,9 +397,7 @@ const MovieInfo = ({
               </button>
             </div>
 
-            {/* --- IMPROVED MATERIAL SOURCE CARD --- */}
             <div className="bg-card rounded-2xl border border-border shadow-xl overflow-hidden mb-8 flex flex-col">
-              {/* 1. Active Source Display (Header) */}
               {selectedServer && (
                 <div className="p-5 border-b border-border bg-foreground/[0.02] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 blur-[50px] rounded-full pointer-events-none" />
@@ -444,7 +452,6 @@ const MovieInfo = ({
                 </div>
               )}
 
-              {/* 2. Available Sources Grid (Body) */}
               <div className="p-5 bg-background/50">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
@@ -499,7 +506,6 @@ const MovieInfo = ({
               </div>
             </div>
 
-            {/* --- TABS --- */}
             <div className="flex gap-1 p-1 bg-muted rounded-2xl w-fit mb-6">
               {["overview", "cast", "reviews", "related"].map((tab) => (
                 <button
@@ -527,10 +533,8 @@ const MovieInfo = ({
               ))}
             </div>
 
-            {/* --- TAB CONTENT --- */}
             <div className="min-h-[300px]">
               <AnimatePresence mode="wait">
-                {/* OVERVIEW */}
                 {activeTab === "overview" && (
                   <motion.div
                     key="overview"
@@ -552,7 +556,6 @@ const MovieInfo = ({
                   </motion.div>
                 )}
 
-                {/* CAST */}
                 {activeTab === "cast" && (
                   <motion.div
                     key="cast"
@@ -590,7 +593,6 @@ const MovieInfo = ({
                   </motion.div>
                 )}
 
-                {/* REVIEWS */}
                 {activeTab === "reviews" && (
                   <motion.div
                     key="reviews"
@@ -625,7 +627,6 @@ const MovieInfo = ({
                   </motion.div>
                 )}
 
-                {/* RELATED */}
                 {activeTab === "related" && (
                   <motion.div
                     key="related"
@@ -666,19 +667,17 @@ const MovieInfo = ({
           </div>
         </div>
 
-        {/* === RIGHT COLUMN: PURE PLAYER STAGE === */}
         <div className="order-1 lg:order-2 lg:col-span-8 flex flex-col items-center justify-center relative p-0 lg:p-8 min-h-[35vh] sm:min-h-[50vh] lg:h-full bg-background">
-          {/* Ambient Glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/10 opacity-60 pointer-events-none" />
 
-          {/* Player Container */}
-          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_accent/10] lg:border border-border z-10 bg-background lg:ring-1 ring-border group">
+          <div className="w-full h-full lg:max-h-[85%] aspect-video relative lg:rounded-2xl overflow-hidden lg:shadow-[0_0_100px_accent/10] lg:border border-border z-10 bg-black lg:ring-1 ring-border group">
             {isMounted && iframeSrc ? (
               <iframe
                 src={iframeSrc}
-                className="w-full h-full absolute inset-0 z-10 bg-black"
+                className="w-full h-full absolute inset-0 z-10 bg-black border-0"
                 allowFullScreen
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                referrerPolicy="no-referrer"
                 title="Player"
               />
             ) : (
@@ -691,7 +690,6 @@ const MovieInfo = ({
         </div>
       </div>
 
-      {/* TOAST NOTIFICATIONS */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -707,7 +705,6 @@ const MovieInfo = ({
           </motion.div>
         )}
 
-        {/* ADBLOCK WARNING */}
         {showAdPopup && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -726,10 +723,7 @@ const MovieInfo = ({
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Third-party sources may contain popups. We strongly advise
                   using{" "}
-                  <span className="text-primary font-bold">
-                    uBlock Origin
-                  </span>
-                  .
+                  <span className="text-primary font-bold">uBlock Origin</span>.
                 </p>
               </div>
               <button
@@ -742,7 +736,6 @@ const MovieInfo = ({
           </motion.div>
         )}
 
-        {/* DOWNLOAD PORTAL MODAL */}
         {showDownloadPopup && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -756,7 +749,6 @@ const MovieInfo = ({
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-4xl h-[80vh] bg-background border border-border rounded-2xl overflow-hidden flex flex-col shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]"
             >
-              {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-foreground/[0.02]">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
@@ -779,7 +771,6 @@ const MovieInfo = ({
                 </button>
               </div>
 
-              {/* Iframe Body */}
               <div className="flex-1 bg-background relative">
                 <iframe
                   src={`https://vidvault.ru/movie/${id}`}
