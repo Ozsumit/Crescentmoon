@@ -67,10 +67,6 @@ const TopTen = () => {
             Top 5 Today
           </h2>
         </div>
-        <div className="text-sm font-medium text-muted-foreground max-w-[280px] leading-snug">
-          A mathematically-curated index tracking the most-watched features
-          globally. Updated every 24 hours.
-        </div>
       </div>
 
       {/* Swiss Layout Grid */}

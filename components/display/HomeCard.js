@@ -1,15 +1,15 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef, memo } from "react";
-import { createPortal } from "react-dom";
+// import { createPortal } from "react-dom";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { Heart, Star, Play, Plus, X, Volume2, VolumeX } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+// import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-const getImageUrl = (path, size = "w1280") => {
+const getImageUrl = (path, size = "w500") => {
   if (!path) return "https://i.imgur.com/HIYYPtZ.png";
   return `https://image.tmdb.org/t/p/${size}/${path}`;
 };
