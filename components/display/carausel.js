@@ -22,6 +22,7 @@ const SpotlightCarousel = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [trailers, setTrailers] = useState({});
+  const [logos, setLogos] = useState({}); // Stores configuration for item logos
   const [isMounted, setIsMounted] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,20 +82,38 @@ const SpotlightCarousel = () => {
     fetchSpotlights();
   }, []);
 
-  const fetchTrailer = async (id, mediaType) => {
+  // Fetches both trailers and logos in parallel for optimized performance
+  const fetchMediaDetails = async (id, mediaType) => {
     const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const URL = `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${API_KEY}`;
+
+    // 1. Fetch Trailer
+    const videoURL = `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${API_KEY}`;
+    // 2. Fetch Logo Image Configurations
+    const imagesURL = `https://api.themoviedb.org/3/${mediaType}/${id}/images?api_key=${API_KEY}`;
+
     try {
-      const response = await fetch(URL);
-      const data = await response.json();
-      const trailer = data.results.find(
+      const [videoRes, imagesRes] = await Promise.all([
+        fetch(videoURL).then((res) => res.json()),
+        fetch(imagesURL).then((res) => res.json()),
+      ]);
+
+      // Handle Trailer Key extraction
+      const trailer = videoRes.results?.find(
         (video) => video.type === "Trailer" && video.site === "YouTube",
       );
       if (trailer) {
         setTrailers((prev) => ({ ...prev, [id]: trailer.key }));
       }
+
+      // Handle Logo Extraction (prefer English logos)
+      const logo =
+        imagesRes.logos?.find((img) => img.iso_639_1 === "en") ||
+        imagesRes.logos?.[0];
+      if (logo) {
+        setLogos((prev) => ({ ...prev, [id]: logo.file_path }));
+      }
     } catch (error) {
-      console.error("Error fetching trailer:", error);
+      console.error("Error fetching media details:", error);
     }
   };
 
@@ -120,16 +139,16 @@ const SpotlightCarousel = () => {
   useEffect(() => {
     if (spotlights.length > 0) {
       const currentItem = spotlights[currentSlide];
-      if (!trailers[currentItem.id]) {
-        fetchTrailer(currentItem.id, currentItem.media_type);
+      if (!trailers[currentItem.id] || !logos[currentItem.id]) {
+        fetchMediaDetails(currentItem.id, currentItem.media_type);
       }
       const nextSlide = (currentSlide + 1) % spotlights.length;
       const nextItem = spotlights[nextSlide];
-      if (!trailers[nextItem.id]) {
-        fetchTrailer(nextItem.id, nextItem.media_type);
+      if (!trailers[nextItem.id] || !logos[nextItem.id]) {
+        fetchMediaDetails(nextItem.id, nextItem.media_type);
       }
     }
-  }, [currentSlide, spotlights, trailers]);
+  }, [currentSlide, spotlights, trailers, logos]);
 
   const handleNextSlide = () => {
     setShowTrailer(false);
@@ -174,6 +193,9 @@ const SpotlightCarousel = () => {
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
     : null;
   const trailerKey = trailers[currentItem.id];
+  const logoPath = logos[currentItem.id]
+    ? `https://image.tmdb.org/t/p/w500${logos[currentItem.id]}`
+    : currentItem.title;
   const rating = currentItem.vote_average?.toFixed(1) || "N/A";
   const isTV = currentItem.media_type === "tv";
   const href = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;
@@ -202,13 +224,7 @@ const SpotlightCarousel = () => {
             />
           )}
 
-          {/* Subtle noise texture */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-
-          {/* DYNAMIC LIGHT & DARK GRADIENT OVERLAYS
-            Using explicit semi-transparent black in light mode to force high-contrast white text legibility 
-            on colorful/bright backdrops, and native theme color transitions for dark mode.
-          */}
 
           {/* Mobile Overlay */}
           <div
@@ -286,9 +302,6 @@ const SpotlightCarousel = () => {
       </AnimatePresence>
 
       {/* --- CONTENT LAYER --- */}
-      {/* Text color targets uniform high contrast white-spectrum on light mode (due to dark scrim) 
-        and theme standard adaptive tokens on native dark mode configurations.
-      */}
       <div className="relative z-30 h-full flex flex-col justify-end pb-12 px-6 md:px-12 lg:px-16 max-w-[2400px] mx-auto pointer-events-none">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end w-full">
           {/* --- LEFT: METADATA & TITLE --- */}
@@ -334,12 +347,26 @@ const SpotlightCarousel = () => {
                   )}
                 </div>
 
-                {/* Title: Ensured crystal clear readability */}
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] md:leading-[0.95] text-white dark:text-foreground drop-shadow-sm">
-                  {title}
-                </h1>
+                {/* Title / Logo Conditionally Rendered */}
+                <div className="min-h-[60px] md:min-h-[120px] flex items-end">
+                  {logoPath ? (
+                    <div className="relative w-full max-w-[280px] md:max-w-[420px] h-[70px] md:h-[130px]">
+                      <Image
+                        src={logoPath}
+                        alt={title}
+                        fill
+                        priority
+                        className="object-contain object-left filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] dark:invert-0 brightness-110"
+                      />
+                    </div>
+                  ) : (
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] md:leading-[0.95] text-white dark:text-foreground drop-shadow-sm">
+                      {title}
+                    </h1>
+                  )}
+                </div>
 
-                {/* Description: High readability opacity adjustments */}
+                {/* Description */}
                 <p className="text-white/85 dark:text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3 font-medium dark:font-normal">
                   {description}
                 </p>
