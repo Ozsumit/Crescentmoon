@@ -1,35 +1,49 @@
 import SpotlightCarousel from "@/components/display/carausel";
+import TopTen from "@/components/display/TopTen";
 import HomeDisplay from "@/components/display/HomeDisplay";
-import HomeFilter from "@/components/filter/HomeFilter";
-import SearchBar from "@/components/searchbar/SearchBar";
-import Title from "@/components/title/Title";
-import TvDisplay from "@/components/display/TvDisplay";
-import WelcomeModal from "@/components/welcome";
+
 import AdblockerModal from "@/components/adblockmodel";
 
 async function getData() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  const resp = await fetch(
-    // `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
-    `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`,
-    {
-      next: {
-        revalidate: 3600, // Cache for 1 hour
-      },
-    },
-  );
 
-  if (!resp.ok) {
-    console.error(`Error: ${resp.status} ${resp.statusText}`);
-    throw new Error("Pussycat API error");
+  if (!apiKey) {
+    console.warn("TMDB API Key is missing. Using fallback mock data.");
+    return Array.from({ length: 20 }).map((_, i) => ({
+      id: `mock-${i}`,
+      title: `Trending Item ${i + 1}`,
+      name: `Trending Item ${i + 1}`,
+      poster_path: null,
+      backdrop_path: null,
+      media_type: i % 2 === 0 ? "movie" : "tv",
+      vote_average: 8.5,
+      release_date: new Date().toISOString().split("T")[0],
+      first_air_date: new Date().toISOString().split("T")[0],
+      popularity: 1000 - i,
+      overview: "Mock overview for visual verification.",
+    }));
   }
-  const data = await resp.json();
-  if (!data.results) {
-    console.error("Error: 'results' field is missing in the API response");
-    throw new Error("Invalid API tung tung tung tung tung sahurrr response");
+
+  try {
+    const resp = await fetch(
+      `https://api.themoviedb.org/3/trending/all/day?language=en-US&api_key=${apiKey}`,
+      {
+        next: {
+          revalidate: 3600, // Cache for 1 hour
+        },
+      },
+    );
+
+    if (!resp.ok) {
+      throw new Error(`API responded with status: ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    return data.results || [];
+  } catch (error) {
+    console.error("Error fetching trending data:", error);
+    return [];
   }
-  let res = data.results;
-  return res;
 }
 
 export default async function Home() {
@@ -38,6 +52,7 @@ export default async function Home() {
     <div className=" m-0 bg-background text-foreground h-auto">
       {/* <Title /> */}
       <SpotlightCarousel />
+      <TopTen />
       {/* <SearchBar /> */}
       {/* <HomeFilter /> */}
       {/* <h1>Trending Movies</h1> div*/}

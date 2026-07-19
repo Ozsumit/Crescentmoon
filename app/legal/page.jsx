@@ -1,3 +1,4 @@
+import TestPage from "@/components/ui/testpage";
 import LegalLayout from "./LegalLayout";
 
 export default function PrivacyPolicy() {
@@ -24,6 +25,7 @@ export default function PrivacyPolicy() {
         policies regarding how they handle API requests. Please refer to their
         respective documentation for more details.
       </p>
+      <TestPage />
     </LegalLayout>
   );
 }
