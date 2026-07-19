@@ -1,3 +1,5 @@
 {
-  "WillLuke.nextjs.hasPrompted": true
+	"files.associations": {
+		"*.css": "tailwindcss"
+	}
 }

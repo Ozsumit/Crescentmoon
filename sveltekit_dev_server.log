@@ -1,0 +1,278 @@
+$ vite dev
+1:36:06 PM [vite] (client) Forced re-optimization of dependencies
+1:36:09 PM [vite] (ssr) [optimizer] bundling dependencies...
+1:36:09 PM [vite] (client) [optimizer] bundling dependencies...
+
+  VITE v8.1.5  ready in 6272 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+Error fetching trending data inside SvelteKit load: Error: API responded with status: 401
+    at load (/app/src/routes/+page.server.js:14:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async fn (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:101:19)
+    at async load_server_data (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:91:17)
+    at async eval (/app/node_modules/@sveltejs/kit/src/runtime/server/page/index.js?v=58c29f22:207:26)
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:124:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:141:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:142:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:146:10 Self-closing HTML tags for non-void elements are ambiguous — use `<iframe ...></iframe>` rather than `<iframe ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:225:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:236:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:41 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:14:6 `videoRef` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+1:43:42 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:40:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:42 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:41:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:42 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:53:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:42 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:100:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:42 PM [vite-plugin-svelte] src/lib/components/Header.svelte:102:12 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:43:42 PM [vite-plugin-svelte] src/lib/components/Header.svelte:108:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Logo.svelte:22:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:32:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:35:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:75:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/HomeDisplay.svelte:120:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/HomeDisplay.svelte:131:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:169:2 Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:189:10 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:212:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:257:22 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:260:20 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:298:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:44:10 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:85:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:90:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:156:4 Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:156:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+1:44:11 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:158:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/RecommendedMovies.svelte:36:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/HomeCard.svelte:46:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/HorHomeCard.svelte:66:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:126:12 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:143:12 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:155:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:158:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:161:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:44:11 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:164:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+
+[1;31m[500] GET /[0m
+ReferenceError: FeedbackFormCore is not defined
+    at eval (src/lib/components/Footer.svelte:120:4)
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:214:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:319:22)
+    at Footer (src/lib/components/Footer.svelte:15:13)
+    at eval (src/routes/+layout.svelte:57:39)
+    at /app/src/lib/components/ThemeWrapper.svelte:169:12
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:214:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:319:22)
+    at ThemeWrapper (src/lib/components/ThemeWrapper.svelte:17:13)
+    at eval (src/routes/+layout.svelte:42:37)
+
+[1;31m[500] GET /[0m
+ReferenceError: FeedbackFormCore is not defined
+    at eval (src/lib/components/Footer.svelte:120:4)
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:214:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:319:22)
+    at Footer (src/lib/components/Footer.svelte:15:13)
+    at eval (src/routes/+layout.svelte:57:39)
+    at /app/src/lib/components/ThemeWrapper.svelte:169:12
+    at Renderer.child (node_modules/svelte/src/internal/server/renderer.js:214:18)
+    at Renderer.component (node_modules/svelte/src/internal/server/renderer.js:319:22)
+    at ThemeWrapper (src/lib/components/ThemeWrapper.svelte:17:13)
+    at eval (src/routes/+layout.svelte:42:37)
+1:51:19 PM [vite] (ssr) page reload src/lib/components/Footer.svelte
+Error fetching trending data inside SvelteKit load: Error: API responded with status: 401
+    at load (/app/src/routes/+page.server.js:14:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async fn (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:101:19)
+    at async load_server_data (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:91:17)
+    at async eval (/app/node_modules/@sveltejs/kit/src/runtime/server/page/index.js?v=58c29f22:207:26)
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:127:12 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:144:12 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:156:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:159:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:162:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:24 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:165:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+
+[1;31m[404] GET /logo.svg[0m
+
+[1;31m[404] GET /%7BnormalCursorDataUri%7D[0m
+
+[1;31m[404] GET /%7BhoverCursorDataUri%7D[0m
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:40:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:41:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:53:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SplashScreen.svelte:100:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Header.svelte:102:12 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Header.svelte:108:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:127:12 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:144:12 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:156:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:159:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:162:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Footer.svelte:165:11 '#' is not a valid href attribute
+https://svelte.dev/e/a11y_invalid_attribute
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:124:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:141:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:142:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:146:10 Self-closing HTML tags for non-void elements are ambiguous — use `<iframe ...></iframe>` rather than `<iframe ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:225:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:236:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/SpotlightCarousel.svelte:14:6 `videoRef` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
+https://svelte.dev/e/non_reactive_update
+1:51:26 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:32:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:35:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/TopTen.svelte:75:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/HomeDisplay.svelte:120:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/HomeDisplay.svelte:131:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/Logo.svelte:22:4 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:169:2 Elements with the 'dialog' interactive role must have a tabindex value
+https://svelte.dev/e/a11y_interactive_supports_focus
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:189:10 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:212:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:257:22 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:260:20 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:26 PM [vite-plugin-svelte] src/lib/components/QuickSearch.svelte:298:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:44:10 Self-closing HTML tags for non-void elements are ambiguous — use `<span ...></span>` rather than `<span ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:85:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:90:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:156:4 Visible, non-interactive element `<div>` with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:156:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+1:51:28 PM [vite-plugin-svelte] src/lib/components/ContinueWatching.svelte:158:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/RecommendedMovies.svelte:36:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/HorHomeCard.svelte:66:8 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:28 PM [vite-plugin-svelte] src/lib/components/HomeCard.svelte:46:6 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+Error: Failed to fetch
+    at load (/app/src/routes/movie/+page.server.js:13:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async fn (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:101:19)
+    at async load_server_data (/app/node_modules/@sveltejs/kit/src/runtime/server/page/load_data.js?v=58c29f22:91:17)
+    at async eval (/app/node_modules/@sveltejs/kit/src/runtime/server/page/index.js?v=58c29f22:207:26)
+1:51:31 PM [vite-plugin-svelte] src/routes/movie/+page.svelte:18:2 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+
+[1;31m[404] GET /logo.svg[0m
+
+[1;31m[404] GET /%7BnormalCursorDataUri%7D[0m
+
+[1;31m[404] GET /%7BhoverCursorDataUri%7D[0m
+1:51:32 PM [vite-plugin-svelte] src/routes/movie/+page.svelte:18:2 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+DATABASE_URL is not set. Database features will fallback to dummy mock arrays.
+DATABASE_URL is not set. Database features will fallback to dummy mock arrays.
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:66:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:67:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:68:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:95:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:114:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:195:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:34 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:213:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+
+[1;31m[404] GET /logo.svg[0m
+
+[1;31m[404] GET /%7BhoverCursorDataUri%7D[0m
+
+[1;31m[404] GET /%7BnormalCursorDataUri%7D[0m
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:66:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:67:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:68:14 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:95:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:114:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:195:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
+1:51:35 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:213:10 Self-closing HTML tags for non-void elements are ambiguous — use `<div ...></div>` rather than `<div ... />`
+https://svelte.dev/e/element_invalid_self_closing_tag
