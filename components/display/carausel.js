@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,31 +23,22 @@ const SpotlightCarousel = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [trailers, setTrailers] = useState({});
-  const [logos, setLogos] = useState({}); // Stores configuration for item logos
+  const [logos, setLogos] = useState({});
   const [isMounted, setIsMounted] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+
   const videoRef = useRef(null);
   const autoplayRef = useRef(null);
 
   // --- SKELETON LOADER ---
   const SpotlightSkeleton = () => (
-    <div className="relative w-full h-[100svh] bg-background overflow-hidden">
-      <div className="absolute inset-0 bg-muted/50 animate-pulse" />
-      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 z-20">
-        <div className="flex flex-col md:flex-row items-end gap-8 mb-8 md:mb-0">
-          <div className="flex-1 space-y-6 w-full max-w-4xl">
-            <div className="space-y-4">
-              <div className="w-3/4 h-12 md:h-20 bg-foreground/10 rounded-2xl animate-pulse" />
-              <div className="w-1/2 h-12 md:h-20 bg-foreground/10 rounded-2xl animate-pulse" />
-            </div>
-            <div className="flex gap-4">
-              <div className="w-32 h-12 bg-foreground/10 rounded-xl animate-pulse" />
-              <div className="w-32 h-12 bg-foreground/10 rounded-xl animate-pulse" />
-            </div>
-          </div>
-        </div>
+    <div className="relative w-full h-[100svh] bg-black overflow-hidden flex flex-col justify-end p-6 md:p-12">
+      <div className="w-full max-w-2xl space-y-4 mb-8">
+        <div className="w-24 h-6 bg-white/10 rounded-md animate-pulse" />
+        <div className="w-3/4 h-12 md:h-16 bg-white/10 rounded-2xl animate-pulse" />
+        <div className="w-full h-12 bg-white/10 rounded-2xl animate-pulse" />
       </div>
     </div>
   );
@@ -82,13 +74,11 @@ const SpotlightCarousel = () => {
     fetchSpotlights();
   }, []);
 
-  // Fetches both trailers and logos in parallel for optimized performance
   const fetchMediaDetails = async (id, mediaType) => {
     const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!API_KEY) return;
 
-    // 1. Fetch Trailer
     const videoURL = `https://api.themoviedb.org/3/${mediaType}/${id}/videos?api_key=${API_KEY}`;
-    // 2. Fetch Logo Image Configurations
     const imagesURL = `https://api.themoviedb.org/3/${mediaType}/${id}/images?api_key=${API_KEY}`;
 
     try {
@@ -97,7 +87,6 @@ const SpotlightCarousel = () => {
         fetch(imagesURL).then((res) => res.json()),
       ]);
 
-      // Handle Trailer Key extraction
       const trailer = videoRes.results?.find(
         (video) => video.type === "Trailer" && video.site === "YouTube",
       );
@@ -105,7 +94,6 @@ const SpotlightCarousel = () => {
         setTrailers((prev) => ({ ...prev, [id]: trailer.key }));
       }
 
-      // Handle Logo Extraction (prefer English logos)
       const logo =
         imagesRes.logos?.find((img) => img.iso_639_1 === "en") ||
         imagesRes.logos?.[0];
@@ -120,7 +108,7 @@ const SpotlightCarousel = () => {
   const startAutoplay = () => {
     stopAutoplay();
     if (!isPaused) {
-      autoplayRef.current = setInterval(handleNextSlide, 15000);
+      autoplayRef.current = setInterval(handleNextSlide, 10000);
     }
   };
 
@@ -148,13 +136,13 @@ const SpotlightCarousel = () => {
         fetchMediaDetails(nextItem.id, nextItem.media_type);
       }
     }
-  }, [currentSlide, spotlights, trailers, logos]);
+  }, [currentSlide, spotlights]);
 
   const handleNextSlide = () => {
     setShowTrailer(false);
     setCurrentSlide((prev) => (prev + 1) % spotlights.length);
     if (!isMobile) {
-      setTimeout(() => setShowTrailer(true), 5000);
+      setTimeout(() => setShowTrailer(true), 4000);
     }
   };
 
@@ -163,14 +151,17 @@ const SpotlightCarousel = () => {
     setCurrentSlide((prev) => (prev === 0 ? spotlights.length - 1 : prev - 1));
   };
 
+  const handleDragEnd = (_, info) => {
+    if (info.offset.x < -40) handleNextSlide();
+    else if (info.offset.x > 40) handlePrevSlide();
+  };
+
   const togglePause = () => {
-    setIsPaused(!isPaused);
-    if (!isPaused) stopAutoplay();
-    else startAutoplay();
+    setIsPaused((prev) => !prev);
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    setIsMuted((prev) => !prev);
   };
 
   if (!isMounted || isLoading) return <SpotlightSkeleton />;
@@ -189,123 +180,189 @@ const SpotlightCarousel = () => {
     ""
   ).split("-")[0];
   const description = currentItem.overview || "No description available.";
-  const posterPath = currentItem.backdrop_path
+
+  // Mobile uses TMDB poster art; Desktop uses backdrop art
+  const posterImage = currentItem.poster_path
+    ? `https://image.tmdb.org/t/p/w780${currentItem.poster_path}`
+    : `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`;
+
+  const backdropImage = currentItem.backdrop_path
     ? `https://image.tmdb.org/t/p/original/${currentItem.backdrop_path}`
-    : null;
+    : posterImage;
+
   const trailerKey = trailers[currentItem.id];
   const logoPath = logos[currentItem.id]
     ? `https://image.tmdb.org/t/p/w500${logos[currentItem.id]}`
-    : currentItem.title;
+    : null;
   const rating = currentItem.vote_average?.toFixed(1) || "N/A";
   const isTV = currentItem.media_type === "tv";
   const href = isTV ? `/series/${currentItem.id}` : `/movie/${currentItem.id}`;
 
   return (
-    <div className="relative w-full h-[100svh] overflow-hidden bg-background text-foreground font-sans selection:bg-primary/30">
-      {/* --- BACKGROUND LAYER --- */}
+    <div className="relative w-full h-[100svh] overflow-hidden bg-black text-white font-sans selection:bg-primary/30 select-none">
+      {/* ========================================== */}
+      {/* BACKGROUND LAYER (DESKTOP & MOBILE)        */}
+      {/* ========================================== */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
           initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
-          className="absolute inset-0 z-0 bg-background transform-gpu"
+          transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+          drag={isMobile ? "x" : false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={handleDragEnd}
+          className="absolute inset-0 z-0 touch-pan-y"
         >
-          {posterPath && (
+          {/* Mobile Image (Poster Path) */}
+          <div className="block md:hidden relative w-full h-full">
             <Image
-              src={posterPath}
+              src={posterImage}
               alt={title}
               fill
-              className={`object-cover transition-opacity duration-1000 ${
-                showTrailer ? "opacity-0" : "opacity-100 dark:opacity-80"
-              }`}
+              className="object-cover object-center"
               priority
             />
-          )}
+            {/* Smooth gradient from dark top to pure black bottom */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/60" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black" />
+          </div>
 
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-
-          {/* Mobile Overlay */}
-          <div
-            className="
-              absolute inset-0 z-10 pointer-events-none
-              bg-gradient-to-t
-              from-black/80 via-black/40 to-transparent
-              dark:from-background dark:via-background/70 dark:to-transparent
-              md:hidden
-            "
-          />
-
-          {/* Desktop Bottom Overlay */}
-          <div
-            className="
-              hidden md:block
-              absolute inset-x-0 bottom-0 h-3/4
-              z-10 pointer-events-none
-              bg-gradient-to-t
-              from-black/85 via-black/30 to-transparent
-              dark:from-background dark:via-background/80 dark:to-transparent
-            "
-          />
-
-          {/* Desktop Left Overlay */}
-          <div
-            className="
-              hidden md:block
-              absolute inset-y-0 left-0 w-full lg:w-2/3
-              z-10 pointer-events-none
-              bg-gradient-to-r
-              from-black/70 via-black/20 to-transparent
-              dark:from-background dark:via-background/70 dark:to-transparent
-            "
-          />
-
-          {/* Top Overlay */}
-          <div
-            className="
-              absolute inset-x-0 top-0 h-32
-              z-10 pointer-events-none
-              bg-gradient-to-b
-              from-black/40 to-transparent
-              dark:from-background/60 dark:to-transparent
-            "
-          />
-
-          {/* Cinematic Vignette */}
-          <div
-            className="
-              absolute inset-0
-              pointer-events-none
-              z-10
-              bg-[radial-gradient(circle_at_18%_70%,transparent_0%,transparent_40%,rgba(0,0,0,.4)_100%)]
-              dark:bg-[radial-gradient(circle_at_18%_70%,transparent_0%,transparent_30%,rgba(0,0,0,.6)_100%)]
-            "
-          />
-
-          {trailerKey && !isMobile && (
-            <div
-              className={`absolute inset-0 z-0 transition-opacity duration-1000 ${
-                showTrailer ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <iframe
-                className="absolute w-full h-[140%] -top-[20%] pointer-events-none scale-110"
-                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&vq=hd1080&rel=0&playsinline=1`}
-                allow="autoplay; encrypted-media"
-                title="Trailer"
-                loading="lazy"
+          {/* Desktop Image (Backdrop Path) */}
+          <div className="hidden md:block relative w-full h-full">
+            {backdropImage && (
+              <Image
+                src={backdropImage}
+                alt={title}
+                fill
+                className={`object-cover transition-opacity duration-1000 ${
+                  showTrailer ? "opacity-0" : "opacity-100"
+                }`}
+                priority
               />
-            </div>
-          )}
+            )}
+
+            {/* Desktop Overlay Gradients */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            <div className="absolute inset-x-0 bottom-0 h-3/4 z-10 pointer-events-none bg-gradient-to-t from-black via-black/40 to-transparent" />
+            <div className="absolute inset-y-0 left-0 w-full lg:w-2/3 z-10 pointer-events-none bg-gradient-to-r from-black via-black/30 to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-32 z-10 pointer-events-none bg-gradient-to-b from-black/60 to-transparent" />
+
+            {/* Cinematic Desktop Video Trailer */}
+            {trailerKey && (
+              <div
+                className={`absolute inset-0 z-0 transition-opacity duration-1000 ${
+                  showTrailer ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <iframe
+                  className="absolute w-full h-[140%] -top-[20%] pointer-events-none scale-110"
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${
+                    isMuted ? 1 : 0
+                  }&controls=0&modestbranding=1&loop=1&playlist=${trailerKey}&vq=hd1080&rel=0&playsinline=1`}
+                  allow="autoplay; encrypted-media"
+                  title="Trailer"
+                />
+              </div>
+            )}
+          </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* --- CONTENT LAYER --- */}
-      <div className="relative z-30 h-full flex flex-col justify-end pb-12 px-6 md:px-12 lg:px-16 max-w-[2400px] mx-auto pointer-events-none">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end w-full">
-          {/* --- LEFT: METADATA & TITLE --- */}
-          <div className="md:col-span-8 lg:col-span-7 space-y-6 md:space-y-8 mb-6 pointer-events-auto">
+      {/* ========================================== */}
+      {/* 1. MOBILE LAYOUT (Clean, Native Mobile UI) */}
+      {/* ========================================== */}
+      <div className="flex md:hidden relative z-30 h-full flex-col justify-end pb-8 px-5 pointer-events-none">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="pointer-events-auto space-y-4 text-center flex flex-col items-center"
+          >
+            {/* Title Logo or Typography */}
+            <div className="min-h-[50px] flex items-center justify-center">
+              {logoPath ? (
+                <div className="relative w-52 h-14">
+                  <Image
+                    src={logoPath}
+                    alt={title}
+                    fill
+                    priority
+                    className="object-contain object-center filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
+                  />
+                </div>
+              ) : (
+                <h1 className="text-3xl font-black tracking-tight leading-tight text-white drop-shadow-md">
+                  {title}
+                </h1>
+              )}
+            </div>
+
+            {/* Clean Metadata Line (Dot separated) */}
+            <div className="flex items-center justify-center gap-2 text-xs font-semibold text-white/80">
+              <span className="text-primary font-bold">
+                {isTV ? "Series" : "Movie"}
+              </span>
+              <span>•</span>
+              <span>{releaseYear}</span>
+              {rating !== "N/A" && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-yellow-400">
+                    <Star size={12} className="fill-yellow-400 stroke-none" />
+                    {rating}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Action Row */}
+            <div className="flex items-center gap-3 w-full max-w-xs pt-1">
+              <Link href={href} className="flex-1">
+                <button className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3.5 rounded-xl font-bold text-sm transition-transform active:scale-95 shadow-lg shadow-primary/20">
+                  <Play size={18} className="fill-current" />
+                  <span>Play</span>
+                </button>
+              </Link>
+
+              {/* <Link href={href}>
+                <button className="flex items-center justify-center gap-2 bg-white/15 hover:bg-white/20 border border-white/20 text-white px-4 py-3.5 rounded-xl font-semibold text-sm backdrop-blur-md transition-transform active:scale-95">
+                  <Info size={18} />
+                  <span>Info</span>
+                </button>
+              </Link> */}
+            </div>
+
+            {/* Dot Indicators */}
+            <div className="flex items-center justify-center gap-1.5 pt-2">
+              {spotlights.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === currentSlide
+                      ? "w-6 bg-primary"
+                      : "w-1.5 bg-white/30"
+                  }`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ========================================== */}
+      {/* 2. DESKTOP LAYOUT (Rich Dashboard UI)     */}
+      {/* ========================================== */}
+      <div className="hidden md:flex relative z-30 h-full flex-col justify-end pb-12 px-12 lg:px-16 max-w-[2400px] mx-auto pointer-events-none">
+        <div className="grid grid-cols-12 gap-8 items-end w-full">
+          {/* Left Metadata & Info */}
+          <div className="col-span-8 lg:col-span-7 space-y-6 mb-6 pointer-events-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
@@ -315,27 +372,24 @@ const SpotlightCarousel = () => {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="space-y-6"
               >
+                {/* Badges */}
                 <div className="flex flex-wrap items-center gap-3">
-                  {/* Media Type Badge */}
                   <div
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border flex items-center gap-2 backdrop-blur-md
-                    ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border flex items-center gap-2 backdrop-blur-md ${
                       isTV
-                        ? "bg-primary/20 text-primary border-primary/30 dark:bg-primary/10 dark:text-primary dark:border-primary/20"
-                        : "bg-white/10 text-white border-white/20 dark:bg-secondary/20 dark:text-secondary-foreground dark:border-secondary/30"
+                        ? "bg-primary/20 text-primary border-primary/30"
+                        : "bg-white/10 text-white border-white/20"
                     }`}
                   >
                     {isTV ? <Tv size={14} /> : <Film size={14} />}
                     {isTV ? "Series" : "Movie"}
                   </div>
 
-                  {/* Calendar Badge */}
-                  <div className="px-3 py-1.5 rounded-lg text-xs font-medium uppercase tracking-wider bg-black/30 border border-white/10 text-white dark:bg-foreground/5 dark:border-border dark:text-foreground backdrop-blur-md flex items-center gap-2">
+                  <div className="px-3 py-1.5 rounded-lg text-xs font-medium uppercase tracking-wider bg-black/40 border border-white/10 text-white backdrop-blur-md flex items-center gap-2">
                     <Calendar size={14} />
                     {releaseYear}
                   </div>
 
-                  {/* Rating Badge */}
                   {rating !== "N/A" && (
                     <div className="px-3 py-1.5 rounded-lg text-xs font-bold bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 backdrop-blur-md flex items-center gap-1.5">
                       <Star
@@ -347,31 +401,32 @@ const SpotlightCarousel = () => {
                   )}
                 </div>
 
-                {/* Title / Logo Conditionally Rendered */}
-                <div className="min-h-[60px] md:min-h-[120px] flex items-end">
+                {/* Logo / Title */}
+                <div className="min-h-[100px] flex items-end">
                   {logoPath ? (
-                    <div className="relative w-full max-w-[280px] md:max-w-[420px] h-[70px] md:h-[130px]">
+                    <div className="relative w-full max-w-[420px] h-[120px]">
                       <Image
                         src={logoPath}
                         alt={title}
                         fill
                         priority
-                        className="object-contain object-left filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] dark:invert-0 brightness-110"
+                        className="object-contain object-left filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                       />
                     </div>
                   ) : (
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] md:leading-[0.95] text-white dark:text-foreground drop-shadow-sm">
+                    <h1 className="text-6xl lg:text-7xl font-black tracking-tight leading-none text-white drop-shadow-sm">
                       {title}
                     </h1>
                   )}
                 </div>
 
-                {/* Description */}
-                <p className="text-white/85 dark:text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3 font-medium dark:font-normal">
+                {/* Paragraph */}
+                <p className="text-white/80 text-base lg:text-lg max-w-2xl leading-relaxed line-clamp-3 font-normal">
                   {description}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 pt-4">
+                {/* Desktop Buttons */}
+                <div className="flex items-center gap-4 pt-2">
                   <Link href={href}>
                     <button className="group flex items-center gap-3 bg-primary text-primary-foreground px-8 py-3.5 rounded-xl font-bold tracking-tight hover:scale-105 hover:bg-primary/90 transition-all duration-300 shadow-xl shadow-primary/25">
                       <Play
@@ -382,79 +437,81 @@ const SpotlightCarousel = () => {
                     </button>
                   </Link>
 
-                  <button className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 dark:bg-card/40 dark:hover:bg-card/60 dark:border-border dark:text-foreground backdrop-blur-xl transition-all font-medium flex items-center gap-2 shadow-lg shadow-black/5">
-                    <Info size={20} />
-                    <span>More Info</span>
-                  </button>
+                  <Link href={href}>
+                    <button className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-xl transition-all font-medium flex items-center gap-2 shadow-lg shadow-black/5">
+                      <Info size={20} />
+                      <span>More Info</span>
+                    </button>
+                  </Link>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* --- RIGHT: CONTROL DASHBOARD --- */}
-          <div className="md:col-span-4 lg:col-span-5 flex flex-col items-end justify-end space-y-4 pointer-events-auto">
+          {/* Right Control Dashboard */}
+          <div className="col-span-4 lg:col-span-5 flex flex-col items-end justify-end space-y-4 pointer-events-auto">
             <div className="flex items-center gap-3">
-              {/* Pagination Card */}
-              <div className="bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border backdrop-blur-xl rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group shadow-lg shadow-black/5">
-                <span className="font-mono text-sm font-medium tracking-widest text-white/50 dark:text-muted-foreground relative z-10">
-                  <span className="text-white dark:text-foreground text-lg">
+              {/* Slide Counter Box */}
+              <div className="bg-black/40 border border-white/10 backdrop-blur-xl rounded-2xl px-5 h-14 flex flex-col justify-center min-w-[100px] relative overflow-hidden group shadow-lg">
+                <span className="font-mono text-sm font-medium tracking-widest text-white/50 relative z-10">
+                  <span className="text-white text-lg">
                     {String(currentSlide + 1).padStart(2, "0")}
                   </span>
                   <span className="opacity-50 mx-1">/</span>
                   {String(spotlights.length).padStart(2, "0")}
                 </span>
 
-                <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 dark:bg-foreground/10 w-full">
+                <div className="absolute bottom-0 left-0 h-[3px] bg-white/10 w-full">
                   <motion.div
                     className="h-full bg-primary"
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{
-                      duration: 15,
+                      duration: 10,
                       ease: "linear",
-                      repeat: isPaused ? 0 : Infinity,
+                      repeat: isPaused ? Infinity : 0,
                     }}
                     key={currentSlide}
                   />
                 </div>
               </div>
 
-              {/* Slider Action Buttons */}
-              <div className="h-14 bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border backdrop-blur-xl rounded-2xl flex items-center p-1 gap-1 shadow-lg shadow-black/5">
+              {/* Navigation Controls */}
+              <div className="h-14 bg-black/40 border border-white/10 backdrop-blur-xl rounded-2xl flex items-center p-1 gap-1 shadow-lg">
                 <button
                   onClick={handlePrevSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white dark:hover:bg-foreground/10 dark:text-muted-foreground dark:hover:text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-all"
                 >
                   <ArrowRight size={20} className="rotate-180" />
                 </button>
 
-                <div className="w-[1px] h-6 bg-white/10 dark:bg-border" />
+                <div className="w-[1px] h-6 bg-white/10" />
 
                 <button
                   onClick={togglePause}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white dark:hover:bg-foreground/10 dark:text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white transition-all"
                 >
                   {isPaused ? <Play size={20} /> : <Pause size={20} />}
                 </button>
 
-                <div className="w-[1px] h-6 bg-white/10 dark:bg-border" />
+                <div className="w-[1px] h-6 bg-white/10" />
 
                 <button
                   onClick={handleNextSlide}
-                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white dark:hover:bg-foreground/10 dark:text-muted-foreground dark:hover:text-foreground transition-all"
+                  className="w-12 h-full flex items-center justify-center rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-all"
                 >
                   <ArrowRight size={20} />
                 </button>
               </div>
             </div>
 
-            {/* Mute/Unmute Layer */}
-            {trailerKey && !isMobile && (
+            {/* Mute Button */}
+            {trailerKey && (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={toggleMute}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 dark:bg-card/40 dark:border-border text-white dark:text-foreground hover:bg-black/60 dark:hover:bg-card/60 backdrop-blur-xl transition-all shadow-lg shadow-black/5"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/40 border border-white/10 text-white hover:bg-black/60 backdrop-blur-xl transition-all shadow-lg"
               >
                 {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </motion.button>

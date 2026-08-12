@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Star, Play, Plus } from "lucide-react";
+import { Star, Play } from "lucide-react";
 
 const TopTen = () => {
   const [trending, setTrending] = useState([]);
@@ -19,6 +19,7 @@ const TopTen = () => {
         );
         if (!res.ok) throw new Error("API response error");
         const data = await res.json();
+        // Slice top 10 items
         setTrending(data.results.slice(0, 5));
       } catch (err) {
         console.warn("Falling back to mock data:", err);
@@ -41,13 +42,13 @@ const TopTen = () => {
 
   if (loading) {
     return (
-      <div className="w-full py-16 px-6 bg-background">
+      <div className="w-full py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-background">
         <div className="h-12 w-64 bg-secondary/60 animate-pulse rounded-[1rem] mb-12" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {[...Array(5)].map((_, i) => (
+        <div className="flex overflow-x-auto gap-6 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 scrollbar-none">
+          {[...Array(10)].map((_, i) => (
             <div
               key={i}
-              className="aspect-[2/3] w-full bg-secondary/40 animate-pulse rounded-[2rem]"
+              className="w-[75vw] min-w-[240px] max-w-[280px] sm:w-auto sm:min-w-0 sm:max-w-none shrink-0 aspect-[2/3] bg-secondary/40 animate-pulse rounded-[2rem]"
             />
           ))}
         </div>
@@ -56,21 +57,21 @@ const TopTen = () => {
   }
 
   return (
-    <section className="w-full py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-background text-foreground overflow-hidden">
+    <section className="w-full py-12 sm:py-16 px-4 sm:px-6 md:px-12 lg:px-16 bg-background text-foreground overflow-hidden">
       {/* Swiss Editorial Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-8 mb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-6 sm:pb-8 mb-8 sm:mb-12">
         <div className="space-y-2">
           <p className="text-xs font-black uppercase tracking-widest text-primary/80">
             Current Leaderboard
           </p>
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">
-            Top 5 Today
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">
+            Top 10 Today
           </h2>
         </div>
       </div>
 
-      {/* Swiss Layout Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-y-16 gap-x-8">
+      {/* Mobile Carousel & Desktop Grid Layout */}
+      <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 pt-10 sm:pt-0 sm:pb-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-y-16 sm:gap-x-8 scrollbar-none sm:overflow-visible">
         {trending.map((item, index) => {
           const isTV = item.media_type === "tv";
           const title = item.title || item.name || "Untitled";
@@ -85,19 +86,19 @@ const TopTen = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="flex flex-col relative"
+              transition={{ duration: 0.5, delay: (index % 5) * 0.05 }}
+              className="w-[75vw] min-w-[240px] max-w-[280px] sm:w-auto sm:min-w-0 sm:max-w-none shrink-0 sm:shrink snap-start flex flex-col relative"
             >
               {/* Massive Swiss Index Number behind the Material You container */}
-              <div className="absolute -top-12 -left-3 select-none pointer-events-none z-0">
-                <span className="text-[120px] font-black leading-none tracking-tighter text-primary font-sans opacity-70">
+              <div className="absolute -top-10 -left-2 select-none pointer-events-none z-0">
+                <span className="text-[100px] sm:text-[120px] font-black leading-none tracking-tighter text-primary font-sans opacity-70">
                   {String(index + 1).padStart(2, "0")}
                 </span>
               </div>
 
               {/* Material You Styled Card Container */}
               <div className="relative z-10 flex-1 flex flex-col bg-secondary/30 backdrop-blur-sm rounded-[2rem] p-4 border border-border/50 hover:border-border/100 hover:bg-secondary/50 transition-all duration-300">
-                {/* Visual Image Block (Very Rounded Material Corners) */}
+                {/* Visual Image Block */}
                 <Link
                   href={href}
                   className="relative block aspect-[4/5] rounded-[1.5rem] overflow-hidden group mb-4"
@@ -107,10 +108,10 @@ const TopTen = () => {
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 300px"
+                    sizes="(max-width: 768px) 75vw, 300px"
                     priority={index < 3}
                   />
-                  {/* Subtle dark layout screen tint */}
+                  {/* Dark layout screen tint */}
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300" />
 
                   {/* Material Dynamic Accent Chip */}
@@ -141,7 +142,7 @@ const TopTen = () => {
                     ) : null}
                   </div>
 
-                  {/* Dynamic Action Buttons (Material-You Rounded Pills) */}
+                  {/* Action Button */}
                   <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/40">
                     <Link
                       href={href}
@@ -150,13 +151,6 @@ const TopTen = () => {
                       <Play size={11} className="fill-current stroke-none" />
                       <span>Details</span>
                     </Link>
-
-                    {/* <button
-                      className="p-2.5 rounded-full bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground border border-border/60 transition-colors duration-200"
-                      aria-label="Add to my list"
-                    >
-                      <Plus size={14} strokeWidth={3} />
-                    </button> */}
                   </div>
                 </div>
               </div>
@@ -164,6 +158,16 @@ const TopTen = () => {
           );
         })}
       </div>
+
+      <style jsx global>{`
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
   );
 };
