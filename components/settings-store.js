@@ -25,7 +25,7 @@ const useSettingsStore = create(
       confirmRemove: true,
       showAdNotice: true,
       customCursor: false,
-      showFeedbackPopup: true,
+      showFeedbackPopup: false,
       feedbackTheme: "classic",
       siteTheme: "space_gray",
       customTheme: {

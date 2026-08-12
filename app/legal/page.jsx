@@ -1,4 +1,4 @@
-import TestPage from "@/components/ui/testpage";
+// import TestPage from "@/components/ui/testpage";
 import LegalLayout from "./LegalLayout";
 
 export default function PrivacyPolicy() {
@@ -8,8 +8,8 @@ export default function PrivacyPolicy() {
       <p>
         As a solo-developed application, Crescent prioritizes your privacy. We
         only collect the bare minimum data required to make the application
-        function (such as saved movies, watchlists, and basic account details if
-        you create an account).
+        function `such as saved movies, watchlists, and basic account details if
+        you create an account`.
       </p>
 
       <h3>2. How We Use Your Information</h3>
@@ -25,7 +25,7 @@ export default function PrivacyPolicy() {
         policies regarding how they handle API requests. Please refer to their
         respective documentation for more details.
       </p>
-      <TestPage />
+      {/* <TestPage /> */}
     </LegalLayout>
   );
 }
