@@ -27,7 +27,7 @@ const TopTen = () => {
             id: `mock-${i}`,
             title:
               i % 2 === 0 ? "Swiss Editorial Title" : "Dynamic Material Block",
-            poster_path: null,
+            backdrop_path: null,
             media_type: i % 2 === 0 ? "movie" : "tv",
             vote_average: 8.5 - i * 0.1,
           })),
@@ -76,7 +76,7 @@ const TopTen = () => {
           const title = item.title || item.name || "Untitled";
           const href = isTV ? `/series/${item.id}` : `/movie/${item.id}`;
           const poster = item.poster_path
-            ? `https://image.tmdb.org/t/p/w500/${item.poster_path}`
+            ? `https://image.tmdb.org/t/p/w300/${item.poster_path}`
             : "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=600&auto=format&fit=crop";
 
           return (
@@ -90,13 +90,13 @@ const TopTen = () => {
             >
               {/* Massive Swiss Index Number behind the Material You container */}
               <div className="absolute -top-12 -left-3 select-none pointer-events-none z-0">
-                <span className="text-[120px] font-black leading-none tracking-tighter text-secondary font-sans opacity-70">
+                <span className="text-[120px] font-black leading-none tracking-tighter text-primary font-sans opacity-70">
                   {String(index + 1).padStart(2, "0")}
                 </span>
               </div>
 
               {/* Material You Styled Card Container */}
-              <div className="relative z-10 flex-1 flex flex-col bg-secondary/30 rounded-[2rem] p-4 border border-border/50 hover:border-border/100 hover:bg-secondary/50 transition-all duration-300">
+              <div className="relative z-10 flex-1 flex flex-col bg-secondary/30 backdrop-blur-sm rounded-[2rem] p-4 border border-border/50 hover:border-border/100 hover:bg-secondary/50 transition-all duration-300">
                 {/* Visual Image Block (Very Rounded Material Corners) */}
                 <Link
                   href={href}
@@ -151,12 +151,12 @@ const TopTen = () => {
                       <span>Details</span>
                     </Link>
 
-                    <button
+                    {/* <button
                       className="p-2.5 rounded-full bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground border border-border/60 transition-colors duration-200"
                       aria-label="Add to my list"
                     >
                       <Plus size={14} strokeWidth={3} />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

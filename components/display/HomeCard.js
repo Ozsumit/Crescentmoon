@@ -60,7 +60,7 @@ const HomeCard = memo(({ MovieCard }) => {
   );
 
   return (
-    <div className="group relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-card transform-gpu transition-transform duration-300 ease-out hover:-translate-y-1 [content-visibility:auto] [contain-intrinsic-size:200px_300px]">
+    <div className="group relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-card   hover:-translate-y-2 transform-gpu transition-transform duration-500 ease-in-out[content-visibility:auto]  [contain-intrinsic-size:200px_300px]">
       {/* Poster Image & Primary Link */}
       <Link href={linkPath} className="absolute inset-0 block">
         <Image
@@ -69,7 +69,7 @@ const HomeCard = memo(({ MovieCard }) => {
           fill
           loading="lazy"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="object-cover transition-transform duration-500 ease-out "
         />
 
         {/* Minimal Dark Gradient for Text Legibility */}
@@ -83,16 +83,16 @@ const HomeCard = memo(({ MovieCard }) => {
         className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-200 active:scale-90 ${
           isFavorite
             ? "bg-destructive text-destructive-foreground opacity-100 shadow-md"
-            : "bg-black/40 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70"
+            : "bg-black/40 text-white opacity-0 group-hover:opacity-100"
         }`}
       >
         <Heart size={14} className={isFavorite ? "fill-current" : ""} />
       </button>
 
       {/* Bottom: Unadorned Swiss Typography (Directly on Image) */}
-      <div className="absolute dark:text-black text-white bottom-0 inset-x-0 p-4 z-10 pointer-events-none flex flex-col gap-1">
+      <div className="absolute  text-white bottom-0 inset-x-0 p-4 z-10 pointer-events-none flex flex-col gap-1">
         {/* Bold Swiss Uppercase Title */}
-        <h3 className="font-sans font-black text-xl  dark:text-foreground  tracking-tight line-clamp-2 group-hover:text-primary-foreground transition-colors">
+        <h3 className="font-sans font-black text-xl  dark:text-foreground  tracking-tight line-clamp-2  transition-colors">
           {title}
         </h3>
 
