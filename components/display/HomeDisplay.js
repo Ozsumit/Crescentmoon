@@ -93,7 +93,9 @@ const HomeDisplay = ({ initialData = [] }) => {
     movies: (initialData || []).filter(
       (i) => i.media_type === "movie" && isReleased(i),
     ),
-    tvShows: (initialData || []).filter((i) => i.media_type === "tv" && isReleased(i)),
+    tvShows: (initialData || []).filter(
+      (i) => i.media_type === "tv" && isReleased(i),
+    ),
   }));
 
   const [activeTab, setActiveTab] = useState("all");
@@ -274,7 +276,7 @@ const HomeDisplay = ({ initialData = [] }) => {
       </section>
 
       <div className="bg-card border border-border rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl relative contain-layout">
-        <ProviderFilter />
+        {/* <ProviderFilter /> */}
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] transform-gpu" />
         </div>
@@ -406,13 +408,15 @@ const HomeDisplay = ({ initialData = [] }) => {
         </Tabs>
 
         <div className="mt-16 border-t border-border pt-12">
-          {activeTab !== "all" && !isLoading && (currentData || []).length > 0 && (
-            <HomePagination
-              page={pageData[currentType]}
-              setPage={handlePageChange}
-              totalPages={totalPages[currentType]}
-            />
-          )}
+          {activeTab !== "all" &&
+            !isLoading &&
+            (currentData || []).length > 0 && (
+              <HomePagination
+                page={pageData[currentType]}
+                setPage={handlePageChange}
+                totalPages={totalPages[currentType]}
+              />
+            )}
 
           {(activeGenres || []).length === 0 && !isLoading && (
             <div className="mt-20">

@@ -229,33 +229,31 @@ const Header = () => {
         </div>
 
         {/* --- ALTERNATE DOMAIN TICKER --- */}
-          {showDomainNotice && (
-            <div
-              className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10 transition-all duration-300 opacity-100"
-            >
-              <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-muted-foreground">
-                <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  <div className="flex items-center gap-1.5 shrink-0 text-foreground/40">
-                    <AlertCircle size={12} />
-                    <span className="hidden sm:block">MIRRORS:</span>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    {ALTERNATE_DOMAINS.map((domain) => (
-                      <a
-                        key={domain}
-                        href={`https://${domain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="snap-start shrink-0 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                      >
-                        {domain}
-                      </a>
-                    ))}
-                  </div>
+        {/* {showDomainNotice && (
+          <div className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10 transition-all duration-300 opacity-100">
+            <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-muted-foreground">
+              <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex items-center gap-1.5 shrink-0 text-foreground/40">
+                  <AlertCircle size={12} />
+                  <span className="hidden sm:block">MIRRORS:</span>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-border bg-gradient-to-l from-transparent to-transparent">
+                <div className="flex items-center gap-3 shrink-0">
+                  {ALTERNATE_DOMAINS.map((domain) => (
+                    <a
+                      key={domain}
+                      href={`https://${domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="snap-start shrink-0 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                    >
+                      {domain}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-border bg-gradient-to-l from-transparent to-transparent">
                   <Link
                     href="/legal/domains"
                     className="text-foreground hover:underline uppercase font-bold tracking-normal"
@@ -270,56 +268,57 @@ const Header = () => {
                   >
                     <X size={12} />
                   </button>
-                </div>
-              </div>
+                </div> 
             </div>
-          )}
+          </div>
+        )} */}
 
         {/* --- MOBILE MENU --- */}
-          {isMobileMenuOpen && (
-            <div
-              className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border transition-opacity duration-300"
-            >
-              {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
-              <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
-                <nav className="flex flex-col space-y-6">
-                  {navLinks.map((item, i) => (
-                    <div
-                      key={item.label}
-                      className="animate-in fade-in slide-in-from-left-4 duration-300"
-                      style={{ animationFillMode: "both", animationDelay: `${i * 50}ms` }}
+        {isMobileMenuOpen && (
+          <div className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border transition-opacity duration-300">
+            {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
+            <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
+              <nav className="flex flex-col space-y-6">
+                {navLinks.map((item, i) => (
+                  <div
+                    key={item.label}
+                    className="animate-in fade-in slide-in-from-left-4 duration-300"
+                    style={{
+                      animationFillMode: "both",
+                      animationDelay: `${i * 50}ms`,
+                    }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="group flex items-center justify-between"
                     >
-                      <Link
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="group flex items-center justify-between"
+                      <span
+                        className={`text-4xl font-black uppercase tracking-tighter transition-colors ${
+                          pathname === item.href
+                            ? "text-foreground"
+                            : "text-transparent bg-clip-text bg-gradient-to-br from-muted-foreground to-foreground/50 group-hover:text-foreground"
+                        }`}
                       >
-                        <span
-                          className={`text-4xl font-black uppercase tracking-tighter transition-colors ${
-                            pathname === item.href
-                              ? "text-foreground"
-                              : "text-transparent bg-clip-text bg-gradient-to-br from-muted-foreground to-foreground/50 group-hover:text-foreground"
-                          }`}
-                        >
-                          {item.label}
-                        </span>
-                        <ArrowRight
-                          size={24}
-                          className="text-foreground opacity-0 group-hover:opacity-100 -rotate-45 group-hover:rotate-0 transition-all"
-                        />
-                      </Link>
-                    </div>
-                  ))}
-                </nav>
+                        {item.label}
+                      </span>
+                      <ArrowRight
+                        size={24}
+                        className="text-foreground opacity-0 group-hover:opacity-100 -rotate-45 group-hover:rotate-0 transition-all"
+                      />
+                    </Link>
+                  </div>
+                ))}
+              </nav>
 
-                <div className="mt-auto border-t border-border pt-6">
-                  <p className="text-[10px] text-muted-foreground font-mono uppercase">
-                    © 2025 Crescent Moon.
-                  </p>
-                </div>
+              <div className="mt-auto border-t border-border pt-6">
+                <p className="text-[10px] text-muted-foreground font-mono uppercase">
+                  © 2025 Crescent Moon.
+                </p>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </header>
 
       {isQuickSearchOpen && (

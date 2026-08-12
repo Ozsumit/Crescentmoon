@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import ThemeWrapper from "@/components/themewrappr";
 import Footer from "@/components/footer/Footer";
 import CookieConsent from "@/components/cookies";
-import SplashScreen from "@/components/ui/SplashScreen";
+// import SplashScreen from "@/components/ui/SplashScreen";
 // import LiteModeBanner from "@/components/litemodebanner";
 
 const PopupDeveloperFeedback = dynamic(() =>
@@ -198,7 +198,7 @@ export default function RootLayout({ children }) {
 
       <body className="bg-slate-950 text-white antialiased">
         <ThemeWrapper>
-          <SplashScreen />
+          {/* <SplashScreen /> */}
           <Header />
           {/* <LiteModeBanner /> */}
 
