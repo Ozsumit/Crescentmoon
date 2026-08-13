@@ -90,7 +90,7 @@ const TopTen = () => {
               className="w-[75vw] min-w-[240px] max-w-[280px] sm:w-auto sm:min-w-0 sm:max-w-none shrink-0 sm:shrink snap-start flex flex-col relative"
             >
               {/* Massive Swiss Index Number behind the Material You container */}
-              <div className="absolute -top-10 -left-2 select-none pointer-events-none z-0">
+              <div className="absolute -top-16 -left-6 select-none pointer-events-none z-0">
                 <span className="text-[100px] sm:text-[120px] font-black leading-none tracking-tighter text-primary font-sans opacity-70">
                   {String(index + 1).padStart(2, "0")}
                 </span>

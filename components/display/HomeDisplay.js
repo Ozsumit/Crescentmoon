@@ -24,6 +24,19 @@ import RecommendedMovies from "../recommended";
 import GenreSelector from "@/components/filter/Filter";
 import HomePagination from "../pagination/HomePagination";
 
+// --- MODULE-LEVEL HELPERS (hoisted out of the component so they aren't
+// re-created on every render) ---
+const isReleased = (item) => {
+  const releaseStr = item.release_date || item.first_air_date;
+  if (!releaseStr) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(releaseStr) <= today;
+};
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min client-side cache per signature
+const DEBOUNCE_MS = 300; // wait for rapid genre/provider toggling to settle
+
 // --- STATIC SKELETONS ---
 const CardSkeleton = React.memo(() => (
   <div className="flex flex-col gap-2.5 contain-layout">
@@ -50,21 +63,10 @@ ContentGrid.displayName = "ContentGrid";
 
 // --- MAIN COMPONENT ---
 const HomeDisplay = ({ initialData = [] }) => {
-  // SINGLE state for controlling the genre modal
   const [isGenreOpen, setIsGenreOpen] = useState(false);
 
   const { activeGenres, toggleGenre, clearGenres, activeProviders } =
     useGenreStore();
-
-  // Helper logic to cleanly filter out future releases locally
-  const isReleased = (item) => {
-    const releaseStr = item.release_date || item.first_air_date;
-    if (!releaseStr) return true;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return new Date(releaseStr) <= today;
-  };
 
   const [contentData, setContentData] = useState(() => ({
     movies: (initialData || []).filter(
@@ -80,15 +82,28 @@ const HomeDisplay = ({ initialData = [] }) => {
   const [loading, setLoading] = useState({ movies: false, tvShows: false });
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState({ movies: 1, tvShows: 1 });
-
   const [showTopBtn, setShowTopBtn] = useState(false);
 
-  const fetchedSignatures = useRef({
-    movies: (initialData || []).length > 0 ? "1-" : null,
-    tvShows: (initialData || []).length > 0 ? "1-" : null,
-  });
+  // In-memory response cache keyed by "type:page-genres-providers", so
+  // flipping back to a page/filter combo we've already fetched is instant
+  // and costs zero network requests.
+  const responseCache = useRef(new Map());
 
-  // Throttled Scroll Execution using requestAnimationFrame
+  // Track the in-flight AbortController per type so a slow, now-stale
+  // request can never overwrite the state for a newer one (tab-flicker race).
+  const abortControllers = useRef({ movies: null, tvShows: null });
+
+  // Debounce timers per type, for rapid genre/provider toggling.
+  const debounceTimers = useRef({ movies: null, tvShows: null });
+
+  // Remember the last genre/provider signature so we can reset pagination
+  // to page 1 whenever filters actually change (previously the page could
+  // stay on e.g. page 3 while showing a brand-new, much shorter filtered
+  // result set — silently wrong/empty pages).
+  const lastFilterSignature = useRef(
+    `${(activeGenres || []).map((g) => g.id).join(",")}|${(activeProviders || []).join(",")}`,
+  );
+
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -103,71 +118,117 @@ const HomeDisplay = ({ initialData = [] }) => {
         ticking = true;
       }
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Reset to page 1 whenever the active genres/providers change.
+  useEffect(() => {
+    const signature = `${(activeGenres || []).map((g) => g.id).join(",")}|${(activeProviders || []).join(",")}`;
+    if (signature !== lastFilterSignature.current) {
+      lastFilterSignature.current = signature;
+      setPageData({ movies: 1, tvShows: 1 });
+    }
+  }, [activeGenres, activeProviders]);
+
   const fetchContent = useCallback(async (type, page, genres, providers) => {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    if (!apiKey) return;
+    if (!apiKey) {
+      console.error(
+        "[HomeDisplay] NEXT_PUBLIC_TMDB_API_KEY is undefined in the browser — " +
+          "check it's set in .env.local and that you restarted the dev server " +
+          "after adding it (Next.js only inlines NEXT_PUBLIC_ vars at build/start time).",
+      );
+      setError("Missing TMDB API key.");
+      setLoading((prev) => ({ ...prev, [type]: false }));
+      return;
+    }
 
     const genreString = (genres || []).map((g) => g.id).join(",");
     const providerString = (providers || []).join("|");
-    const signature = `${page}-${genreString}-${providerString}`;
+    const signature = `${type}:${page}-${genreString}-${providerString}`;
 
-    if (fetchedSignatures.current[type] === signature) return;
+    // Serve from cache if we have a fresh entry — no network call at all.
+    const cached = responseCache.current.get(signature);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      setContentData((prev) => ({ ...prev, [type]: cached.results }));
+      setTotalPages((prev) => ({ ...prev, [type]: cached.totalPages }));
+      setLoading((prev) => (prev[type] ? { ...prev, [type]: false } : prev));
+      return;
+    }
 
-    const isMovie = type === "movies";
-    const baseUrl = isMovie ? "movie" : "tv";
+    // Debounce: rapid genre clicks shouldn't fire a request per click.
+    if (debounceTimers.current[type]) {
+      clearTimeout(debounceTimers.current[type]);
+    }
 
-    try {
-      setLoading((prev) =>
-        prev[type] === true ? prev : { ...prev, [type]: true },
-      );
-      setError(null);
+    debounceTimers.current[type] = setTimeout(async () => {
+      // Cancel any still-in-flight request of the same type.
+      abortControllers.current[type]?.abort();
+      const controller = new AbortController();
+      abortControllers.current[type] = controller;
 
-      let url = "";
-      if ((genres || []).length > 0 || (providers || []).length > 0) {
-        url = `https://api.themoviedb.org/3/discover/${baseUrl}?api_key=${apiKey}&page=${page}&language=en-US&sort_by=popularity.desc`;
-        if (genres?.length > 0) url += `&with_genres=${genreString}`;
-        if (providers?.length > 0)
-          url += `&with_watch_providers=${providerString}&watch_region=US`;
-      } else {
-        url = `https://api.themoviedb.org/3/${baseUrl}/popular?api_key=${apiKey}&page=${page}&language=en-US`;
-      }
+      const isMovie = type === "movies";
+      const baseUrl = isMovie ? "movie" : "tv";
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to fetch ${type}`);
-      const data = await response.json();
+      try {
+        setLoading((prev) => ({ ...prev, [type]: true }));
+        setError(null);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+        let url = "";
+        if (genreString || providerString) {
+          url = `https://api.themoviedb.org/3/discover/${baseUrl}?api_key=${apiKey}&page=${page}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false`;
+          if (genreString) url += `&with_genres=${genreString}`;
+          if (providerString)
+            url += `&with_watch_providers=${providerString}&watch_region=US`;
+        } else {
+          url = `https://api.themoviedb.org/3/trending/${baseUrl}/day?api_key=${apiKey}&page=${page}&language=en-US`;
+        }
 
-      const processed = data.results
-        .map((item) => ({
-          ...item,
-          media_type: isMovie ? "movie" : "tv",
-          title: isMovie ? item.title : item.name,
-          release_date: isMovie ? item.release_date : item.first_air_date,
-        }))
-        .filter((item) => {
-          if (!item.release_date) return true;
-          return new Date(item.release_date) <= today;
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) {
+          let detail = "";
+          try {
+            const body = await response.json();
+            detail = body?.status_message ? ` — ${body.status_message}` : "";
+          } catch {
+            /* response wasn't JSON, ignore */
+          }
+          throw new Error(
+            `Failed to fetch ${type} (${response.status})${detail}`,
+          );
+        }
+        const data = await response.json();
+
+        const processed = (data.results || [])
+          .map((item) => ({
+            ...item,
+            media_type: isMovie ? "movie" : "tv",
+            title: isMovie ? item.title : item.name,
+            release_date: isMovie ? item.release_date : item.first_air_date,
+          }))
+          .filter(isReleased);
+
+        const cappedTotalPages = Math.min(data.total_pages || 1, 500);
+
+        responseCache.current.set(signature, {
+          results: processed,
+          totalPages: cappedTotalPages,
+          timestamp: Date.now(),
         });
 
-      setContentData((prev) => ({ ...prev, [type]: processed }));
-      setTotalPages((prev) => ({
-        ...prev,
-        [type]: Math.min(data.total_pages, 500),
-      }));
-      fetchedSignatures.current[type] = signature;
-    } catch (err) {
-      console.error(`Error fetching ${type}:`, err);
-      setError(`Unable to load ${type}. Please try again later.`);
-    } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
-    }
+        setContentData((prev) => ({ ...prev, [type]: processed }));
+        setTotalPages((prev) => ({ ...prev, [type]: cappedTotalPages }));
+      } catch (err) {
+        if (err.name === "AbortError") return; // superseded by a newer request
+        console.error(`Error fetching ${type}:`, err);
+        setError(`Unable to load ${type}. Please try again later.`);
+      } finally {
+        if (abortControllers.current[type] === controller) {
+          setLoading((prev) => ({ ...prev, [type]: false }));
+        }
+      }
+    }, DEBOUNCE_MS);
   }, []);
 
   useEffect(() => {
@@ -191,6 +252,16 @@ const HomeDisplay = ({ initialData = [] }) => {
     pageData.tvShows,
     fetchContent,
   ]);
+
+  // Clean up any pending debounce/in-flight requests on unmount.
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(
+        (t) => t && clearTimeout(t),
+      );
+      Object.values(abortControllers.current).forEach((c) => c?.abort());
+    };
+  }, []);
 
   const handleTabChange = useCallback((value) => {
     setActiveTab(value);
@@ -247,12 +318,10 @@ const HomeDisplay = ({ initialData = [] }) => {
       </section>
 
       <div className="bg-card border border-border/80 rounded-2xl sm:rounded-[2.5rem] p-3.5 sm:p-8 md:p-12 shadow-xl sm:shadow-2xl relative contain-layout">
-        {/* Background Texture */}
         <div className="absolute inset-0 rounded-2xl sm:rounded-[2.5rem] overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] transform-gpu" />
         </div>
 
-        {/* HEADER & FILTER ACTION BAR */}
         <div className="relative z-40 flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-8 mb-6 sm:mb-10">
           <div className="space-y-1 sm:space-y-2">
             <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black uppercase tracking-widest text-primary">
@@ -271,7 +340,6 @@ const HomeDisplay = ({ initialData = [] }) => {
             </h2>
           </div>
 
-          {/* GENRE FILTER BUTTON & SELECTOR */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
@@ -291,7 +359,6 @@ const HomeDisplay = ({ initialData = [] }) => {
               )}
             </button>
 
-            {/* GENRE SELECTOR PORTAL */}
             <GenreSelector
               isOpen={isGenreOpen}
               onClose={() => setIsGenreOpen(false)}
@@ -316,7 +383,6 @@ const HomeDisplay = ({ initialData = [] }) => {
           </div>
         </div>
 
-        {/* CATEGORY TABS */}
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
@@ -355,7 +421,6 @@ const HomeDisplay = ({ initialData = [] }) => {
             </TabsList>
           </div>
 
-          {/* MAIN GRID DISPLAY AREA */}
           <div className="min-h-[400px] sm:min-h-[500px] contain-paint">
             {isLoading ? (
               renderSkeletons()
@@ -390,7 +455,6 @@ const HomeDisplay = ({ initialData = [] }) => {
           </div>
         </Tabs>
 
-        {/* PAGINATION & RECOMMENDED SECTION */}
         <div className="mt-10 sm:mt-16 border-t border-border/80 pt-8 sm:pt-12">
           {activeTab !== "all" &&
             !isLoading &&
@@ -410,7 +474,6 @@ const HomeDisplay = ({ initialData = [] }) => {
         </div>
       </div>
 
-      {/* FLOATING BACK TO TOP BUTTON */}
       {showTopBtn && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -435,4 +498,3 @@ const HomeDisplay = ({ initialData = [] }) => {
 };
 
 export default HomeDisplay;
- 

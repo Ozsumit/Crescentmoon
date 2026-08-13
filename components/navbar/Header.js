@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import LiteModeBanner from "@/components/litemodebanner";
+import SettingsModal from "@/components/settingsmodal";
 
 import {
   Home,
@@ -28,7 +29,6 @@ const ALTERNATE_DOMAINS = [
   "comsic.qzz.io",
   "movie.sumit.info.np",
 ];
-
 const QuickSearch = dynamic(() => import("../searchbar"), {
   ssr: false,
 });
@@ -38,10 +38,12 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
+  // const [isSettingsOpen, setIsSettingsOpen] = useState(false); // <--- POPUP STATE
   const [showDomainNotice, setShowDomainNotice] = useState(true);
 
   const pathname = usePathname();
   const lastScrollY = useRef(0);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // --- HIGH PERFORMANCE SCROLL LISTENER ---
   useEffect(() => {
@@ -73,15 +75,21 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isMobileMenuOpen]);
 
+  // Lock scroll when mobile menu or settings popup is active
   useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "unset";
-  }, [isMobileMenuOpen]);
+    document.body.style.overflow =
+      isMobileMenuOpen || isSettingsOpen ? "hidden" : "unset";
+  }, [isMobileMenuOpen, isSettingsOpen]);
 
+  // Key Listeners (⌘K for Search, Escape for Settings)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsQuickSearchOpen((prev) => !prev);
+      }
+      if (e.key === "Escape") {
+        setIsSettingsOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -202,18 +210,22 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Settings */}
+            {/* Settings (CONVERTED TO MODAL TRIGGER) */}
             <div className="flex items-center justify-center h-full w-14 md:w-16 border-l border-border hover:bg-accent transition-colors">
-              <Link href="/settings" className="text-foreground">
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="text-foreground focus:outline-none"
+                aria-label="Open Settings"
+              >
                 <Settings
                   size={18}
                   className={`transition-all duration-300 ${
-                    pathname === "/settings"
+                    isSettingsOpen
                       ? "rotate-90 text-primary"
                       : "hover:rotate-45"
                   }`}
                 />
-              </Link>
+              </button>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -228,55 +240,9 @@ const Header = () => {
           </div>
         </div>
 
-        {/* --- ALTERNATE DOMAIN TICKER --- */}
-        {/* {showDomainNotice && (
-          <div className="w-full bg-foreground/[0.03] backdrop-blur-md border-t border-border overflow-hidden relative z-10 transition-all duration-300 opacity-100">
-            <div className="w-full px-4 h-8 flex items-center justify-between gap-4 text-[10px] tracking-wider font-mono text-muted-foreground">
-              <div className="flex-1 min-w-0 flex items-center gap-3 overflow-x-auto snap-x scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <div className="flex items-center gap-1.5 shrink-0 text-foreground/40">
-                  <AlertCircle size={12} />
-                  <span className="hidden sm:block">MIRRORS:</span>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {ALTERNATE_DOMAINS.map((domain) => (
-                    <a
-                      key={domain}
-                      href={`https://${domain}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="snap-start shrink-0 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                    >
-                      {domain}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {/* <div className="flex items-center gap-3 shrink-0 pl-3 border-l border-border bg-gradient-to-l from-transparent to-transparent">
-                  <Link
-                    href="/legal/domains"
-                    className="text-foreground hover:underline uppercase font-bold tracking-normal"
-                  >
-                    <span className="hidden sm:inline">All Mirrors</span>
-                    <span className="sm:hidden">More</span>
-                  </Link>
-                  <button
-                    onClick={() => setShowDomainNotice(false)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Dismiss notice"
-                  >
-                    <X size={12} />
-                  </button>
-                </div> 
-            </div>
-          </div>
-        )} */}
-
         {/* --- MOBILE MENU --- */}
         {isMobileMenuOpen && (
           <div className="absolute top-full left-0 right-0 h-[100dvh] bg-background/95 backdrop-blur-xl border-t border-border transition-opacity duration-300">
-            {/* Added bottom padding (pb-[25vh]) so users can scroll down all the way to the footer */}
             <div className="flex flex-col h-full overflow-y-auto p-8 pb-[25vh]">
               <nav className="flex flex-col space-y-6">
                 {navLinks.map((item, i) => (
@@ -321,11 +287,58 @@ const Header = () => {
         )}
       </header>
 
+      {/* --- QUICK SEARCH MODAL --- */}
       {isQuickSearchOpen && (
         <QuickSearch
           open={isQuickSearchOpen}
           onOpenChange={setIsQuickSearchOpen}
         />
+      )}
+
+      {/* --- SETTINGS POPUP MODAL --- */}
+      {isSettingsOpen && (
+        <div
+          className="fixed inset-0 z-[150] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setIsSettingsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-lg mx-4 bg-background border border-border rounded-lg shadow-2xl p-6 md:p-8 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-border pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Settings className="text-primary" size={20} />
+                <h2 className="text-lg font-bold uppercase tracking-wider text-foreground">
+                  Settings
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close Settings"
+              >
+                <X size={20} />
+              </button>
+              <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+              />
+            </div>
+
+            {/* Modal Body / Settings Content */}
+
+            {/* Modal Footer */}
+            <div className="mt-8 pt-4 border-t border-border flex justify-end">
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded hover:opacity-90 transition-opacity"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
