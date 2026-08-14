@@ -1,6 +1,7 @@
 import { getFeedback, getAnalyticsData, getVideoSources } from "./action";
 
 import SourceManagement from "./SourceManagement";
+import ContractInfo from "./ContractInfo";
 
 export default async function AdminPage() {
   const feedbacks = await getFeedback();
@@ -21,6 +22,8 @@ export default async function AdminPage() {
         </header>
 
         <SourceManagement initialSources={videoSources} />
+
+        <ContractInfo />
 
         <header className="mb-8 mt-12">
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
